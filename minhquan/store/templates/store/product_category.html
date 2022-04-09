@@ -1,0 +1,50 @@
+{% extends "store/base_home.html" %}
+
+{% block content %}
+<div class="content-section">
+  <div class="groupfeature groupfeaturepromotion orange">
+    <div class="title">
+      <h2 class="grouptitle">Đồ ăn, đồ uống</h2>
+      <div class="cate-list owl-carousel owl-theme owl-loaded owl-drag">
+        <div class="fresh-thit-ca cate-item active"><span>Trà sữa</span></div>
+        <div class="fresh-thit-ca cate-item"><span>Lẩu</span></div>
+        <div class="fresh-thit-ca cate-item"><span>Nướng</span></div>
+      </div>
+    </div>
+
+    {% if products %}
+    <ul class="cate cateproduct">
+      {% for product in products %}
+      <li class="product hasNotUnit" data-sku="{{ product.id }}">
+        <a href="{% url 'product_detail' product.id %}" title="{{ product.name }}">
+          <div class="boximg" title="{{ product.name }}">
+            <img width="160" height="160" src="{{ product.image.url }}" alt="{{ product.name }}">
+          </div>
+          <h3 class="product-name">{{ product.name }}</h3>
+          <div class="price">
+            <strong>{{ product.price }}₫</strong>
+            <span>{{ product.price }}₫</span>
+            <label>-20%</label>
+          </div>
+          <div class="gift">
+            <img width="36" height="36"
+              src="https://cdn.tgdd.vn/Products/Images/7462/250122/bhx/kem-oc-que-dau-celano-extra-125ml-202202232242187904_300x300.jpeg"
+              alt="Kem ốc quế dâu Celano Extra 125ml">
+            <span>Mua từ 2 cây được Tặng cây Kem ốc quế dâu Celano Extra 125ml hoặc 2 quà tặng khác</span>
+          </div>
+        </a>
+        <a class="buy">Chọn mua</a>
+        <div class="updown">
+          <div class="down"><span></span></div>
+          <input class="number" value="0" maxlength="50" pattern="[0-9]*" type="number">
+          <div class="up"><span></span><span></span></div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div>No product</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

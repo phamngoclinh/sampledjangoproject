@@ -1,0 +1,111 @@
+{% extends "store/base_cart.html" %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div id="cart" class="cart-wrap">
+  <div class="">
+    <div class="cart-content">
+      <div id="block1" class="">
+        <div class="p-gender">
+          Giỏ hàng của bạn
+        </div>
+        <div class="block">
+          <!-- <div class="orderid"><span>Chỉnh sửa đơn hàng: </span> <label>#</label></div> -->
+          <div class="lst-product onlyone">
+            <div>
+              <!-- <div class="lstproductoff">
+                <div data-code="8936011771047" data-guild="3a76da7c-855b-410d-b403-368d40e6d0e9" data-st="7022"
+                  class="item"><img alt="Kem ốc quế vani socola Celano cây 110ml"
+                    src="https://cdn.tgdd.vn/Products/Images/7462/250138/bhx/kem-oc-que-vani-socola-celano-cay-110ml-202203281432278387_300x300.jpeg"
+                    width="60" height="60">
+                  <div class="colinfo"><a href="/kem/kem-oc-que-vani-socola-celano-cay-110ml" data-type="0"
+                      class="name">Kem ốc quế vani socola Celano cây 110ml</a>
+                    <div class="cream"><span>Hỗ trợ giao đơn hàng kem trên 50.000đ</span></div>
+                    <div class="npromotion"></div>
+                    <div class="promotion">
+                      <p>Khuyến mãi:</p>
+                      <div class="listpromotion">
+                        <div>1 cây Kem ốc quế dâu Celano Extra 125ml</div> <a class="changepm">Chọn lại khuyến mãi</a>
+                      </div>
+                    </div>
+                    <div class="info-text error">Tạm hết hàng</div>
+                    <a class="delete">Xóa</a>
+                  </div> <a href="/kem" class="same-product">Xem sản phẩm tương tự</a>
+                </div>
+              </div> -->
+              <div class="lstproductbuy lstproductoff">
+                <div data-code="1233901000157" data-guild="a8374304-e366-4967-977f-4db0dc9d5604" data-st="9424"
+                  class="item"><img alt="Vịt nguyên con Vietswan túi 2.4kg <small>Hàng đặt trước</small>"
+                    src="https://cdn.tgdd.vn/Products/Images/8790/270864/bhx/vit-nguyen-con-vietswan-tui-24kg-202201270947331908_300x300.jpg"
+                    width="60" height="60">
+                  <div class="colinfo"><a href="/thit-ga/vit-nguyen-con-vietswan-tui-24kg" data-type="9"
+                      class="name">Vịt nguyên con Vietswan túi 2.4kg <small>Hàng đặt trước</small></a>
+                    <div class="quantity">
+                      <div class="quantitynum">
+                        <i class="noselect">-</i>
+                        <input autocomplete="off" type="number" min="0" max="50" class="qty">
+                        <i class="noselect">+</i>
+                      </div>
+                      <a class="delete">Xóa</a>
+                    </div>
+                    <div class="npromotion"></div>
+                  </div>
+                  <div class="colmoney">
+                    <strong>185.400₫</strong>
+                    <span class="price-discount">195.000₫</span>
+                  </div>
+                </div>
+                <div class="summary">
+                  <div class="row1">
+                    <div class="col55">
+                      <div class="cost">
+                        <span>
+                          Tiền hàng:
+                        </span>
+                        <label><b>185.400₫</b></label>
+                      </div>
+                      <div class="cost">
+                        <span>Phí giao hàng</span>
+                        <label class="rightshiping"><span>15.000₫</span></label>
+                      </div>
+                      <div class="cost">
+                        <span>Áp dụng voucher</span>
+                        <label><span>15.000₫</span></label>
+                      </div>
+
+                      <div class="cost">
+                        <form action="" method="post">
+                          <input type="text" name="coupon" id="" placeholder="Mã giảm giá">
+                          <input type="submit" value="Áp dụng">
+                        </form>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="summary">
+            <div class="row1">
+              <div class="col55">
+                <div class="cost">
+                  <span>Tiền hàng:</span> <label id="carttotal"><b>185.400₫</b></label>
+                </div>
+                <!-- <div class="bcusrank">Miễn phí giao với đơn hàng từ 300.000đ trở lên</div>
+                <div class="btn-userapply">
+                  <button class="couponlink"><i class="icon-use-voucher"></i> Dùng phiếu mua hàng</button>
+                </div> -->
+              </div>
+            </div>
+            <div class="btn-order"><button class="btn-og btn-step">ĐẶT HÀNG</button>
+              <div class="clearall"><button>XÓA GIỎ HÀNG</button></div>
+            </div>
+          </div>
+          <div class="clr"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "store/base_auth.html" %}
+
+{% block content %}
+<h1>Register</h1>
+
+{% if form.error_messages %}
+{% for message in form.error_messages %}
+  {{message}}
+{% endfor %}
+{% endif %}
+
+<form method="post" action="{% url 'register' %}">
+  {% csrf_token %}
+  
+  {{form}}
+  <!-- <table>
+    <tbody>
+      <tr>
+        <td>{{ form.username.label_tag }}</td>
+        <td>{{ form.username }}</td>
+      </tr>
+      <tr>
+        <td>{{ form.email.label_tag }}</td>
+        <td>{{ form.email }}</td>
+      </tr>
+      <tr>
+        <td>{{ form.phone.label_tag }}</td>
+        <td>{{ form.phone }}</td>
+      </tr>
+      <tr>
+        <td>{{ form.password1.label_tag }}</td>
+        <td>{{ form.password1 }}</td>      </tr>
+      <tr>
+        <td>{{ form.password2.label_tag }}</td>
+        <td>{{ form.password2 }}</td>      </tr>
+    </tbody>
+  </table> -->
+  <input type="submit" value="Register">
+</form>
+
+{% endblock %}

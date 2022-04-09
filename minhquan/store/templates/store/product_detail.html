@@ -1,0 +1,28 @@
+{% extends "store/base_home.html" %}
+
+{% block content %}
+<div class="content-section">
+  <div class="rowdetail">
+    <aside class="slide">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" style="max-width: 100%;">
+    </aside>
+    <aside class="infosell infosell-preorder">
+      <h1 class="nameproduct">{{ product.name }}</h1>
+      <div class="expireddate">
+        <div class="box-expire"></div>
+      </div>
+      <div class="ratinglist-price">
+        <div class="boxprice"><strong>{{ product.price }}₫</strong> <span class="strike">{{ product.price }}₫</span>
+          <label>-4%</label>
+        </div>
+      </div>
+      <div class="updown hide">
+        <div class="down"><span></span></div>
+        <input class="number" value="0" pattern="[0-9]*" type="number"maxlength="50">
+        <div class="up"><span></span><span></span></div>
+      </div>
+      <a href="javascript:" class="choosebuy">Chọn mua</a>
+    </aside>
+  </div>
+</div>
+{% endblock %}

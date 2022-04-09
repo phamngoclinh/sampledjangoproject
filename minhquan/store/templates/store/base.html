@@ -1,0 +1,85 @@
+{% load static %}
+{% load store_common %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% block head %}
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% endblock %} - Minh Quân</title>
+  <link rel="stylesheet" type="text/css" href="{% static 'store/css/style.css' %}">
+  {% endblock %}
+</head>
+
+<body>
+  {% block header %}
+  <header>
+    <div class="tophead">
+      <a href="{% url 'index' %}" class="logo" aria-hidden="true">Mi Thiên Kiêu</a>
+      <div class="hiscart">
+        <form class="mainsearch" onsubmit="return mainSearch.submitSearch(this)">
+          <div class="easy-autocomplete" style="width: 385px;"><input type="text" name="key" id="text-search"
+              placeholder="Bạn tìm gì?" maxlength="80" aria-label="text-search" autocomplete="off">
+            <div class="easy-autocomplete-container" id="eac-container-text-search">
+              <ul></ul>
+            </div>
+          </div>
+          <div class="reset"><i class="bhx-closemenu"></i></div><button type="submit" aria-label="Search"> <i
+              class="bhx-search"></i> </button>
+        </form>
+        <a href="/lich-su-mua-hang" class="histories">Đơn hàng<br>của bạn</a>
+        <a href="{% url 'cart_detail' %}" class="temcart no">
+          <div><i class="bhx-cart" style="margin-bottom: 0px;"></i> <span class="">1</span></div>
+          <div><b class="card">THANH TOÁN</b> <b class="sumorder">61.500₫</b></div>
+        </a>
+      </div>
+    </div>
+  </header>
+  {% endblock %}
+
+  {% block wrapper %}
+  {% block sidebar %}
+  <aside class="colmenu sb-container">
+    <div class="sb-content" style="max-height: 902px;">
+      <nav class="menu-hover">
+        <span><i class="bhx-navmenu"></i> DANH MỤC SẢN PHẨM</span>
+        <ul id="colmenuId" class="colmenu-ul">
+          {% for product_category in product_categories %}
+            <li class="CateItem">
+              <div class="nav-parent">{{ product_category.name }}</div>
+              {% for product_category_children in product_category.children %}
+                <div class="nav-item">
+                  <div class="parent">
+                    <a href="{% url 'product_category' product_category_children.id %}" class="link-hover menu-haschild">{{ product_category_children.name }}</a>
+                  </div>
+                  {% for product_category_children_children in product_category_children.children %}
+                    <div class="nav-item">
+                      <div class="parent">
+                        <a href="{% url 'product_category' product_category_children_children.id %}" class="link-hover menu-haschild">{{ product_category_children_children.name }}</a>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              {% endfor %}
+            </li>
+          {% endfor %}
+        </ul>
+      </nav>
+    </div>
+  </aside>
+  {% endblock %}
+
+  <!-- Main content -->
+  {% block content %}{% endblock %}
+  {% endblock %}
+  {% block footer %}
+  <footer>
+    Footer
+  </footer>
+  {% endblock %}
+</body>
+
+</html>
