@@ -1,0 +1,34 @@
+<li class="product hasNotUnit" data-sku="{{ product.id }}" data-product-id="{{ product.id }}">
+  <a href="{% url 'product_detail' product.id %}" title="{{ product.name }}">
+    <div class="boximg" title="{{ product.name }}">
+      <img width="160" height="160" src="{{ product.image.url }}" alt="{{ product.name }}">
+    </div>
+    <h3 class="product-name">{{ product.name }}</h3>
+    <div class="price">
+      {% with discount_price=product.discount_price %}
+        {% if discount_price %}
+          <strong>{{ discount_price|floatformat:"g" }}đ</strong>
+          <span>{{ product.price|floatformat:"g" }}₫</span>
+          <label>
+            -{{ product.coupon_program.discount|floatformat:"g" }}
+            {% if product.coupon_program.discount_type == 'percent' %}%{% else %}đ{% endif %}
+          </label>
+        {% else %}
+          <strong>{{ product.price|floatformat:"g" }}đ</strong>
+        {% endif %}
+      {% endwith %}
+    </div>
+    <div class="gift">
+      <img width="36" height="36"
+        src="https://cdn.tgdd.vn/Products/Images/7462/250122/bhx/kem-oc-que-dau-celano-extra-125ml-202202232242187904_300x300.jpeg"
+        alt="Kem ốc quế dâu Celano Extra 125ml">
+      <span>Mua từ 2 cây được Tặng cây Kem ốc quế dâu Celano Extra 125ml hoặc 2 quà tặng khác</span>
+    </div>
+  </a>
+  <a class="buy">Chọn mua</a>
+  <div class="updown">
+    <div class="down"><span></span></div>
+    <input class="number" value="0" maxlength="50" pattern="[0-9]*" type="number">
+    <div class="up"><span></span><span></span></div>
+  </div>
+</li>

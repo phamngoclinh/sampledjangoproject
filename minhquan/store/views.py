@@ -1,7 +1,15 @@
-from django.shortcuts import render
+import json
+
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from datetime import datetime
-from .models import CouponProgram, Product, ProductCategory
+from django.forms.models import model_to_dict
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+
+from .models import POS, Partner, Product, ProductCategory
+
 
 def convert_categories_into_tree(categories):
   map, roots = {}, []
@@ -15,44 +23,15 @@ def convert_categories_into_tree(categories):
       roots.append(item)
   return roots
 
-def get_product_categories():
+def get_custom_product_categories():
   product_categories_tree = convert_categories_into_tree(ProductCategory.objects.values())
   return product_categories_tree
 
-def get_coupon_programs():
-  return CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
-
-def get_coupon_programs_by_product_id(product_id, coupon_programs):
-  product_coupon_programs = []
-  for coupon_program in coupon_programs:
-    for product in coupon_program.products:
-      if product.id == product_id:
-        sub_price = coupon_program.discount_price(product.price)
-        product_coupon_programs.append({
-          'data': coupon_program,
-          'populated': {
-            'sub_price': sub_price
-          }
-        })
-  return product_coupon_programs
-
-def get_products():
-  products = []
-  coupon_programs = get_coupon_programs()
-  for product in Product.objects.all():
-    product_coupon_programs = get_coupon_programs_by_product_id(product.id, coupon_programs)
-    products.append({
-      'data': product,
-      'coupon_programs': product_coupon_programs
-    })
-  return products
-
 def index(request):
-  products = get_products()
-
+  products = Product.objects.all()
   return render(request, 'store/index.html', {
     'title': 'Home',
-    'product_categories': get_product_categories(),
+    'product_categories': get_custom_product_categories(),
     'products': products
   })
 
@@ -63,23 +42,69 @@ def product_category(request, category_id):
   products = Product.objects.filter(Q(category_id__in=category_children_ids) | Q(category_id=category_id))
   return render(request, 'store/product_category.html', {
     'title': 'Product category',
-    'product_categories': get_product_categories(),
-    'products': products
+    'product_categories': get_custom_product_categories(),
+    'products': products,
   })
 
 def product_detail(request, product_id):
-  coupon_programs = get_coupon_programs()
-  product_coupon_programs = get_coupon_programs_by_product_id(product_id, coupon_programs)
   product = Product.objects.get(pk=product_id)
-
   return render(request, 'store/product_detail.html', {
     'title': 'Product detail',
-    'product_categories': get_product_categories(),
+    'product_categories': get_custom_product_categories(),
     'product': product,
-    'coupon_programs': product_coupon_programs
   })
 
 def cart_detail(request):
+  pos = POS.objects.get(customer_id=request.user.id)
   return render(request, 'store/cart_detail.html', {
-    'title': 'Cart'
+    'title': 'Cart',
+    'pos': pos
   })
+
+@login_required
+@csrf_exempt
+@require_http_methods(['POST'])
+def add_to_cart(request):
+  try:
+    user = request.user
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+    product_id = body['product_id']
+    product = Product.objects.get(pk=product_id)
+
+    if not product:
+      return JsonResponse({ 'success': False, 'messages': 'product_id is not exists' })
+
+    pos, is_now_pos = POS.objects.get_or_create(customer_id=user.id)
+    customer, is_new_customer = Partner.objects.get_or_create(email=user.email)
+    pos.customer = customer
+
+    posdetail, is_new_posdetail = pos.posdetail_set.get_or_create(product_id=product_id)
+    if 'quantity' not in body: # increase quantity
+      if not is_new_posdetail:
+        posdetail.quantity += 1
+        posdetail.save()
+    else: # set quantity or delete
+      quantity = body['quantity']
+      if quantity: # set a specific quantity
+        posdetail.quantity = quantity
+        posdetail.save()
+      else: # delete pos detail
+        posdetail.delete()
+
+    pos.calculate()
+    pos.save()
+
+    return JsonResponse({
+      'success': True,
+      'pos': model_to_dict(pos),
+      'posdetail': model_to_dict(posdetail),
+      'product': {
+        'id': posdetail.product.id,
+        'price': posdetail.product.price,
+        'discount_price': posdetail.product.discount_price()
+      },
+    })
+    return HttpResponse({ 'pos': pos, 'posdetail': posdetail })
+  except Exception as e:
+    return JsonResponse({ 'success': False, 'messages': e.args })

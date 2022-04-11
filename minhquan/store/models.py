@@ -7,7 +7,7 @@ from datetime import datetime
 class BaseModel(models.Model):
   created_date = models.DateTimeField(default=datetime.now, blank=True)
   updated_date = models.DateTimeField(default=datetime.now, blank=True)
-  active = models.BooleanField(default=False)
+  active = models.BooleanField(default=True)
 
   def __str__(self):
     return hasattr(self, 'name') and self.name or 'Name is undefined'
@@ -18,12 +18,17 @@ class BaseModel(models.Model):
 
 class Partner(BaseModel):
   user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-  phone = models.IntegerField(unique=True)
+  phone = models.IntegerField(null=True)
   email = models.EmailField()
-  full_name = models.CharField(max_length=200)
-  first_name = models.CharField(max_length=50)
-  last_name = models.CharField(max_length=50)
-  dob = models.DateTimeField()
+  full_name = models.CharField(null=True, max_length=200)
+  first_name = models.CharField(null=True, max_length=50)
+  last_name = models.CharField(null=True, max_length=50)
+  dob = models.DateTimeField(null=True)
+  is_customer = models.BooleanField(default=True)
+  is_vendor = models.BooleanField(default=False)
+
+  def __str__(self):
+    return self.full_name or self.first_name or self.email or self.phone
 
 
 class UOMCategory(BaseModel):
@@ -101,17 +106,49 @@ class Product(BaseModel):
   price = models.FloatField(default=0)
   cost = models.FloatField(default=0) # Gia mua
 
+  def coupon_programs(self):
+    coupon_programs = CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
+    product_coupon_programs = []
+    for coupon_program in coupon_programs:
+      for product in coupon_program.products:
+        if product.id == self.id:
+          product_coupon_programs.append(coupon_program)
+    return product_coupon_programs
+  
+  def coupon_program(self):
+    coupon_programs = self.coupon_programs()
+    return coupon_programs[0] if coupon_programs else []
+
+  def discount_price(self):
+    coupon_program = self.coupon_program()
+    return coupon_program.discount_price(self.price) if coupon_program else 0
+
 
 class POS(BaseModel):
-  customer = models.CharField(max_length=200)
+  customer = models.OneToOneField(Partner, on_delete=models.CASCADE, null=True, blank=True)
   total = models.FloatField(default=0)
+
+  def __str__(self):
+    return 'DH - %d' % self.id
+  
+  def calculate(self):
+    total = 0
+    for posdetail in self.posdetail_set.all():
+      product_discount_price = posdetail.product.discount_price()
+      if product_discount_price:
+        total += product_discount_price * posdetail.quantity
+      else:
+        total += posdetail.product.price * posdetail.quantity
+    self.total = total
 
 
 class POSDetail(BaseModel):
   product = models.ForeignKey(Product, on_delete=models.CASCADE)
   pos = models.ForeignKey(POS, on_delete=models.CASCADE)
-  quantity = models.FloatField(default=0)
+  quantity = models.FloatField(default=1)
   price = models.FloatField(default=0)
   discount = models.FloatField(default=0)
   sub_total = models.FloatField(default=0)
-  
+
+  def __str__(self):
+    return '%d - %s' % (self.pos.id, self.product.name)

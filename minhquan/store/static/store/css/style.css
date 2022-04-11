@@ -38,6 +38,16 @@ body {
   overflow-y: scroll;
 }
 
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
 .container {
   max-width: 1200px;
   margin: auto;
@@ -1126,10 +1136,11 @@ footer {
   font-size: 12px;
   margin-bottom: 5px;
   position: relative;
+  display: flex;
 }
 
 .lst-product .item .quantity>div {
-  float: left;
+  flex-shrink: 0;
   box-sizing: initial;
 }
 
@@ -1204,7 +1215,7 @@ footer {
 .quantitynum .qty {
   float: left;
   padding: 0 5px;
-  width: 22px;
+  width: 40px;
   border: 1px solid #ededed;
   text-align: center;
   height: 26px;

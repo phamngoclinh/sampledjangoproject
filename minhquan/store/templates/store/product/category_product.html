@@ -1,0 +1,20 @@
+<div class="groupfeature groupfeaturepromotion orange">
+  <div class="title">
+    <h2 class="grouptitle">Đồ ăn, đồ uống</h2>
+    <div class="cate-list owl-carousel owl-theme owl-loaded owl-drag">
+      <div class="fresh-thit-ca cate-item active"><span>Trà sữa</span></div>
+      <div class="fresh-thit-ca cate-item"><span>Lẩu</span></div>
+      <div class="fresh-thit-ca cate-item"><span>Nướng</span></div>
+    </div>
+  </div>
+
+  {% if products %}
+    <ul class="cate cateproduct">
+      {% for product in products %}
+        {% include "store/product/product_item.html" %}
+      {% endfor %}
+    </ul>
+  {% else %}
+  <div>No product</div>
+  {% endif %}
+</div>

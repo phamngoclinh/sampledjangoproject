@@ -1,4 +1,4 @@
-{% extends "store/base_home.html" %}
+{% extends "store/base/base_home.html" %}
 
 {% block content %}
 <div class="content-section">
@@ -12,8 +12,19 @@
         <div class="box-expire"></div>
       </div>
       <div class="ratinglist-price">
-        <div class="boxprice"><strong>{{ product.price }}₫</strong> <span class="strike">{{ product.price }}₫</span>
-          <label>-4%</label>
+        <div class="boxprice">
+          {% with discount_price=product.discount_price %}
+            {% if discount_price %}
+              <strong>{{ discount_price|floatformat:"g" }}đ</strong>
+              <span class="strike">{{ product.price|floatformat:"g" }}₫</span>
+              <label>
+                -{{ product.coupon_program.discount|floatformat:"g" }}
+                {% if product.coupon_program.discount_type == 'percent' %}%{% else %}đ{% endif %}
+              </label>
+            {% else %}
+              <strong>{{ product.price|floatformat:"g" }}đ</strong>
+            {% endif %}
+          {% endwith %}
         </div>
       </div>
       <div class="updown hide">

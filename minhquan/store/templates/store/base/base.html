@@ -1,0 +1,38 @@
+{% load static %}
+{% load store_common %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  {% block head %}
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Minh Quân</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'store/css/style.css' %}">
+  {% endblock %}
+  <script>
+    const post_data = {
+      'csrfmiddlewaretoken': "{{ csrf_token }}"
+    }
+  </script>
+  <script src="{% static 'store/js/jquery-3.6.0.min.js' %}"></script>
+  <script src="{% static 'store/js/client.js' %}"></script>
+</head>
+
+<body>
+  {% block header %}{% include "store/shared/header.html" %}{% endblock %}
+
+  {% block wrapper %}
+    {% block sidebar %}{% include "store/shared/sidebar.html" %}{% endblock %}
+    <!-- Main content -->
+    {% block content %}{% endblock %}
+  {% endblock %}
+
+  {% block footer %}{% include "store/shared/footer.html" %}{% endblock %}
+
+  <script src="{% static 'store/js/main.js' %}"></script>
+</body>
+
+</html>
