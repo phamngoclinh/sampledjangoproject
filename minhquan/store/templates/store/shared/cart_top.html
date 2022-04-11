@@ -1,7 +1,16 @@
 <div class="hiscart">
-  <form class="mainsearch" onsubmit="return mainSearch.submitSearch(this)">
-    <div class="easy-autocomplete" style="width: 385px;"><input type="text" name="key" id="text-search"
-        placeholder="Bạn tìm gì?" maxlength="80" aria-label="text-search" autocomplete="off">
+  <form class="mainsearch" method="get" action="/search">
+    <div class="easy-autocomplete" style="width: 385px;">
+      <input
+        type="text"
+        name="product_name"
+        id="text-search"
+        placeholder="Bạn tìm gì?"
+        maxlength="80"
+        aria-label="text-search"
+        autocomplete="off"
+        value="{{ request.GET.product_name }}"
+      />
       <div class="easy-autocomplete-container" id="eac-container-text-search">
         <ul></ul>
       </div>

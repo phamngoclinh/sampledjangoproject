@@ -54,6 +54,15 @@ def product_detail(request, product_id):
     'product': product,
   })
 
+def search(request):
+  product_name = request.GET.get('product_name', '')
+  products = Product.objects.filter(Q(name__icontains=product_name) | Q(slug__icontains=product_name))
+  return render(request, 'store/search.html', {
+    'title': 'Search',
+    'product_categories': get_custom_product_categories(),
+    'products': products
+  })
+
 def cart_detail(request):
   pos = POS.objects.get(customer_id=request.user.id)
   return render(request, 'store/cart_detail.html', {

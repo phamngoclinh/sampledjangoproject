@@ -1,0 +1,13 @@
+{% extends "store/base/base_home.html" %}
+
+{% block content %}
+<div class="content-section">
+  <h1>
+    <span>Từ khóa:</span>
+    <strong>{{ request.GET.product_name }}</strong>.
+    <span>Kết quả:</span>
+    <strong>{{ products.count }}</strong>
+  </h1>
+  {% include "store/product/product_list.html" %}
+</div>
+{% endblock %}

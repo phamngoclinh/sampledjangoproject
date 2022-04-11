@@ -1,0 +1,9 @@
+{% if products %}
+  <ul class="cate cateproduct">
+    {% for product in products %}
+      {% include "store/product/product_item.html" %}
+    {% endfor %}
+  </ul>
+{% else %}
+<div>No product</div>
+{% endif %}
