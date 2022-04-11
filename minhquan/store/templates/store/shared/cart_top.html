@@ -20,7 +20,7 @@
   </form>
   <a href="{% url 'cart_detail' %}" class="histories">Đơn hàng<br>của bạn</a>
   <a href="{% url 'cart_detail' %}" class="temcart no">
-    <div><i class="bhx-cart" style="margin-bottom: 0px;"></i> <span class="">1</span></div>
-    <div><b class="card">THANH TOÁN</b> <b class="sumorder">61.500₫</b></div>
+    <div><i class="bhx-cart" style="margin-bottom: 0px;"></i> <span id="pos_detail_count" class="">{{pos.posdetail_set.count}}</span></div>
+    <div><b class="card">THANH TOÁN</b> <b id="pos_total" class="sumorder pos_total">{{ pos.total|default:0|floatformat:"g" }}₫</b></div>
   </a>
 </div>

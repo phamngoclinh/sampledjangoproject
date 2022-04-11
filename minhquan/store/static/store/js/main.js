@@ -4,7 +4,13 @@ $(document).ready(function () {
     if ($products.length) {
       const $product = $($products[0])
       const productId = $product.data('product-id')
-      addToCartRequest({ data: { product_id: productId } })
+      addToCartRequest({
+        data: { product_id: productId },
+        success: function (result) {
+          $('#pos_total').html(result.pos.total.toLocaleString() + 'đ')
+          $('#pos_detail_count').html(result.pos_count)
+        }
+      })
     }
   })
 

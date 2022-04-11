@@ -29,10 +29,12 @@ def get_custom_product_categories():
 
 def index(request):
   products = Product.objects.all()
+  pos = POS.objects.get(customer_id=request.user.id)
   return render(request, 'store/index.html', {
     'title': 'Home',
     'product_categories': get_custom_product_categories(),
-    'products': products
+    'products': products,
+    'pos': pos
   })
 
 def product_category(request, category_id):
@@ -40,18 +42,22 @@ def product_category(request, category_id):
   category_childrens = category.get_childrens()
   category_children_ids = [i.id for i in category_childrens]
   products = Product.objects.filter(Q(category_id__in=category_children_ids) | Q(category_id=category_id))
+  pos = POS.objects.get(customer_id=request.user.id)
   return render(request, 'store/product_category.html', {
     'title': 'Product category',
     'product_categories': get_custom_product_categories(),
     'products': products,
+    'pos': pos,
   })
 
 def product_detail(request, product_id):
   product = Product.objects.get(pk=product_id)
+  pos = POS.objects.get(customer_id=request.user.id)
   return render(request, 'store/product_detail.html', {
     'title': 'Product detail',
     'product_categories': get_custom_product_categories(),
     'product': product,
+    'pos': pos,
   })
 
 def search(request):
@@ -65,10 +71,11 @@ def search(request):
 
 def cart_detail(request):
   pos = POS.objects.get(customer_id=request.user.id)
-  return render(request, 'store/cart_detail.html', {
+  context = {
     'title': 'Cart',
     'pos': pos
-  })
+  }
+  return render(request, 'store/cart_detail.html', context)
 
 @login_required
 @csrf_exempt
@@ -107,6 +114,7 @@ def add_to_cart(request):
     return JsonResponse({
       'success': True,
       'pos': model_to_dict(pos),
+      'pos_count': pos.posdetail_set.count(),
       'posdetail': model_to_dict(posdetail),
       'product': {
         'id': posdetail.product.id,
@@ -114,6 +122,5 @@ def add_to_cart(request):
         'discount_price': posdetail.product.discount_price()
       },
     })
-    return HttpResponse({ 'pos': pos, 'posdetail': posdetail })
   except Exception as e:
     return JsonResponse({ 'success': False, 'messages': e.args })

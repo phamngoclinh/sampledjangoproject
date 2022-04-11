@@ -52,7 +52,7 @@
                       <span>
                         Tiền hàng:
                       </span>
-                      <label><b>{{ pos.total|floatformat:"g" }}₫</b></label>
+                      <label><b class="pos_total">{{ pos.total|floatformat:"g" }}₫</b></label>
                     </div>
                     <!-- <div class="cost">
                       <span>Phí giao hàng</span>
@@ -77,7 +77,7 @@
                 <div class="cost">
                   <span>Tổng tiền thanh toán:</span>
                   <label id="carttotal">
-                    <b>{{ pos.total|floatformat:"g" }}₫</b>
+                    <b class="pos_total">{{ pos.total|floatformat:"g" }}₫</b>
                   </label>
                 </div>
                 <!-- <div class="bcusrank">Miễn phí giao với đơn hàng từ 300.000đ trở lên</div>
@@ -103,7 +103,12 @@
       const productId = $cartItem.data('product-id')
       addToCartRequest({
         data: { product_id: productId, quantity: 0 },
-        success: function () { window.location.reload() }
+        success: function (result) {
+          $cartItem.remove()
+          $('.pos_total').html(result.pos.total.toLocaleString() + 'đ')
+          $('#pos_detail_count').html(result.pos_count)
+          //window.location.reload()
+        }
       })
     })
   

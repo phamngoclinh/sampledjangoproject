@@ -1,4 +1,5 @@
 function sendRequest({ data, ...others }) {
+
   $.ajax({
     method: 'GET',
     url: '/',
