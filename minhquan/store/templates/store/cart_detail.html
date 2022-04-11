@@ -124,8 +124,12 @@
           if (quantity_discount_price) {
             $cartItem.find('.colmoney strong').html(quantity_discount_price.toLocaleString()+'₫')
             $cartItem.find('.colmoney span').html(quantity_price.toLocaleString()+'₫')
+            $('.pos_total').html(result.pos.total.toLocaleString() + 'đ')
+            $('#pos_detail_count').html(result.pos_count)
           } else {
             $cartItem.find('.colmoney strong').html(quantity_price.toLocaleString()+'₫')
+            $('.pos_total').html(result.pos.total.toLocaleString() + 'đ')
+            $('#pos_detail_count').html(result.pos_count)
           }
         }
       })
