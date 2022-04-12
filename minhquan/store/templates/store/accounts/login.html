@@ -1,0 +1,20 @@
+{% extends "store/base/base_auth.html" %}
+
+{% block content %}
+<div class="small-form center">
+  <h1>Đăng nhập</h1>
+
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    {% if messages %}
+      <div>{{ messages }}</div>
+    {% endif %}
+    <input class="input" type="text" name="email" placeholder="Email" />
+    <button type="submit">Đăng nhập</button>
+  </form>
+  <hr/>
+  <a href="{% url 'register' %}" style="display:block; text-align:center">Đăng ký tài khoản?</a>
+  <br/>
+  <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>
+</div>
+{% endblock %}

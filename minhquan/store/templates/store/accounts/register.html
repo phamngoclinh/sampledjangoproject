@@ -1,0 +1,24 @@
+{% extends "store/base/base_auth.html" %}
+
+{% block content %}
+<div class="small-form center">
+  <h1>Đăng ký tài khoản</h1>
+
+  <form method="post" action="{% url 'register' %}">
+    {% csrf_token %}
+    {% if messages %}
+    <div>{{ messages }}</div>
+    {% endif %}
+    <input type="text" name="email" placeholder="Email" required />
+    <input type="text" name="phone" placeholder="Điện thoại" required />
+    <input type="text" name="first_name" placeholder="Họ" />
+    <input type="text" name="last_name" placeholder="Tên" />
+    <button type="submit">Đăng ký</button>
+  </form>
+  <hr/>
+  <a href="{% url 'login' %}" style="display:block; text-align:center">Đăng nhập</a>
+  <br/>
+  <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>
+</div>
+
+{% endblock %}

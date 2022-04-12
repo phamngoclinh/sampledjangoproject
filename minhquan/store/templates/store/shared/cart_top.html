@@ -11,16 +11,30 @@
         autocomplete="off"
         value="{{ request.GET.product_name }}"
       />
-      <div class="easy-autocomplete-container" id="eac-container-text-search">
-        <ul></ul>
-      </div>
     </div>
-    <div class="reset"><i class="bhx-closemenu"></i></div><button type="submit" aria-label="Search"> <i
-        class="bhx-search"></i> </button>
+    <button type="submit" aria-label="Search"> <i class="bhx-search"></i> </button>
   </form>
+  {% if request.partner %}
+    <a href="{% url 'cart_detail' %}" class="profile">
+      {{ request.partner.full_name }}
+      <br />
+      ({{ request.partner.email }})
+    </a>
+    <a href="{% url 'logout' %}" class="profile">Đăng xuất</a>
+  {% else %}
+    <a href="{% url 'login' %}" class="profile">Đăng nhập</a>
+  {% endif %}
   <a href="{% url 'cart_detail' %}" class="histories">Đơn hàng<br>của bạn</a>
   <a href="{% url 'cart_detail' %}" class="temcart no">
-    <div><i class="bhx-cart" style="margin-bottom: 0px;"></i> <span id="pos_detail_count" class="">{{pos.posdetail_set.count}}</span></div>
-    <div><b class="card">THANH TOÁN</b> <b id="pos_total" class="sumorder pos_total">{{ pos.total|default:0|floatformat:"g" }}₫</b></div>
+    <div>
+      <i class="bhx-cart" style="margin-bottom: 0px;"></i>
+      <span id="pos_detail_count" class="">{{ pos.posdetail_set.count|default:0 }}</span>
+    </div>
+    <div>
+      <b class="card">THANH TOÁN</b>
+      <b id="pos_total" class="sumorder pos_total">
+        {{ pos.total|default:0|floatformat:"g" }}₫
+      </b>
+    </div>
   </a>
 </div>
