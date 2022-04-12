@@ -28,11 +28,11 @@
   <a href="{% url 'cart_detail' %}" class="temcart no">
     <div>
       <i class="bhx-cart" style="margin-bottom: 0px;"></i>
-      <span id="pos_detail_count" class="">{{ pos.posdetail_set.count|default:0 }}</span>
+      <span class="pos-detail-count" class="">{{ pos.posdetail_set.count|default:0 }}</span>
     </div>
     <div>
       <b class="card">THANH TOÁN</b>
-      <b id="pos_total" class="sumorder pos_total">
+      <b class="sumorder pos-total">
         {{ pos.total|default:0|floatformat:"g" }}₫
       </b>
     </div>

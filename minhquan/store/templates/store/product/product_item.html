@@ -1,4 +1,13 @@
-<li class="product hasNotUnit" data-sku="{{ product.id }}" data-product-id="{{ product.id }}">
+<li
+  class="product product-item hasNotUnit"
+  data-product-id="{{ product.id }}"
+  data-product-name="{{ product.name }}"
+  data-product-image="{{ product.image.url }}"
+  data-product-slug="{{ product.slug }}"
+  data-product-price="{{ product.price }}"
+  data-product-discount-price="{{ product.discount_price }}"
+  data-product-url="{% url 'product_detail' product.id %}"
+>
   <a href="{% url 'product_detail' product.id %}" title="{{ product.name }}">
     <div class="boximg" title="{{ product.name }}">
       <img width="160" height="160" src="{{ product.image.url }}" alt="{{ product.name }}">
