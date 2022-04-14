@@ -10,6 +10,7 @@
       <div>{{ messages }}</div>
     {% endif %}
     <input class="input" type="text" name="email" placeholder="Email" />
+    <input id="shopping_cart" type="hidden" name="shopping_cart" />
     <button type="submit">Đăng nhập</button>
   </form>
   <hr/>
@@ -17,4 +18,12 @@
   <br/>
   <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>
 </div>
+
+<script>
+  // Synchrozire local shopping_cart with database
+  const CART_DATA = localStorage.getItem('CART_DATA', '')
+  if (CART_DATA) {
+    $('#shopping_cart').val(CART_DATA)
+  }
+</script>
 {% endblock %}

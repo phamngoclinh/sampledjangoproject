@@ -7,7 +7,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import POS, Partner, Product, ProductCategory
+from .models import POS, POSDetail, Partner, Product, ProductCategory
 
 
 def convert_categories_into_tree(categories):
@@ -196,6 +196,40 @@ def login(request):
   
   try:
     partner = Partner.objects.get(email=email)
+
+    # Synchrozire local shopping_cart with database
+    shopping_cart = request.POST.get('shopping_cart')
+    if shopping_cart:
+      shopping_cart = json.loads(shopping_cart)
+
+      pos, is_new_pos = POS.objects.get_or_create(customer=partner, status='draft')
+
+      total = pos.total
+      for sp_posdetail in shopping_cart['pos']['posdetails']:
+        product = Product.objects.get(pk=sp_posdetail['product']['id'])
+        posdetail, is_new_posdetail = POSDetail.objects.get_or_create(
+          pos=pos,
+          product=product,
+          defaults={
+            'quantity': sp_posdetail['quantity'],
+            'price': sp_posdetail['quantity'] * product.price,
+            'discount': sp_posdetail['quantity'] * product.discount_price(),
+            'sub_total': sp_posdetail['quantity'] * product.discount_price() if product.discount_price() else sp_posdetail['quantity'] * product.price
+          }
+        )
+
+        if not is_new_posdetail:
+          posdetail.quantity += sp_posdetail['quantity']
+          posdetail.price += sp_posdetail['quantity'] * product.price
+          posdetail.discount += sp_posdetail['quantity'] * product.discount_price()
+          posdetail.sub_total += sp_posdetail['quantity'] * product.discount_price() if product.discount_price() else sp_posdetail['quantity'] * product.price
+          posdetail.save()
+        
+        total += posdetail.sub_total
+
+      if (pos.total != total):
+        pos.total = total
+        pos.save()
   except Partner.DoesNotExist:
     return render(request, 'store/accounts/login.html', { 'messages': f'{email} không tồn tại' })
     

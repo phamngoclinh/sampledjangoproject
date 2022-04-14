@@ -124,8 +124,16 @@ class Product(BaseModel):
 
 
 class POS(BaseModel):
+  POS_STATUS = (
+    ('draft', 'Draft'),
+    ('processing', 'Processing'),
+    ('shipping', 'Shipping'),
+    ('done', 'Done')
+  )
+
   customer = models.OneToOneField(Partner, on_delete=models.CASCADE, null=True, blank=True)
   total = models.FloatField(default=0)
+  status = models.CharField(default='draft', max_length=100, choices=POS_STATUS)
 
   def __str__(self):
     return 'DH - %d' % self.id
