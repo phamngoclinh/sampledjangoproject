@@ -18,7 +18,7 @@ class BaseModel(models.Model):
 
 class Partner(BaseModel):
   user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-  phone = models.IntegerField(null=True, blank=True)
+  phone = models.IntegerField(unique=True, blank=True)
   email = models.EmailField(unique=True)
   full_name = models.CharField(null=True, max_length=200, blank=True)
   first_name = models.CharField(null=True, max_length=50, blank=True)
