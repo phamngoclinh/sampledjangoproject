@@ -8,6 +8,7 @@
   <div class="container">
     <div class="checkout-content">
       <form method="post" action="{% url 'checkout' cart.id %}">
+        {% csrf_token %}
         <div class="cart-block">
           <div class="p-gender">Giỏ hàng của bạn</div>
           <div class="block">
@@ -65,28 +66,11 @@
           <div class="p-gender">Chương trình khuyến mãi</div>
           <div class="block">
             <div class="coupon-program-list">
-              <div class="coupon-program-item">
-                <div class="name">
-                  <span>Giam 10% cho tat ca san pham</span>
-                </div>
-                <span class="apply-coupon-program" data-coupon-program-id="1">
-                  <span>Áp dụng</span>
-                </span>
-              </div>
-              <div class="coupon-program-item active">
-                <div class="name">
-                  <span>Giam 10% cho tat ca san pham</span>
-                </div>
-                <span class="apply-coupon-program" data-coupon-program-id="1">
-                  <span>Áp dụng</span>
-                </span>
-              </div>
-              
               {% for coupon_program in coupon_programs %}
-              <div class="coupon-program-item">
-                <div class="name">{{ coupon_program.name }}</div>
-                <span class="apply-coupon-program" data-coupon-program-id="{{ coupon_program.id }}">Áp dụng</span>>
-              </div>
+                <div class="coupon-program-item">
+                  <div class="name">{{ coupon_program.name }}</div>
+                  <span class="apply-coupon-program" data-coupon-program-id="{{ coupon_program.id }}">Áp dụng</span>
+                </div>
               {% endfor %}
             </div>
           </div>
@@ -111,4 +95,30 @@
     </div>
   </div>
 </div>
+
+<script>
+  $(document).ready(function () {
+    $('#apply-coupon').on('click', function () {
+      const couponValue = $('#id_code').val()
+      SERVICES.getCoupon({
+        data: { 'code': couponValue },
+        success: function (result) {
+          if (result.success) {
+            // Synchronize with shopping cart
+            // ...
+          } else {
+            alert(result.messages)
+          }
+        }
+      })
+    })
+
+    $('.apply-coupon-program').on('click', function () {
+      const couponProgramId = $(this).data('coupon-program-id')
+      $('#id_coupon_program_id').val(couponProgramId)
+      $('.coupon-program-item').removeClass('active')
+      $(this).parent('.coupon-program-item').addClass('active')
+    })
+  })
+</script>
 {% endblock %}

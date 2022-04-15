@@ -90,9 +90,10 @@ class ShippingForm(forms.Form):
   district = forms.CharField(max_length=50, label='Quận/huyện')
   award = forms.CharField(max_length=50, label='Phường/thị xã')
   address = forms.CharField(max_length=100, label='Số nhà, đường')
-  email = forms.EmailField(label='Địa chỉ email')
-  note = forms.CharField(max_length=200, label='Lưu ý cho người giao hàng')
+  email = forms.EmailField(label='Địa chỉ email', required=False)
+  note = forms.CharField(max_length=200, label='Lưu ý cho người giao hàng', required=False)
 
 
 class CouponForm(forms.Form):
   code = forms.CharField(max_length=100, required=False)
+  coupon_program_id = forms.CharField(widget=forms.HiddenInput(), max_length=10, required=False)

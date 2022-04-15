@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,7 +12,7 @@ from django.views.decorators.http import require_http_methods
 
 from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
 
-from .models import POS, POSDetail, Partner, Product, ProductCategory
+from .models import POS, Coupon, CouponProgram, POSDetail, Partner, Product, ProductCategory
 
 
 def convert_categories_into_tree(categories):
@@ -125,27 +126,54 @@ def carts(request):
 def checkout(request, pos_id):
   context = { 'title': 'Checkout' }
 
-  pos = get_object_or_404(POS, pk=pos_id)
-  context['cart'] = pos
-  if pos.status != 'draft':
-    messages.success(f'Đơn hàng {pos_id} đã được xử lý')
-  
-  shipping_form = ShippingForm()
-  coupon_form = CouponForm()
+  if request.partner:
+    user_email = request.partner.email
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
+    context['pos'] = pos
 
-  if request.method == 'POST':
-    shipping_form = ShippingForm(request.POST)
-    coupon_form = CouponForm(request.POST)
-    if shipping_form.is_valid() and coupon_form.is_valid():
-      # Save shipping information
-      # Update coupon program
-      pass
+    pos = get_object_or_404(POS, pk=pos_id)
+    context['cart'] = pos
+    if pos.status != 'draft':
+      messages.success(f'Đơn hàng {pos_id} đã được xử lý')
+
+    coupon_programs = CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
+    context['coupon_programs'] = coupon_programs
     
+    shipping_form = ShippingForm()
+    coupon_form = CouponForm()
 
-  context['shipping_form'] = shipping_form
-  context['coupon_form'] = coupon_form
+    if request.method == 'POST':
+      shipping_form = ShippingForm(request.POST)
+      coupon_form = CouponForm(request.POST)
+      if shipping_form.is_valid() and coupon_form.is_valid():
+        # Save shipping information
+        # Update coupon program
+        pass
+      
+
+    context['shipping_form'] = shipping_form
+    context['coupon_form'] = coupon_form
 
   return render(request, 'store/checkout.html', context)
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def get_coupon(request):
+  try:
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+
+    code = body['code']
+    coupon = Coupon.objects.get(
+      code=code,
+      active=True,
+      program__start_date__lte=datetime.today(),
+      program__expired_date__gte=datetime.today()
+    )
+  except Coupon.DoesNotExist:
+    return JsonResponse({ 'success': False, 'messages': 'Mã giảm giá không tồn tại' })  
+
+  return JsonResponse({ 'success': True })
 
 @csrf_exempt
 @require_http_methods(['POST'])
