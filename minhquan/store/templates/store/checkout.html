@@ -1,0 +1,114 @@
+{% extends "store/base/base_cart.html" %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<br /><br /><br /><br /><br />
+<div id="checkout" class="checkout-wrap">
+  <div class="container">
+    <div class="checkout-content">
+      <form method="post" action="{% url 'checkout' cart.id %}">
+        <div class="cart-block">
+          <div class="p-gender">Giỏ hàng của bạn</div>
+          <div class="block">
+            {% if cart %}
+            <div class="cart">
+              <div class="heading">
+                Trạng thái: {{ cart.get_status_display }} - Ngày tạo: {{ cart.created_date|date:"D d M Y" }}
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Đơn hàng #1</th>
+                    <th>Sản phẩm</th>
+                    <th>Tổng tiền</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{{ cart.id }}</td>
+                    <td>
+                      <ul>
+                        {% for posdetail in cart.posdetail_set.all %}
+                        <li>
+                          <a href="{% url 'product_detail' posdetail.product.id %}">{{ posdetail.product.name }}</a>
+                          <span>(x{{ posdetail.quantity }})</span>
+                        </li>
+                        {% endfor %}
+                      </ul>
+                    </td>
+                    <td>{{ cart.total|floatformat:"g" }}đ</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            {% endif %}
+          </div>
+          <div class="block" style="padding: 10px">
+            <table style="width: 100%; text-align: right;">
+              <tr>
+                <td>
+                  <div class="coupon-form">
+                    {{ coupon_form.as_p }}
+                    <span id="apply-coupon" class="button">Áp dụng</span>
+                  </div>
+                </td>
+                <td>Áp dụng giảm giá (#adasdsdfsdfsdf): - 100.000đ</td>
+                <td>Tổng đơn: 300.000đ</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+        <!-- Program -->
+        <br/>
+        <div class="cart-block">
+          <div class="p-gender">Chương trình khuyến mãi</div>
+          <div class="block">
+            <div class="coupon-program-list">
+              <div class="coupon-program-item">
+                <div class="name">
+                  <span>Giam 10% cho tat ca san pham</span>
+                </div>
+                <span class="apply-coupon-program" data-coupon-program-id="1">
+                  <span>Áp dụng</span>
+                </span>
+              </div>
+              <div class="coupon-program-item active">
+                <div class="name">
+                  <span>Giam 10% cho tat ca san pham</span>
+                </div>
+                <span class="apply-coupon-program" data-coupon-program-id="1">
+                  <span>Áp dụng</span>
+                </span>
+              </div>
+              
+              {% for coupon_program in coupon_programs %}
+              <div class="coupon-program-item">
+                <div class="name">{{ coupon_program.name }}</div>
+                <span class="apply-coupon-program" data-coupon-program-id="{{ coupon_program.id }}">Áp dụng</span>>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <!-- Shipping -->
+        <br/>
+        <div class="cart-block">
+          <div class="p-gender">Thông tin giao hàng</div>
+          <div class="block">
+            <div class="shipping">
+              {{ shipping_form.as_p }}
+            </div>
+          </div>
+        </div>
+        <!-- Submit -->
+        <br />
+        <button>Xác nhận đặt hàng</button>
+        <br />
+        <br />
+        <br />
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

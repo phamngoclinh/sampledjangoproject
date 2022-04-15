@@ -5,11 +5,11 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm
+from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
 
 from .models import POS, POSDetail, Partner, Product, ProductCategory
 
@@ -121,6 +121,31 @@ def carts(request):
     context['carts'] = carts
 
   return render(request, 'store/carts.html', context)
+
+def checkout(request, pos_id):
+  context = { 'title': 'Checkout' }
+
+  pos = get_object_or_404(POS, pk=pos_id)
+  context['cart'] = pos
+  if pos.status != 'draft':
+    messages.success(f'Đơn hàng {pos_id} đã được xử lý')
+  
+  shipping_form = ShippingForm()
+  coupon_form = CouponForm()
+
+  if request.method == 'POST':
+    shipping_form = ShippingForm(request.POST)
+    coupon_form = CouponForm(request.POST)
+    if shipping_form.is_valid() and coupon_form.is_valid():
+      # Save shipping information
+      # Update coupon program
+      pass
+    
+
+  context['shipping_form'] = shipping_form
+  context['coupon_form'] = coupon_form
+
+  return render(request, 'store/checkout.html', context)
 
 @csrf_exempt
 @require_http_methods(['POST'])

@@ -81,3 +81,18 @@ class RegisterForm(forms.Form):
     except Partner.DoesNotExist:
       pass
     return phone
+
+
+class ShippingForm(forms.Form):
+  name = forms.CharField(max_length=100, label='Người nhận hàng')
+  phone = forms.IntegerField(label='Số điện thoại')
+  city = forms.CharField(max_length=50, label='Tỉnh/thành phố')
+  district = forms.CharField(max_length=50, label='Quận/huyện')
+  award = forms.CharField(max_length=50, label='Phường/thị xã')
+  address = forms.CharField(max_length=100, label='Số nhà, đường')
+  email = forms.EmailField(label='Địa chỉ email')
+  note = forms.CharField(max_length=200, label='Lưu ý cho người giao hàng')
+
+
+class CouponForm(forms.Form):
+  code = forms.CharField(max_length=100, required=False)

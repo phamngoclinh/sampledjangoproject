@@ -1,9 +1,5 @@
-html {
+* {
   box-sizing: border-box;
-}
-
-*, *:before, *:after {
-  box-sizing: inherit;
 }
 
 body,
@@ -55,6 +51,10 @@ input[type=number] {
   -moz-appearance: textfield;
 }
 
+input {
+  box-sizing: border-box;
+}
+
 .container {
   width: 1200px;
   margin: auto;
@@ -65,6 +65,10 @@ body {
   flex-direction: column;
   min-height: 100vh;
 
+}
+
+.block {
+  background: #ffffff;
 }
 
 .container {
@@ -113,7 +117,6 @@ header {
   width: 161px;
   height: 100%;
   padding: 8px 0 9px 0;
-  box-sizing: border-box;
   color: #ffffff;
   font-size: 20px;
   font-weight: 900;
@@ -162,7 +165,6 @@ header {
   text-indent: 10px;
   -webkit-appearance: none;
   padding-right: 30px;
-  box-sizing: border-box;
   border-radius: 4px;
 }
 
@@ -173,7 +175,6 @@ header {
 
 .easy-autocomplete input {
   padding: 0 30px 0 0;
-  box-sizing: border-box;
 }
 
 .easy-autocomplete-container {
@@ -222,7 +223,6 @@ header {
   font-size: 12px;
   color: #fff;
   padding: 10px 5px;
-  box-sizing: border-box;
   flex-shrink: 0;
 }
 
@@ -298,7 +298,6 @@ header {
 }
 
 .groupfeature.groupfeaturepromotion * {
-  box-sizing: border-box;
 }
 
 .groupfeature.groupfeaturepromotion .title {
@@ -392,7 +391,6 @@ header {
   margin: 0;
   position: relative;
   padding-bottom: 60px;
-  box-sizing: border-box;
 }
 
 .cate .product .boximg,
@@ -435,7 +433,6 @@ header {
   -webkit-box-orient: vertical;
   min-height: 42px;
   height: 25px;
-  box-sizing: border-box;
 }
 
 .cate .product .price,
@@ -644,10 +641,7 @@ header {
 
 .sb-content {
   height: 100%;
-  width: 121%;
-  padding-right: 14%;
   overflow-y: scroll;
-  box-sizing: border-box;
 }
 
 nav {
@@ -796,7 +790,6 @@ footer {
   background: #fff;
   padding: 0 10px 20px 10px;
   width: 100%;
-  box-sizing: border-box;
   margin-bottom: 5px;
 }
 
@@ -804,7 +797,6 @@ footer {
   overflow: hidden;
   width: 540px;
   min-height: 381px;
-  box-sizing: border-box;
   float: left;
 }
 
@@ -812,7 +804,6 @@ footer {
   overflow: visible;
   width: 410px;
   margin-left: 10px;
-  box-sizing: border-box;
   float: left;
 }
 
@@ -896,7 +887,6 @@ footer {
 }
 
 .infosell .updown * {
-  box-sizing: border-box;
 }
 
 .infosell .updown .up,
@@ -980,7 +970,6 @@ footer {
 .cart-content {
   background: #fff;
   position: relative;
-  box-sizing: border-box;
   display: block;
 }
 
@@ -1044,7 +1033,6 @@ footer {
   border-bottom: 1px solid #f8f8f8;
   float: left;
   width: calc(100% + 20px);
-  box-sizing: border-box;
 }
 
 .lst-product .item .delete {
@@ -1468,6 +1456,96 @@ form label {
   color: #ff0000
 }
 
+/* Checkout */
+input {
+  height: 35px;
+  border: 1px solid #e0e0e0;
+  text-indent: 10px;
+  -webkit-appearance: none;
+  padding-right: 30px;
+  border-radius: 4px;
+}
+
+.shipping {
+  padding: 10px;
+}
+
+.shipping > p {
+  display: flex;
+}
+
+.shipping > p label {
+  width: 250px;
+  flex-shrink: 0;
+}
+
+.shipping > p input {
+  flex-grow: 1;
+}
+
+.button {
+  background: #008848;
+  color: #ffffff;
+  border-radius: 4px;
+  padding: 8px;
+  cursor: pointer;
+}
+
+/* Coupon program */
+.coupon-form {
+  padding: 10px;
+  display: flex;
+}
+
+.coupon-form > p {
+  margin: 0;
+}
+
+.coupon-form span.button {
+  margin-left: 5px;
+}
+
+.coupon-program-list {
+  --spacing: 5px;
+  --column: 3;
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: calc(var(--spacing) * -1);
+  padding: calc(var(--spacing) * 2);
+}
+
+.coupon-program-item {
+  margin-right: var(--spacing);
+  margin-bottom: var(--spacing);
+  display: flex;
+  width: calc(calc(100%/var(--column)) - calc(var(--spacing)));
+}
+
+.coupon-program-item .name {
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-right: 0;
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.coupon-program-item .apply-coupon-program {
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #008848;
+  color: #ffffff;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  width: 75px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.coupon-program-item.active .apply-coupon-program {
+  background: #03542e;
+}
 
 @media screen and (max-width: 1200px) {
   .container {
@@ -1506,6 +1584,10 @@ form label {
 
   .cart-list {
     width: 100%;
+  }
+
+  .coupon-program-list {
+    --column: 2;
   }
 }
 
@@ -1547,5 +1629,9 @@ form label {
     height: 100%;
     background: #ffffff;
     padding: 20px 0;
+  }
+
+  .coupon-program-list {
+    --column: 1;
   }
 }
