@@ -2,5 +2,27 @@
   <div class="tophead">
     <a href="{% url 'index' %}" class="logo" aria-hidden="true">Mi Thiên Kiêu</a>
     {% include 'store/shared/cart_top.html' %}
+    <div class="profile-top">
+      {% if request.partner == None %}
+        <a href="{% url 'login' %}"><span>Đăng nhập</span></a>
+      {% else %}
+        <a href="{% url 'profile' %}">
+          <span>
+            {% if request.partner.full_name %}
+              {{ request.partner.full_name }}
+            {% elif request.partner.email %}
+              {{ request.partner.email }}
+            {% else %}
+              {{ request.partner.phone }}
+            {% endif %}
+          </span>
+        </a>
+        <ul class="profile-menu">
+          <li><a href="{% url 'profile' %}">Cập nhật thông tin</a></li>
+          <li><a href="{% url 'carts' %}">Đơn hàng của bạn</a></li>
+          <li><a href="#" data-url="{% url 'logout' %}" class="logout-action">Đăng xuất</a></li>
+        </ul>
+      {% endif %}
+    </div>
   </div>
 </header>

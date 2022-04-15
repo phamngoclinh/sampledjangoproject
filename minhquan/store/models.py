@@ -131,7 +131,7 @@ class POS(BaseModel):
     ('done', 'Done')
   )
 
-  customer = models.OneToOneField(Partner, on_delete=models.CASCADE, null=True, blank=True)
+  customer = models.ForeignKey(Partner, on_delete=models.CASCADE, null=True, blank=True)
   total = models.FloatField(default=0)
   status = models.CharField(default='draft', max_length=100, choices=POS_STATUS)
 

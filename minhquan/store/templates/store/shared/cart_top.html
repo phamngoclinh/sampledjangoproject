@@ -14,18 +14,7 @@
     </div>
     <button type="submit" aria-label="Search"> <i class="bhx-search"></i> </button>
   </form>
-  {% if request.partner %}
-    <a href="{% url 'cart_detail' %}" class="profile">
-      {{ request.partner.full_name }}
-      <br />
-      ({{ request.partner.email }})
-    </a>
-    <a href="{% url 'logout' %}" class="profile">Đăng xuất</a>
-  {% else %}
-    <a href="{% url 'login' %}" class="profile">Đăng nhập</a>
-  {% endif %}
-  <a href="{% url 'cart_detail' %}" class="histories">Đơn hàng<br>của bạn</a>
-  <a href="{% url 'cart_detail' %}" class="temcart no">
+  <a href="{% url 'cart' %}" class="temcart no">
     <div>
       <i class="bhx-cart" style="margin-bottom: 0px;"></i>
       <span class="pos-detail-count" class="">{{ pos.posdetail_set.count|default:0 }}</span>

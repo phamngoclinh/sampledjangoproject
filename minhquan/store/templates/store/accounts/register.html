@@ -6,13 +6,10 @@
 
   <form method="post" action="{% url 'register' %}">
     {% csrf_token %}
-    {% if messages %}
-    <div>{{ messages }}</div>
-    {% endif %}
-    <input type="text" name="email" placeholder="Email" required />
-    <input type="text" name="phone" placeholder="Điện thoại" required />
-    <input type="text" name="first_name" placeholder="Họ" />
-    <input type="text" name="last_name" placeholder="Tên" />
+    {% for message in messages %}
+      <div class="form-success">{{ message }}</div>
+    {% endfor %}
+    {{ form }}
     <button type="submit">Đăng ký</button>
   </form>
   <hr/>

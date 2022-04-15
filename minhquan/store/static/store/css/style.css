@@ -232,7 +232,6 @@ header {
   vertical-align: middle;
   overflow: hidden;
   line-height: 50px;
-  background: rgba(19, 18, 24, .16);
   color: #fff;
   font-size: 12px;
   font-weight: 300;
@@ -1390,4 +1389,82 @@ footer {
   cursor: pointer;
   border: 1px solid #008848;
   background: #008848;
+}
+
+/* Profile top */
+.profile-top {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  position: relative;
+}
+
+.profile-top > a {
+  background: #03542e;
+  color: #ffffff;
+  font-size: 13px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.profile-top:hover .profile-menu {
+  display: block;
+}
+
+.profile-top .profile-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1;
+  padding: 5px 0;
+  width: 100%;
+  min-width: 170px;
+  background: #fff;
+  box-shadow: 1px 2px 5px #e1e1e1;
+}
+
+.profile-top .profile-menu li a {
+  padding: 5px 10px;
+  display: block;
+  color: #03542e;
+  font-size: 13px;
+}
+
+.profile-top .profile-menu li a:hover {
+  background-color: #047540;
+  color: #ffffff;
+}
+
+/* carts */
+.cart-list {
+  width: 600px;
+  margin: 0 auto;
+}
+
+.cart {
+  background-color: #ffffff;
+  padding: 10px;
+  margin-bottom: 15px;
+}
+
+.cart .heading {
+  margin-bottom: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.cart table {
+  width: 100%;
+  text-align: left;
+}
+
+/* forms */
+form label {
+  font-weight: 600;
+}
+
+.errorlist li {
+  color: #ff0000
 }

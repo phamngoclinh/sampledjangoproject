@@ -1,0 +1,41 @@
+{% extends "store/base/base_cart.html" %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<br/><br/><br/><br/>
+<div class="cart-list">
+  {% for cart in carts %}
+  <div class="cart">
+    <div class="heading">
+      Trạng thái: {{ cart.get_status_display }} - Ngày tạo: {{ cart.created_date|date:"D d M Y" }}
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Đơn hàng #1</th>
+          <th>Sản phẩm</th>
+          <th>Tổng tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ cart.id }}</td>
+          <td>
+            <ul>
+              {% for posdetail in cart.posdetail_set.all %}
+                <li>
+                  <a href="{% url 'product_detail' posdetail.product.id %}">{{ posdetail.product.name }}</a>
+                  <span>(x{{ posdetail.quantity }})</span>
+                </li>
+              {% endfor %}
+            </ul>
+          </td>
+          <td>{{ cart.total|floatformat:"g" }}đ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

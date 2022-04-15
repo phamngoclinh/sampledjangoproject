@@ -35,7 +35,6 @@
   {% if request.partner == None %}
     <script src="{% static 'store/js/cart.js' %}"></script>
   {% else %}
-    <script>localStorage.removeItem('CART_DATA')</script>
     <script src="{% static 'store/js/cart-authenticated.js' %}"></script>
   {% endif %}
   <script src="{% static 'store/js/main.js' %}"></script>

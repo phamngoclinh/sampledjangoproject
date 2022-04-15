@@ -2,19 +2,18 @@
 
 {% block content %}
 <div class="small-form center">
-  <h1>Đăng nhập</h1>
+  <h1>Thông tin tài khoản</h1>
 
-  <form method="post" action="{% url 'login' %}">
+  <form method="post" action="{% url 'profile' %}">
     {% csrf_token %}
     {% for message in messages %}
       <div class="form-success">{{ message }}</div>
     {% endfor %}
     {{ form }}
-    <button type="submit">Đăng nhập</button>
+    <button type="submit">Xác nhận cập nhật</button>
   </form>
   <hr/>
-  <a href="{% url 'register' %}" style="display:block; text-align:center">Đăng ký tài khoản?</a>
-  <br/>
   <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>
 </div>
+
 {% endblock %}
