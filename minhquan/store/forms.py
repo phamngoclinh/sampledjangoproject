@@ -1,6 +1,7 @@
 import json
 
 from django import forms
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -8,7 +9,7 @@ from .models import Partner
 
 
 class ProfileForm(forms.ModelForm):
-  phone = models.CharField(null=False, max_length=15, blank=False)
+  phone = models.IntegerField(null=False, blank=False)
 
   class Meta:
     model = Partner
@@ -47,9 +48,21 @@ class LoginForm(forms.Form):
     return json_data
 
 
+class LoginUserForm(forms.Form):
+  email = forms.EmailField(max_length=200, widget=forms.HiddenInput())
+
+  def clean_email(self):
+    email = self.cleaned_data['email']
+    try:
+      User.objects.get(email=email)
+    except User.DoesNotExist:
+      raise ValidationError(f'Email {email} không tồn tại trong hệ thống')
+    return email
+
+
 class RegisterForm(forms.Form):
   email = forms.EmailField(max_length=200)
-  phone = forms.CharField(max_length=15, label='Điện thoại')
+  phone = forms.IntegerField(label='Điện thoại')
 
   def clean_email(self):
     email = self.cleaned_data['email']

@@ -13,13 +13,16 @@ class PartnerAuthenticationMiddleware:
             partner = Partner.objects.get(pk=partner_id)
             if partner:
                 request.partner = partner
-        elif request.user.is_authenticated:
+        elif request.user.is_authenticated and request.user.email:
             Partner.objects.get_or_create(
                 email=request.user.email,
                 defaults={
+                    'user': request.user,
                     'first_name': request.user.first_name,
                     'last_name': request.user.last_name,
-                    'full_name': request.user.first_name + ' ' + request.user.last_name,
+                    'full_name': request.user.first_name + ' ' + request.user.last_name
+                                if (request.user.first_name or request.user.last_name)
+                                else '',
                 }
             )
 

@@ -12,7 +12,15 @@
     {{ form }}
     <button type="submit">Đăng nhập</button>
   </form>
-  <hr/>
+  <hr >
+  {% if user_form %}
+    <form method="post" action="{% url 'login_user' %}">
+      {% csrf_token %}
+      {{ user_form }}
+      <button type="submit">Đăng nhập bằng {{ user_form.email.value }}</button>
+    </form>
+    <hr/>
+  {% endif %}
   <a href="{% url 'register' %}" style="display:block; text-align:center">Đăng ký tài khoản?</a>
   <br/>
   <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>

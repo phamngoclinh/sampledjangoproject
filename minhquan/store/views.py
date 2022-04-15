@@ -1,6 +1,7 @@
 import json
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.forms.models import model_to_dict
 from django.http import JsonResponse
@@ -8,7 +9,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .forms import ProfileForm, LoginForm, RegisterForm
+from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm
 
 from .models import POS, POSDetail, Partner, Product, ProductCategory
 
@@ -29,6 +30,12 @@ def get_custom_product_categories():
   product_categories_tree = convert_categories_into_tree(ProductCategory.objects.values())
   return product_categories_tree
 
+def get_or_none(classmodel, **kwargs):
+  try:
+    return classmodel.objects.get(**kwargs)
+  except classmodel.DoesNotExist:
+    return None
+
 def index(request):
   context = { 'title': 'Home' }
 
@@ -36,7 +43,7 @@ def index(request):
 
   if request.partner:
     user_email = request.partner.email
-    pos = POS.objects.get(customer__email=user_email, status='draft')
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
     context['pos'] = pos
   
   context['products'] = products
@@ -54,7 +61,7 @@ def product_category(request, category_id):
   
   if request.partner:
     user_email = request.partner.email
-    pos = POS.objects.get(customer__email=user_email, status='draft')
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
     context['pos'] = pos
 
   context['products'] = products
@@ -69,7 +76,7 @@ def product_detail(request, product_id):
 
   if request.partner:
     user_email = request.partner.email
-    pos = POS.objects.get(customer__email=user_email, status='draft')
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
     context['pos'] = pos
 
   context['product'] = product
@@ -85,7 +92,7 @@ def search(request):
 
   if request.partner:
     user_email = request.partner.email
-    pos = POS.objects.get(customer__email=user_email, status='draft')
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
     context['pos'] = pos
   
   context['products'] = products
@@ -98,7 +105,7 @@ def cart(request):
 
   if request.partner:
     user_email = request.partner.email
-    pos = POS.objects.get(customer__email=user_email, status='draft')
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
     context['pos'] = pos
 
   return render(request, 'store/cart.html', context)
@@ -109,7 +116,7 @@ def carts(request):
   if request.partner:
     user_email = request.partner.email
     carts = POS.objects.filter(customer__email=user_email).exclude(status='draft')
-    pos = POS.objects.get(customer__email=user_email, status='draft')
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
     context['pos'] = pos
     context['carts'] = carts
 
@@ -201,6 +208,8 @@ def login(request):
   if request.session.get('partner_id'):
     return redirect('index')
 
+  context = {}
+
   form = LoginForm()
 
   if request.method == 'POST':
@@ -219,8 +228,32 @@ def login(request):
         return redirect('index')
       except Exception as e:
         form.add_error(None, e.args)
+  
+  context['form'] = form
 
-  return render(request, 'store/accounts/login.html', { 'form': form })
+  if request.user.is_authenticated and request.user.email:
+    user_form = LoginUserForm({ 'email': request.user.email })
+    context['user_form'] = user_form
+
+  return render(request, 'store/accounts/login.html', context)
+
+@login_required
+@require_http_methods(['POST'])
+def login_user(request):
+  if request.session.get('partner_id'):
+    return redirect('index')
+  login_form = LoginUserForm(request.POST)
+  if login_form.is_valid():
+    try:
+      partner, is_new = Partner.objects.get_or_create(email=login_form.cleaned_data['email'])
+      if is_new:
+        partner.user = request.user
+        partner.save()
+      request.session['partner_id'] = partner.id
+      return redirect('index')
+    except Exception as e:
+      messages.error(request, e.args)
+  return redirect('login')
 
 def logout(request):
   if request.session.get('partner_id'):
