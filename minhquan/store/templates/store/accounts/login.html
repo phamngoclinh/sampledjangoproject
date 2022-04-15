@@ -1,0 +1,28 @@
+{% extends "store/base/base_auth.html" %}
+
+{% block content %}
+<div class="small-form center">
+  <h1>Đăng nhập</h1>
+
+  <form method="post" action="{% url 'login' %}">
+    {% csrf_token %}
+    {% for message in messages %}
+      <div class="form-success">{{ message }}</div>
+    {% endfor %}
+    {{ form }}
+    <button type="submit">Đăng nhập</button>
+  </form>
+  <hr >
+  {% if user_form %}
+    <form method="post" action="{% url 'login_user' %}">
+      {% csrf_token %}
+      {{ user_form }}
+      <button type="submit">Đăng nhập bằng {{ user_form.email.value }}</button>
+    </form>
+    <hr/>
+  {% endif %}
+  <a href="{% url 'register' %}" style="display:block; text-align:center">Đăng ký tài khoản?</a>
+  <br/>
+  <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>
+</div>
+{% endblock %}

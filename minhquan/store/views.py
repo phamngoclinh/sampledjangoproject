@@ -1,14 +1,17 @@
 import json
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.forms.models import model_to_dict
-from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from .models import POS, Partner, Product, ProductCategory
+from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm
+
+from .models import POS, POSDetail, Partner, Product, ProductCategory
 
 
 def convert_categories_into_tree(categories):
@@ -27,75 +30,120 @@ def get_custom_product_categories():
   product_categories_tree = convert_categories_into_tree(ProductCategory.objects.values())
   return product_categories_tree
 
+def get_or_none(classmodel, **kwargs):
+  try:
+    return classmodel.objects.get(**kwargs)
+  except classmodel.DoesNotExist:
+    return None
+
 def index(request):
+  context = { 'title': 'Home' }
+
   products = Product.objects.all()
-  pos = POS.objects.get(customer_id=request.user.id)
-  return render(request, 'store/index.html', {
-    'title': 'Home',
-    'product_categories': get_custom_product_categories(),
-    'products': products,
-    'pos': pos
-  })
+
+  if request.partner:
+    user_email = request.partner.email
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
+    context['pos'] = pos
+  
+  context['products'] = products
+  context['product_categories'] = get_custom_product_categories()
+  
+  return render(request, 'store/index.html', context)
 
 def product_category(request, category_id):
+  context = { 'title': 'Product category' }
+
   category = ProductCategory.objects.get(id=category_id)
   category_childrens = category.get_childrens()
   category_children_ids = [i.id for i in category_childrens]
   products = Product.objects.filter(Q(category_id__in=category_children_ids) | Q(category_id=category_id))
-  pos = POS.objects.get(customer_id=request.user.id)
-  return render(request, 'store/product_category.html', {
-    'title': 'Product category',
-    'product_categories': get_custom_product_categories(),
-    'products': products,
-    'pos': pos,
-  })
+  
+  if request.partner:
+    user_email = request.partner.email
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
+    context['pos'] = pos
+
+  context['products'] = products
+  context['product_categories'] = get_custom_product_categories()
+
+  return render(request, 'store/product_category.html', context)
 
 def product_detail(request, product_id):
+  context = { 'title': 'Product detail' }
+
   product = Product.objects.get(pk=product_id)
-  pos = POS.objects.get(customer_id=request.user.id)
-  return render(request, 'store/product_detail.html', {
-    'title': 'Product detail',
-    'product_categories': get_custom_product_categories(),
-    'product': product,
-    'pos': pos,
-  })
+
+  if request.partner:
+    user_email = request.partner.email
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
+    context['pos'] = pos
+
+  context['product'] = product
+  context['product_categories'] = get_custom_product_categories()
+
+  return render(request, 'store/product_detail.html', context)
 
 def search(request):
+  context = { 'title': 'Search' }
+
   product_name = request.GET.get('product_name', '')
   products = Product.objects.filter(Q(name__icontains=product_name) | Q(slug__icontains=product_name))
-  return render(request, 'store/search.html', {
-    'title': 'Search',
-    'product_categories': get_custom_product_categories(),
-    'products': products
-  })
 
-def cart_detail(request):
-  pos = POS.objects.get(customer_id=request.user.id)
-  context = {
-    'title': 'Cart',
-    'pos': pos
-  }
-  return render(request, 'store/cart_detail.html', context)
+  if request.partner:
+    user_email = request.partner.email
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
+    context['pos'] = pos
+  
+  context['products'] = products
+  context['product_categories'] = get_custom_product_categories()
 
-@login_required
+  return render(request, 'store/search.html', context)
+
+def cart(request):
+  context = { 'title': 'Cart' }
+
+  if request.partner:
+    user_email = request.partner.email
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
+    context['pos'] = pos
+
+  return render(request, 'store/cart.html', context)
+
+def carts(request):
+  context = { 'title': 'Carts' }
+
+  if request.partner:
+    user_email = request.partner.email
+    carts = POS.objects.filter(customer__email=user_email).exclude(status='draft')
+    pos = get_or_none(POS, customer__email=user_email, status='draft')
+    context['pos'] = pos
+    context['carts'] = carts
+
+  return render(request, 'store/carts.html', context)
+
 @csrf_exempt
 @require_http_methods(['POST'])
 def add_to_cart(request):
   try:
-    user = request.user
+    if request.partner:
+      user_email = request.partner.email
+    else:
+      user_email = None
+
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
-    product_id = body['product_id']
-    product = Product.objects.get(pk=product_id)
 
-    if not product:
-      return JsonResponse({ 'success': False, 'messages': 'product_id is not exists' })
+    try:
+      product_id = body['product_id']
+      product = Product.objects.get(pk=product_id)
+    except Product.DoesNotExist:
+      return JsonResponse({ 'success': False, 'messages': 'Sản phẩm không tồn tại' })
 
-    pos, is_now_pos = POS.objects.get_or_create(customer_id=user.id)
-    customer, is_new_customer = Partner.objects.get_or_create(email=user.email)
-    pos.customer = customer
+    customer, is_new_customer = Partner.objects.get_or_create(email=user_email)
+    pos, is_now_pos = POS.objects.get_or_create(customer_id=customer.id, status='draft')
 
-    posdetail, is_new_posdetail = pos.posdetail_set.get_or_create(product_id=product_id)
+    posdetail, is_new_posdetail = pos.posdetail_set.get_or_create(product_id=product.id)
     if 'quantity' not in body: # increase quantity
       if not is_new_posdetail:
         posdetail.quantity += 1
@@ -124,3 +172,130 @@ def add_to_cart(request):
     })
   except Exception as e:
     return JsonResponse({ 'success': False, 'messages': e.args })
+
+def sync_shopping_cart(partner, shopping_cart):
+  pos, is_new_pos = POS.objects.get_or_create(customer=partner, status='draft')
+
+  total = pos.total
+  for sp_posdetail in shopping_cart['pos']['posdetails']:
+    product = Product.objects.get(pk=sp_posdetail['product']['id'])
+    posdetail, is_new_posdetail = POSDetail.objects.get_or_create(
+      pos=pos,
+      product=product,
+      defaults={
+        'quantity': sp_posdetail['quantity'],
+        'price': sp_posdetail['quantity'] * product.price,
+        'discount': sp_posdetail['quantity'] * product.discount_price(),
+        'sub_total': sp_posdetail['quantity'] * product.discount_price() if product.discount_price() else sp_posdetail['quantity'] * product.price
+      }
+    )
+
+    if not is_new_posdetail:
+      posdetail.quantity += sp_posdetail['quantity']
+      posdetail.price += sp_posdetail['quantity'] * product.price
+      posdetail.discount += sp_posdetail['quantity'] * product.discount_price()
+      posdetail.sub_total += sp_posdetail['quantity'] * product.discount_price() if product.discount_price() else sp_posdetail['quantity'] * product.price
+      posdetail.save()
+    
+    total += posdetail.sub_total
+
+  if (pos.total != total):
+    pos.total = total
+    pos.save()
+
+@require_http_methods(['GET', 'POST'])
+def login(request):
+  if request.session.get('partner_id'):
+    return redirect('index')
+
+  context = {}
+
+  form = LoginForm()
+
+  if request.method == 'POST':
+    form = LoginForm(request.POST)
+
+    if form.is_valid():
+      try:
+        email = form.cleaned_data['email']
+        
+        # Synchrozire local shopping_cart with database
+        partner = Partner.objects.get(email=email)
+        shopping_cart = form.cleaned_data['shopping_cart']
+        sync_shopping_cart(partner, shopping_cart)
+
+        request.session['partner_id'] = partner.id
+        return redirect('index')
+      except Exception as e:
+        form.add_error(None, e.args)
+  
+  context['form'] = form
+
+  if request.user.is_authenticated and request.user.email:
+    user_form = LoginUserForm({ 'email': request.user.email })
+    context['user_form'] = user_form
+
+  return render(request, 'store/accounts/login.html', context)
+
+@login_required
+@require_http_methods(['POST'])
+def login_user(request):
+  if request.session.get('partner_id'):
+    return redirect('index')
+  login_form = LoginUserForm(request.POST)
+  if login_form.is_valid():
+    try:
+      partner, is_new = Partner.objects.get_or_create(email=login_form.cleaned_data['email'])
+      if is_new:
+        partner.user = request.user
+        partner.save()
+      request.session['partner_id'] = partner.id
+      return redirect('index')
+    except Exception as e:
+      messages.error(request, e.args)
+  return redirect('login')
+
+def logout(request):
+  if request.session.get('partner_id'):
+    request.session.__delitem__('partner_id')
+    return redirect('login')
+  return redirect('index')
+  
+@require_http_methods(['GET', 'POST'])
+def register(request):
+  form = RegisterForm()
+
+  if request.method == 'POST':
+    form = RegisterForm(request.POST)
+    if form.is_valid():
+      try:
+        Partner.objects.create(
+          email=form.cleaned_data['email'],
+          phone=form.cleaned_data['phone']
+        )
+        return redirect('login')
+      except Exception as e:
+        form.add_error(None, e.args)
+
+  return render(request, 'store/accounts/register.html', { 'form': form })
+
+@require_http_methods(['GET', 'POST'])
+def profile(request):
+  if not request.partner:
+    return redirect('index')
+
+  partner = Partner.objects.get(email=request.partner.email)
+
+  form = ProfileForm(instance=partner)
+
+  if request.method == 'POST':
+    form = ProfileForm(request.POST, instance=partner)
+    if form.is_valid():
+      try:
+        form.save()
+        messages.success(request, 'Cập nhật thông tin thành công!')
+      except Exception as e:
+        form.add_error(None, e.args)
+
+  return render(request, 'store/accounts/profile.html', { 'form': form })
+

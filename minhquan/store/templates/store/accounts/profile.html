@@ -1,0 +1,19 @@
+{% extends "store/base/base_auth.html" %}
+
+{% block content %}
+<div class="small-form center">
+  <h1>Thông tin tài khoản</h1>
+
+  <form method="post" action="{% url 'profile' %}">
+    {% csrf_token %}
+    {% for message in messages %}
+      <div class="form-success">{{ message }}</div>
+    {% endfor %}
+    {{ form }}
+    <button type="submit">Xác nhận cập nhật</button>
+  </form>
+  <hr/>
+  <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>
+</div>
+
+{% endblock %}

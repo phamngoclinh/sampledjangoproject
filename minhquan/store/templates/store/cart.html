@@ -15,7 +15,14 @@
             <div class="cart-list lstproductbuy lstproductoff">
               {% if pos.posdetail_set %}
                 {% for posdetail in pos.posdetail_set.all %}
-                  <div class="cart-item item" data-posdetail-id="{{ posdetail.id }}" data-product-id="{{ posdetail.product.id }}">
+                  <div
+                    class="cart-item item"
+                    data-posdetail-id="{{ posdetail.id }}"
+                    data-posdetail-quantity="{{ posdetail.quantity }}"
+                    data-product-id="{{ posdetail.product.id }}"
+                    data-product-price="{{ posdetail.product.price }}"
+                    data-product-discount-price="{{ posdetail.product.discount_price }}"
+                  >
                     <img alt="{{ posdetail.product.name }}" src="{{ posdetail.product.image.url }}" width="60" height="60">
                     <div class="colinfo">
                       <a href="{% url 'product_detail' posdetail.product.id %}" class="name">{{ posdetail.product.name }}</a>
@@ -52,7 +59,7 @@
                       <span>
                         Tiền hàng:
                       </span>
-                      <label><b class="pos_total">{{ pos.total|floatformat:"g" }}₫</b></label>
+                      <label><b class="pos-total">{{ pos.total|default:0|floatformat:"g" }}₫</b></label>
                     </div>
                     <!-- <div class="cost">
                       <span>Phí giao hàng</span>
@@ -77,7 +84,7 @@
                 <div class="cost">
                   <span>Tổng tiền thanh toán:</span>
                   <label id="carttotal">
-                    <b class="pos_total">{{ pos.total|floatformat:"g" }}₫</b>
+                    <b class="pos-total">{{ pos.total|default:0|floatformat:"g" }}₫</b>
                   </label>
                 </div>
                 <!-- <div class="bcusrank">Miễn phí giao với đơn hàng từ 300.000đ trở lên</div>
@@ -96,44 +103,4 @@
     </div>
   </div>
 </div>
-<script>
-  $(document).ready(function () {
-    $('.cart-item .delete').on('click', function () {
-      const $cartItem = $(this).parents('.cart-item')
-      const productId = $cartItem.data('product-id')
-      addToCartRequest({
-        data: { product_id: productId, quantity: 0 },
-        success: function (result) {
-          $cartItem.remove()
-          $('.pos_total').html(result.pos.total.toLocaleString() + 'đ')
-          $('#pos_detail_count').html(result.pos_count)
-          //window.location.reload()
-        }
-      })
-    })
-  
-    $('.cart-item .quantity .qty').on('change', function () {
-      const $cartItem = $(this).parents('.cart-item')
-      const productId = $cartItem.data('product-id')
-      const quantity = parseInt($(this).val())
-      addToCartRequest({
-        data: { product_id: productId, quantity: quantity > 0 ? quantity : 0 },
-        success: function (result) {
-          let quantity_discount_price = result.product.discount_price * result.posdetail.quantity
-          let quantity_price = result.product.price * result.posdetail.quantity
-          if (quantity_discount_price) {
-            $cartItem.find('.colmoney strong').html(quantity_discount_price.toLocaleString()+'₫')
-            $cartItem.find('.colmoney span').html(quantity_price.toLocaleString()+'₫')
-            $('.pos_total').html(result.pos.total.toLocaleString() + 'đ')
-            $('#pos_detail_count').html(result.pos_count)
-          } else {
-            $cartItem.find('.colmoney strong').html(quantity_price.toLocaleString()+'₫')
-            $('.pos_total').html(result.pos.total.toLocaleString() + 'đ')
-            $('#pos_detail_count').html(result.pos_count)
-          }
-        }
-      })
-    })
-  })
-</script>
 {% endblock %}

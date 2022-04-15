@@ -18,18 +18,17 @@ class BaseModel(models.Model):
 
 class Partner(BaseModel):
   user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
-  phone = models.IntegerField(null=True)
-  email = models.EmailField()
-  full_name = models.CharField(null=True, max_length=200)
-  first_name = models.CharField(null=True, max_length=50)
-  last_name = models.CharField(null=True, max_length=50)
-  dob = models.DateTimeField(null=True)
+  phone = models.IntegerField(unique=True, null=True, blank=True)
+  email = models.EmailField(unique=True)
+  full_name = models.CharField(null=True, max_length=200, blank=True)
+  first_name = models.CharField(null=True, max_length=50, blank=True)
+  last_name = models.CharField(null=True, max_length=50, blank=True)
+  dob = models.DateTimeField(null=True, blank=True)
   is_customer = models.BooleanField(default=True)
   is_vendor = models.BooleanField(default=False)
 
   def __str__(self):
-    return self.full_name or self.first_name or self.email or self.phone
-
+    return self.email or self.phone or self.full_name or self.first_name
 
 class UOMCategory(BaseModel):
   name = models.CharField(max_length=200, unique=True)
@@ -125,8 +124,16 @@ class Product(BaseModel):
 
 
 class POS(BaseModel):
-  customer = models.OneToOneField(Partner, on_delete=models.CASCADE, null=True, blank=True)
+  POS_STATUS = (
+    ('draft', 'Draft'),
+    ('processing', 'Processing'),
+    ('shipping', 'Shipping'),
+    ('done', 'Done')
+  )
+
+  customer = models.ForeignKey(Partner, on_delete=models.CASCADE, null=True, blank=True)
   total = models.FloatField(default=0)
+  status = models.CharField(default='draft', max_length=100, choices=POS_STATUS)
 
   def __str__(self):
     return 'DH - %d' % self.id

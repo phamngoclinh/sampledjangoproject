@@ -13,9 +13,9 @@
     <link rel="stylesheet" type="text/css" href="{% static 'store/css/style.css' %}">
   {% endblock %}
   <script>
-    const post_data = {
-      'csrfmiddlewaretoken': "{{ csrf_token }}"
-    }
+    const CSRF_TOKEN = "{{ csrf_token }}"
+    const USER_LOGGED_IN = "{{ request.partner }}"
+    const IS_LOGGED_IN = USER_LOGGED_IN !== 'None'
   </script>
   <script src="{% static 'store/js/jquery-3.6.0.min.js' %}"></script>
   <script src="{% static 'store/js/client.js' %}"></script>
@@ -32,6 +32,11 @@
 
   {% block footer %}{% include "store/shared/footer.html" %}{% endblock %}
 
+  {% if request.partner == None %}
+    <script src="{% static 'store/js/cart.js' %}"></script>
+  {% else %}
+    <script src="{% static 'store/js/cart-authenticated.js' %}"></script>
+  {% endif %}
   <script src="{% static 'store/js/main.js' %}"></script>
 </body>
 
