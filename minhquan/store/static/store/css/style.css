@@ -41,7 +41,6 @@ a {
 body {
   --sidebar-width: 210px;
   margin: 0;
-  min-width: 1200px;
   background: #e9edf0;
   overflow-y: scroll;
 }
@@ -93,7 +92,7 @@ dir {
 header.sticky {
   position: fixed;
   top: 0;
-  z-index: 12;
+  z-index: 1;
 }
 
 header {
@@ -1467,4 +1466,86 @@ form label {
 
 .errorlist li {
   color: #ff0000
+}
+
+
+@media screen and (max-width: 1200px) {
+  .container {
+    width: 900px;
+  }
+
+  header {
+    padding-left: calc((100% - 900px)/2 + var(--sidebar-width) + 10px);
+    padding-right: calc((100% - 900px)/2);
+  }
+
+  .cate {
+    --column: 3;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .container {
+    width: 100%;
+  }
+
+  header {
+    padding-left: calc(var(--sidebar-width) + 10px);
+    padding-right: calc((100% - 900px)/2);
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .logo {
+    display: none;
+  }
+
+  .cate {
+    --column: 2;
+  }
+
+  .cart-list {
+    width: 100%;
+  }
+}
+
+@media screen and (max-width: 550px) {
+  header {
+    padding-left: 60px;
+  }
+
+  .content-section {
+    padding-left: 0;
+  }
+
+  .colmenu,
+  .colmenu .sb-content {
+    width: auto;
+    height: 38px;
+    padding-right: 0;
+  }
+
+  .menu-hover > span {
+    height: 38px;
+    border-bottom: 0;
+  }
+
+  .menu-hover > span span {
+    display: none;
+  }
+
+  .colmenu .colmenu-ul {
+    display: none;
+  }
+
+  .menu-hover:hover .colmenu-ul {
+    display: block;
+    position: fixed;
+    top: 50px;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    padding: 20px 0;
+  }
 }
