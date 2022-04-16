@@ -94,7 +94,11 @@
               </div>
             </div>
             <div class="btn-order">
-              <a href="{% url 'checkout' pos.id %}" class="btn-og btn-step">ĐẶT HÀNG</a>
+              {% if pos %}
+                <a href="{% url 'checkout' pos.id %}" class="btn-og btn-step">ĐẶT HÀNG</a>
+              {% else %}
+                <a href="{% url 'login' %}" class="btn-og btn-step">ĐĂNG NHẬP ĐỂ ĐẶT HÀNG</a>
+              {% endif %}
               <div class="clearall"><button>XÓA GIỎ HÀNG</button></div>
             </div>
           </div>
