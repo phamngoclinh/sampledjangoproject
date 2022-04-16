@@ -12,7 +12,7 @@ from django.views.decorators.http import require_http_methods
 
 from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
 
-from .models import POS, Coupon, CouponProgram, POSDetail, Partner, Product, ProductCategory
+from .models import POS, Address, Coupon, CouponProgram, POSDetail, Partner, Product, ProductCategory
 
 
 def convert_categories_into_tree(categories):
@@ -123,23 +123,34 @@ def carts(request):
 
   return render(request, 'store/carts.html', context)
 
+@require_http_methods(['GET', 'POST'])
+@login_required
 def checkout(request, pos_id):
   context = { 'title': 'Checkout' }
 
   if request.partner:
     user_email = request.partner.email
-    pos = get_or_none(POS, customer__email=user_email, status='draft')
-    context['pos'] = pos
-
-    pos = get_object_or_404(POS, pk=pos_id)
-    context['cart'] = pos
+    pos = get_object_or_404(POS, pk=pos_id, customer__email=user_email)
+    context.update({
+      'cart': pos,
+      'pos': pos
+    })
     if pos.status != 'draft':
-      messages.success(f'Đơn hàng {pos_id} đã được xử lý')
+      messages.success(request, message=f'Đơn hàng {pos_id} đã được xử lý')
 
     coupon_programs = CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
     context['coupon_programs'] = coupon_programs
-    
-    shipping_form = ShippingForm()
+    shipping = {
+      'city': pos.shipping_address and pos.shipping_address.city or '',
+      'district': pos.shipping_address and pos.shipping_address.district or '',
+      'award': pos.shipping_address and pos.shipping_address.award or '',
+      'address': pos.shipping_address and pos.shipping_address.address or '',
+      'receive_name': pos.receive_name or pos.customer.full_name,
+      'receive_phone': pos.receive_phone or pos.customer.phone,
+      'receive_email': pos.receive_email or pos.customer.email,
+      'note': pos.note or '',
+    }
+    shipping_form = ShippingForm(shipping)
     coupon_form = CouponForm()
 
     if request.method == 'POST':
@@ -147,9 +158,23 @@ def checkout(request, pos_id):
       coupon_form = CouponForm(request.POST)
       if shipping_form.is_valid() and coupon_form.is_valid():
         # Save shipping information
+        address = Address.objects.create(
+          city=shipping_form.cleaned_data['city'],
+          district=shipping_form.cleaned_data['district'],
+          award=shipping_form.cleaned_data['award'],
+          address=shipping_form.cleaned_data['address'],
+        )
+        pos.receive_name = shipping_form.cleaned_data['receive_name']
+        pos.receive_phone = shipping_form.cleaned_data['receive_phone']
+        pos.receive_email = shipping_form.cleaned_data['receive_email']
+        pos.note = shipping_form.cleaned_data['note']
+        pos.shipping_address = address
+        coupon = Coupon.objects.get(code=coupon_form.cleaned_data['code'])
+        coupon.pos = pos
+        coupon.save()
+        pos.status = 'processing'
+        pos.save()
         # Update coupon program
-        pass
-      
 
     context['shipping_form'] = shipping_form
     context['coupon_form'] = coupon_form
@@ -170,10 +195,14 @@ def get_coupon(request):
       program__start_date__lte=datetime.today(),
       program__expired_date__gte=datetime.today()
     )
+    return JsonResponse({
+      'success': True,
+      'discount_type': coupon.program.discount_type,
+      'discount': coupon.program.discount,
+    })
   except Coupon.DoesNotExist:
     return JsonResponse({ 'success': False, 'messages': 'Mã giảm giá không tồn tại' })  
 
-  return JsonResponse({ 'success': True })
 
 @csrf_exempt
 @require_http_methods(['POST'])
@@ -196,18 +225,44 @@ def add_to_cart(request):
     customer, is_new_customer = Partner.objects.get_or_create(email=user_email)
     pos, is_now_pos = POS.objects.get_or_create(customer_id=customer.id, status='draft')
 
-    posdetail, is_new_posdetail = pos.posdetail_set.get_or_create(product_id=product.id)
-    if 'quantity' not in body: # increase quantity
-      if not is_new_posdetail:
+    posdetail, is_new_posdetail = pos.posdetail_set.get_or_create(
+      product_id=product.id,
+      defaults={
+        'price_unit': product.price,
+        'sub_price_unit': product.sub_price
+      }
+    )
+    
+    if is_new_posdetail:
+      posdetail.calculate()
+      posdetail.save()
+    else:
+      if 'quantity' not in body:
         posdetail.quantity += 1
+        posdetail.calculate()
         posdetail.save()
-    else: # set quantity or delete
-      quantity = body['quantity']
-      if quantity: # set a specific quantity
-        posdetail.quantity = quantity
-        posdetail.save()
-      else: # delete pos detail
-        posdetail.delete()
+      else:
+        quantity = body['quantity']
+        if quantity: # set a specific quantity
+          posdetail.quantity = quantity
+          posdetail.calculate()
+          posdetail.save()
+        else: # delete pos detail
+          posdetail.delete()
+    
+    # if 'quantity' not in body: # increase quantity
+    #   if not is_new_posdetail:
+    #     posdetail.quantity += 1
+    #     posdetail.calculate()
+    #     posdetail.save()
+    # else: # set quantity or delete
+    #   quantity = body['quantity']
+    #   if quantity: # set a specific quantity
+    #     posdetail.quantity = quantity
+    #     posdetail.calculate()
+    #     posdetail.save()
+    #   else: # delete pos detail
+    #     posdetail.delete()
 
     pos.calculate()
     pos.save()
@@ -220,7 +275,7 @@ def add_to_cart(request):
       'product': {
         'id': posdetail.product.id,
         'price': posdetail.product.price,
-        'discount_price': posdetail.product.discount_price()
+        'discount_price': posdetail.product.sub_price
       },
     })
   except Exception as e:
@@ -229,7 +284,7 @@ def add_to_cart(request):
 def sync_shopping_cart(partner, shopping_cart):
   pos, is_new_pos = POS.objects.get_or_create(customer=partner, status='draft')
 
-  total = pos.total
+  total = pos.amount_sub_total
   for sp_posdetail in shopping_cart['pos']['posdetails']:
     product = Product.objects.get(pk=sp_posdetail['product']['id'])
     posdetail, is_new_posdetail = POSDetail.objects.get_or_create(
@@ -237,23 +292,25 @@ def sync_shopping_cart(partner, shopping_cart):
       product=product,
       defaults={
         'quantity': sp_posdetail['quantity'],
-        'price': sp_posdetail['quantity'] * product.price,
-        'discount': sp_posdetail['quantity'] * product.discount_price(),
-        'sub_total': sp_posdetail['quantity'] * product.discount_price() if product.discount_price() else sp_posdetail['quantity'] * product.price
+        'price_unit': product.price,
+        'sub_price_unit': product.sub_price,
+        'price_discount': sp_posdetail['quantity'] * (product.price - product.sub_price),
+        'amount_price': sp_posdetail['quantity'] * product.price,
+        'sub_total': sp_posdetail['quantity'] * product.sub_price if product.sub_price else sp_posdetail['quantity'] * product.price
       }
     )
 
     if not is_new_posdetail:
       posdetail.quantity += sp_posdetail['quantity']
-      posdetail.price += sp_posdetail['quantity'] * product.price
-      posdetail.discount += sp_posdetail['quantity'] * product.discount_price()
-      posdetail.sub_total += sp_posdetail['quantity'] * product.discount_price() if product.discount_price() else sp_posdetail['quantity'] * product.price
+      posdetail.amount_price = posdetail.quantity * posdetail.price_unit
+      posdetail.price_discount = posdetail.quantity * (posdetail.price_unit - posdetail.sub_price_unit)
+      posdetail.sub_total = posdetail.quantity * posdetail.sub_price_unit if posdetail.sub_price_unit else posdetail.quantity * posdetail.price_unit
       posdetail.save()
     
     total += posdetail.sub_total
 
-  if (pos.total != total):
-    pos.total = total
+  if (pos.amount_sub_total != total):
+    pos.calculate()
     pos.save()
 
 @require_http_methods(['GET', 'POST'])

@@ -1,4 +1,12 @@
 $(document).ready(function () {
+  function reRenderCart(result) {
+    $('.pos-detail-count').html(result.pos_count)
+    $('.pos-amount-price').html(result.pos.amount_price.toLocaleString() + 'đ')
+    $('.pos-amount-sub-total').html(result.pos.amount_sub_total.toLocaleString() + 'đ')
+    $('.pos-amount-total').html(result.pos.amount_total.toLocaleString() + 'đ')
+    $('.pos-amount-discount-total').html(result.pos.amount_discount_total.toLocaleString() + 'đ')
+  }
+
   $('.buy').on('click', function (e) {
     const $products = $(this).parents('.product')
     if ($products.length) {
@@ -7,8 +15,7 @@ $(document).ready(function () {
       SERVICES.addToCartRequest({
         data: { product_id: productId },
         success: function (result) {
-          $('.pos-total').html(result.pos.total.toLocaleString() + 'đ')
-          $('.pos-detail-count').html(result.pos_count)
+          reRenderCart(result)
         }
       })
     }
@@ -21,8 +28,7 @@ $(document).ready(function () {
       data: { product_id: productId, quantity: 0 },
       success: function (result) {
         $cartItem.remove()
-        $('.pos-total').html(result.pos.total.toLocaleString() + 'đ')
-        $('.pos-detail-count').html(result.pos_count)
+        reRenderCart(result)
       }
     })
   })
@@ -34,17 +40,13 @@ $(document).ready(function () {
     SERVICES.addToCartRequest({
       data: { product_id: productId, quantity: quantity > 0 ? quantity : 0 },
       success: function (result) {
-        let quantity_discount_price = result.product.discount_price * result.posdetail.quantity
-        let quantity_price = result.product.price * result.posdetail.quantity
-        if (quantity_discount_price) {
-          $cartItem.find('.colmoney strong').html(quantity_discount_price.toLocaleString()+'₫')
-          $cartItem.find('.colmoney span').html(quantity_price.toLocaleString()+'₫')
-          $('.pos-total').html(result.pos.total.toLocaleString() + 'đ')
-          $('.pos-detail-count').html(result.pos_count)
+        if (result.posdetail.sub_price_unit) {
+          $cartItem.find('.colmoney strong').html(result.posdetail.sub_total.toLocaleString()+'₫')
+          $cartItem.find('.colmoney span').html(result.posdetail.amount_price.toLocaleString()+'₫')
+          reRenderCart(result)
         } else {
-          $cartItem.find('.colmoney strong').html(quantity_price.toLocaleString()+'₫')
-          $('.pos-total').html(result.pos.total.toLocaleString() + 'đ')
-          $('.pos-detail-count').html(result.pos_count)
+          $cartItem.find('.colmoney strong').html(result.posdetail.sub_total.toLocaleString()+'₫')
+          reRenderCart(result)
         }
       }
     })

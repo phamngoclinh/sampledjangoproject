@@ -13,7 +13,7 @@
       </div>
       <div class="ratinglist-price">
         <div class="boxprice">
-          {% with discount_price=product.discount_price %}
+          {% with discount_price=product.sub_price %}
             {% if discount_price %}
               <strong>{{ discount_price|floatformat:"g" }}đ</strong>
               <span class="strike">{{ product.price|floatformat:"g" }}₫</span>

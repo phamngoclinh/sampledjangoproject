@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Coupon, CouponProgram, Partner, POS, POSDetail, ProductCategory, Product, UOM, UOMCategory
+from .models import Address, Coupon, CouponProgram, Partner, POS, POSDetail, ProductCategory, Product, UOM, UOMCategory
 
 
 class CouponInline(admin.TabularInline):
@@ -39,4 +39,5 @@ admin.site.register(ProductCategory)
 admin.site.register(Product)
 admin.site.register(POS, POSAdmin)
 admin.site.register(POSDetail)
+admin.site.register(Address)
 
