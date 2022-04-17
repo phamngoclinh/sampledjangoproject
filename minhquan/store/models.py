@@ -72,10 +72,6 @@ class CouponProgram(BaseModel):
   discount_type = models.CharField(default='percent', max_length=50, choices=DISCOUNT_TYPE)
   discount = models.FloatField(default=0)
 
-  # @property
-  # def products(self):
-  #   return Product.objects.raw(f'SELECT * FROM store_product WHERE {self.rule_product}')
-
   def discount_price(self, price):
     return price * (100.0 - self.discount) / 100.0 if self.discount_type == 'percent' else (price - self.discount  if price - self.discount > 0 else 0)
 
@@ -127,29 +123,6 @@ class Product(BaseModel):
   sub_price = models.FloatField(default=0)
   
 
-  # def coupon_programs(self):
-  #   coupon_programs = CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
-  #   product_coupon_programs = []
-  #   for coupon_program in coupon_programs:
-  #     for product in coupon_program.products:
-  #       if product.id == self.id:
-  #         product_coupon_programs.append(coupon_program)
-  #   return product_coupon_programs
-  
-  # def coupon_program(self):
-  #   coupon_programs = self.coupon_programs()
-  #   return coupon_programs[0] if coupon_programs else []
-
-  # def discount_price(self):
-  #   coupon_program = self.coupon_program()
-  #   return coupon_program.discount_price(self.price) if coupon_program else 0
-
-
-# class CouponProgramProduct(BaseModel):
-#   product = models.ForeignKey(Product, on_delete=models.CASCADE)
-#   coupon_program = models.ForeignKey(CouponProgram, on_delete=models.CASCADE)
-
-
 class POS(BaseModel):
   POS_STATUS = (
     ('draft', 'Draft'),
@@ -186,7 +159,12 @@ class POS(BaseModel):
       amount_sub_total += posdetail.sub_total
       amount_discount_total += posdetail.price_discount
     
-    # self.amount_discount = amount_discount
+    if self.coupon_set:
+      amount_discount = 0
+      for coupon in self.coupon_set.all():
+        amount_discount += (self.amount_sub_total - coupon.program.discount_price(self.amount_sub_total))
+      self.amount_discount = amount_discount
+    
     self.amount_price = amount_price
     self.amount_sub_total = amount_sub_total
     self.amount_total = amount_sub_total - self.amount_discount

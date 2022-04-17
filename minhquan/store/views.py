@@ -124,7 +124,6 @@ def carts(request):
   return render(request, 'store/carts.html', context)
 
 @require_http_methods(['GET', 'POST'])
-@login_required
 def checkout(request, pos_id):
   context = { 'title': 'Checkout' }
 
@@ -137,9 +136,12 @@ def checkout(request, pos_id):
     })
     if pos.status != 'draft':
       messages.success(request, message=f'Đơn hàng {pos_id} đã được xử lý')
+      return redirect('checkout_success', pos_id=pos.id)
+
 
     coupon_programs = CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
     context['coupon_programs'] = coupon_programs
+
     shipping = {
       'city': pos.shipping_address and pos.shipping_address.city or '',
       'district': pos.shipping_address and pos.shipping_address.district or '',
@@ -151,7 +153,12 @@ def checkout(request, pos_id):
       'note': pos.note or '',
     }
     shipping_form = ShippingForm(shipping)
-    coupon_form = CouponForm()
+
+    coupon = get_or_none(Coupon, pos=pos)
+    if coupon:
+      coupon_form = CouponForm({ 'code': coupon.code, 'coupon_program_id': coupon.program.id })
+    else:
+      coupon_form = CouponForm()
 
     if request.method == 'POST':
       shipping_form = ShippingForm(request.POST)
@@ -173,6 +180,7 @@ def checkout(request, pos_id):
         coupon.pos = pos
         coupon.save()
         pos.status = 'processing'
+        pos.calculate()
         pos.save()
         # Update coupon program
 
@@ -180,6 +188,18 @@ def checkout(request, pos_id):
     context['coupon_form'] = coupon_form
 
   return render(request, 'store/checkout.html', context)
+
+def checkout_success(request, pos_id):
+  context = { 'title': 'Checkout' }
+
+  if request.partner:
+    user_email = request.partner.email
+    pos = get_object_or_404(POS, pk=pos_id, customer__email=user_email)
+    context.update({
+      'cart': pos,
+      'pos': pos
+    })
+  return render(request, 'store/checkout-success.html', context)
 
 @csrf_exempt
 @require_http_methods(['POST'])
@@ -249,20 +269,6 @@ def add_to_cart(request):
           posdetail.save()
         else: # delete pos detail
           posdetail.delete()
-    
-    # if 'quantity' not in body: # increase quantity
-    #   if not is_new_posdetail:
-    #     posdetail.quantity += 1
-    #     posdetail.calculate()
-    #     posdetail.save()
-    # else: # set quantity or delete
-    #   quantity = body['quantity']
-    #   if quantity: # set a specific quantity
-    #     posdetail.quantity = quantity
-    #     posdetail.calculate()
-    #     posdetail.save()
-    #   else: # delete pos detail
-    #     posdetail.delete()
 
     pos.calculate()
     pos.save()

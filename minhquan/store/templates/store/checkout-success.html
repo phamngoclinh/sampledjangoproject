@@ -1,0 +1,13 @@
+{% extends "store/base/base_cart.html" %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<br /><br /><br /><br /><br />
+<div id="checkout" class="checkout-wrap">
+  <div>Đơn hàng {{ pos.id }} đã được tiếp nhận và đang xử lý</div>
+  <div>Trạng thái {{ pos.status }}</div>
+  <div>Tổng tiền {{ pos.amount_total|floatformat:"g" }}đ</div>
+</div>
+
+{% endblock %}

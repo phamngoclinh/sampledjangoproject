@@ -38,7 +38,7 @@
                         {% endfor %}
                       </ul>
                     </td>
-                    <td>{{ cart.total|floatformat:"g" }}đ</td>
+                    <td>{{ cart.amount_sub_total|floatformat:"g" }}đ</td>
                   </tr>
                 </tbody>
               </table>
@@ -54,8 +54,8 @@
                     <span id="apply-coupon" class="button">Áp dụng</span>
                   </div>
                 </td>
-                <td>Áp dụng giảm giá: - <span id="coupon_amount_discount"></span></td>
-                <td>Tổng đơn: <span id="total_amount"></span></td>
+                <td>Áp dụng giảm giá: <span class="amount_discount">{{ cart.amount_discount|floatformat:"g" }}đ</span></td>
+                <td>Tổng đơn: <span class="amount_total">{{ cart.amount_total|floatformat:"g" }}đ</span></td>
               </tr>
             </table>
           </div>
@@ -105,11 +105,11 @@
         success: function (result) {
           if (result.success) {
             // Synchronize with shopping cart
-            let total = parseFloat("{{ cart.total }}")
-            amount_discount = result.discount_type === 'fixed' ? result.discount : result.discount / 100.0 * total
-            amount_total = total - amount_discount
-            $('#coupon_amount_discount').html(amount_discount.toLocaleString() + 'đ')
-            $('#total_amount').html(amount_total.toLocaleString() + 'đ')
+            let total = parseFloat("{{ cart.amount_total }}")
+            let amount_discount = result.discount_type === 'fixed' ? result.discount : result.discount / 100.0 * total
+            let amount_total = total - amount_discount
+            $('.amount_discount').html(amount_discount.toLocaleString() + 'đ')
+            $('.amount_total').html(amount_total.toLocaleString() + 'đ')
           } else {
             alert(result.messages)
           }
