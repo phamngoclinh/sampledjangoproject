@@ -54,31 +54,47 @@
                     <span id="apply-coupon" class="button">Áp dụng</span>
                   </div>
                 </td>
-                <td>Áp dụng giảm giá: <span class="amount_discount">{{ cart.amount_discount|floatformat:"g" }}đ</span></td>
+                <td>Áp dụng giảm giá: <span class="amount_discount">{{ cart.amount_discount|floatformat:"g" }}đ</span>
+                </td>
                 <td>Tổng đơn: <span class="amount_total">{{ cart.amount_total|floatformat:"g" }}đ</span></td>
               </tr>
             </table>
           </div>
         </div>
         <!-- Program -->
-        <br/>
+        <br />
         <div class="cart-block">
           <div class="p-gender">Chương trình khuyến mãi</div>
           <div class="block">
             <div class="coupon-program-list">
               {% for coupon_program in coupon_programs %}
-                <div class="coupon-program-item">
-                  <div class="name">{{ coupon_program.name }}</div>
-                  <span class="apply-coupon-program" data-coupon-program-id="{{ coupon_program.id }}">Áp dụng</span>
-                </div>
+              <div class="coupon-program-item">
+                <div class="name">{{ coupon_program.name }}</div>
+                <span class="apply-coupon-program" data-coupon-program-id="{{ coupon_program.id }}">Áp dụng</span>
+              </div>
               {% endfor %}
             </div>
           </div>
         </div>
         <!-- Shipping -->
-        <br/>
+        <br />
         <div class="cart-block">
           <div class="p-gender">Thông tin giao hàng</div>
+          <div class="block">
+            <div class="card-list">
+              {% for shipping_address in shipping_addresses %}
+                <div class="card-item">
+                  <div class="name">
+                    <span class="address-data">{{ shipping_address.address }}</span>,
+                    <span class="award-data">{{ shipping_address.award }}</span>,
+                    <span class="district-data">{{ shipping_address.district }}</span>,
+                    <span class="city-data">{{ shipping_address.city }}</span>
+                  </div>
+                  <span class="apply-card apply-shipping-address" data-shipping-address-id="{{ shipping_address.id }}">Áp dụng</span>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
           <div class="block">
             <div class="shipping">
               {{ shipping_form.as_p }}
@@ -122,6 +138,25 @@
       $('#id_coupon_program_id').val(couponProgramId)
       $('.coupon-program-item').removeClass('active')
       $(this).parent('.coupon-program-item').addClass('active')
+    })
+
+    $('.apply-shipping-address').on('click', function () {
+      const addressId = $(this).data('shipping-address-id')
+      const $cartItem = $(this).parent('.card-item')
+
+      let is_active = $cartItem.hasClass('active')
+      $('.card-item').removeClass('active')
+      if (!is_active) {
+        $cartItem.addClass('active')
+        $('#address-id').val(addressId)
+      } else {
+        $('#address-id').val('')
+      }
+
+      $('#id_address').val($cartItem.find('.address-data').html())
+      $('#id_award').val($cartItem.find('.award-data').html())
+      $('#id_district').val($cartItem.find('.district-data').html())
+      $('#id_city').val($cartItem.find('.city-data').html())
     })
   })
 </script>

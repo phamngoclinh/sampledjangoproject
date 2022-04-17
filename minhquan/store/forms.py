@@ -85,6 +85,7 @@ class RegisterForm(forms.Form):
 
 
 class ShippingForm(forms.Form):
+  address_id = forms.IntegerField(widget=forms.HiddenInput(attrs={'id': 'address-id'}), required=False)
   receive_name = forms.CharField(max_length=100, label='Người nhận hàng')
   receive_phone = forms.IntegerField(label='Số điện thoại')
   city = forms.CharField(max_length=50, label='Tỉnh/thành phố')
@@ -103,7 +104,8 @@ class CouponForm(forms.Form):
   def clean_code(self):
     code = self.cleaned_data['code']
     try:
-      Coupon.objects.get(code=code, pos__isnull=True, expired_date__gte=datetime.today(), start_date__lte=datetime.today())
+      if code:
+        Coupon.objects.get(code=code, pos__isnull=True, expired_date__gte=datetime.today(), start_date__lte=datetime.today())
     except Coupon.DoesNotExist:
       raise ValidationError('Coupon Code không tồn tại hoặc đã được sử dụng.')
     return code

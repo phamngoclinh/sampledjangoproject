@@ -135,12 +135,17 @@ def checkout(request, pos_id):
       'pos': pos
     })
     if pos.status != 'draft':
-      messages.success(request, message=f'Đơn hàng {pos_id} đã được xử lý')
       return redirect('checkout_success', pos_id=pos.id)
-
 
     coupon_programs = CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
     context['coupon_programs'] = coupon_programs
+
+    partner_poss = POS.objects.filter(customer__email=user_email).only('shipping_address_id')
+    shipping_address_ids = []
+    for partner_pos in partner_poss:
+      shipping_address_ids.append(partner_pos.shipping_address_id)
+    shipping_addresses = Address.objects.filter(pk__in=shipping_address_ids)
+    context['shipping_addresses'] = shipping_addresses
 
     shipping = {
       'city': pos.shipping_address and pos.shipping_address.city or '',
@@ -165,20 +170,30 @@ def checkout(request, pos_id):
       coupon_form = CouponForm(request.POST)
       if shipping_form.is_valid() and coupon_form.is_valid():
         # Save shipping information
-        address = Address.objects.create(
-          city=shipping_form.cleaned_data['city'],
-          district=shipping_form.cleaned_data['district'],
-          award=shipping_form.cleaned_data['award'],
-          address=shipping_form.cleaned_data['address'],
-        )
+        if coupon_form.cleaned_data['code']:
+          coupon = Coupon.objects.get(code=coupon_form.cleaned_data['code'])
+          coupon.pos = pos
+          coupon.save()
+
+        if shipping_form.cleaned_data['address_id']:
+          address = Address.objects.get(pk=shipping_form.cleaned_data['address_id'])
+          address.city=shipping_form.cleaned_data['city']
+          address.district=shipping_form.cleaned_data['district']
+          address.award=shipping_form.cleaned_data['award']
+          address.address=shipping_form.cleaned_data['address']
+          address.save()
+        else:
+          address = Address.objects.create(
+            city=shipping_form.cleaned_data['city'],
+            district=shipping_form.cleaned_data['district'],
+            award=shipping_form.cleaned_data['award'],
+            address=shipping_form.cleaned_data['address'],
+          )
         pos.receive_name = shipping_form.cleaned_data['receive_name']
         pos.receive_phone = shipping_form.cleaned_data['receive_phone']
         pos.receive_email = shipping_form.cleaned_data['receive_email']
         pos.note = shipping_form.cleaned_data['note']
         pos.shipping_address = address
-        coupon = Coupon.objects.get(code=coupon_form.cleaned_data['code'])
-        coupon.pos = pos
-        coupon.save()
         pos.status = 'processing'
         pos.calculate()
         pos.save()
@@ -211,7 +226,7 @@ def get_coupon(request):
     code = body['code']
     coupon = Coupon.objects.get(
       code=code,
-      active=True,
+      pos__isnull=True,
       program__start_date__lte=datetime.today(),
       program__expired_date__gte=datetime.today()
     )

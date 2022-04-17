@@ -72,8 +72,8 @@ class CouponProgram(BaseModel):
   discount_type = models.CharField(default='percent', max_length=50, choices=DISCOUNT_TYPE)
   discount = models.FloatField(default=0)
 
-  def discount_price(self, price):
-    return price * (100.0 - self.discount) / 100.0 if self.discount_type == 'percent' else (price - self.discount  if price - self.discount > 0 else 0)
+  def cal_price_discount(self, price):
+    return price * self.discount / 100.0 if self.discount_type == 'percent' else (0 if self.discount > price else self.discount)
 
 
 class Coupon(BaseModel):
@@ -119,8 +119,20 @@ class Product(BaseModel):
   description = models.CharField(max_length=500)
   image = models.ImageField(max_length=200)
   price = models.FloatField(default=0)
-  # Formular: sub_price = CouponProgram.discount_price(Product.price)
-  sub_price = models.FloatField(default=0)
+
+  @property
+  def price_discount(self):
+    coupon_program = self.get_coupon_program()
+    if not coupon_program:
+      return 0
+    return coupon_program.cal_price_discount(self.price)
+
+  @property
+  def sub_price(self):
+    return self.price - self.price_discount
+
+  def get_coupon_program(self):
+    return self.couponprogram_set.first()
   
 
 class POS(BaseModel):
@@ -139,7 +151,7 @@ class POS(BaseModel):
   amount_price = models.FloatField(default=0)
   # Formular: amount_sub_total = sum(POSDetail.sub_total)
   amount_sub_total = models.FloatField(default=0)
-  # Formular: amount_discount = CouponProgram.discount_price(POS.amount_sub_total)
+  # Formular: amount_discount = CouponProgram.cal_price_discount(POS.amount_sub_total)
   amount_discount = models.FloatField(default=0)
   # Formular: amount_total = POS.amount_sub_total - POS.amount_discount
   amount_total = models.FloatField(default=0) # Include discount amount, tax amount
@@ -162,7 +174,7 @@ class POS(BaseModel):
     if self.coupon_set:
       amount_discount = 0
       for coupon in self.coupon_set.all():
-        amount_discount += (self.amount_sub_total - coupon.program.discount_price(self.amount_sub_total))
+        amount_discount += (self.amount_sub_total - coupon.program.cal_price_discount(self.amount_sub_total))
       self.amount_discount = amount_discount
     
     self.amount_price = amount_price
