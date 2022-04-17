@@ -1,8 +1,8 @@
 const HTTP_CLIENT = {
-  sendRequest: function ({ data, ...others }) {
+  sendRequest: function ({ data, url, ...others }) {
     $.ajax({
       method: 'GET',
-      url: '/',
+      url: '/api' + url,
       data: JSON.stringify({
         ...data,
         'csrfmiddlewaretoken': CSRF_TOKEN

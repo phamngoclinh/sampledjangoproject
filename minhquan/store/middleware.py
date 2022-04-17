@@ -1,3 +1,4 @@
+from .services import get_base_context
 from .models import Partner
 
 class PartnerAuthenticationMiddleware:
@@ -35,4 +36,5 @@ class PartnerAuthenticationMiddleware:
     
     def process_template_response(self, request, response):
         response.context_data['partner'] = request.partner
+        response.context_data.update(get_base_context(request))
         return response
