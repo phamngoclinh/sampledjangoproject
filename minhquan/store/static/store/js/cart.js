@@ -1,14 +1,14 @@
-function POS ({ amount_total = 0, amount_price = 0, amount_sub_total = 0, posdetails = [] }) {
+function Order ({ amount_total = 0, amount_price = 0, amount_sub_total = 0, orderdetails = [] }) {
   this.amount_total = parseInt(amount_total)
   this.amount_sub_total = parseInt(amount_sub_total)
   this.amount_price = parseInt(amount_price)
-  this.posdetails = posdetails
+  this.orderdetails = orderdetails
 
   this.compute = function () {
     let amount_sub_total = 0, amount_price = 0
-    this.posdetails.forEach(function (posdetail) {
-      amount_sub_total += posdetail.sub_total
-      amount_price += (posdetail.price_unit * posdetail.quantity)
+    this.orderdetails.forEach(function (orderdetail) {
+      amount_sub_total += orderdetail.sub_total
+      amount_price += (orderdetail.price_unit * orderdetail.quantity)
     })
     this.amount_total = amount_sub_total
     this.amount_price = amount_price
@@ -25,32 +25,32 @@ function POS ({ amount_total = 0, amount_price = 0, amount_sub_total = 0, posdet
    */
   this.addProduct = function (product, quantity) {
     if (!(product instanceof Product))
-      throw new Error('POS.addProduct require a instance of Product')
+      throw new Error('Order.addProduct require a instance of Product')
 
-    const posdetail = this.posdetails.find(function (posdetail) {
-      return posdetail.product.id === product.id
+    const orderdetail = this.orderdetails.find(function (orderdetail) {
+      return orderdetail.product.id === product.id
     })
-    if (posdetail) {
+    if (orderdetail) {
       if (quantity > 0) // Increase, decrease quantity in cart item
-        posdetail.setQuantity(quantity)
+        orderdetail.setQuantity(quantity)
       else if (quantity === 0)
-        this.posdetails = this.posdetails.filter(function (posdetail) { // Remove cart item
-          return posdetail.product.id !== product.id
+        this.orderdetails = this.orderdetails.filter(function (orderdetail) { // Remove cart item
+          return orderdetail.product.id !== product.id
         })
       else
-        posdetail.setQuantity(posdetail.quantity + 1) // Add more 1 unit of quantity
+        orderdetail.setQuantity(orderdetail.quantity + 1) // Add more 1 unit of quantity
     } else {
-      this.posdetails.push(new POSDetail({ product })) // Add new a cart item
+      this.orderdetails.push(new OrderDetail({ product })) // Add new a cart item
     }
   }
 
-  this.getPOSDetail = function (productId) {
-    return this.posdetails.find(function (posdetail) { return posdetail.product.id === productId })
+  this.getOrderDetail = function (productId) {
+    return this.orderdetails.find(function (orderdetail) { return orderdetail.product.id === productId })
   }
 }
 
-function POSDetail ({ product, quantity = 1 }) {
-  if (!product) throw new Error('POSDetail.constructor require a instance of Product for key \'product\'')
+function OrderDetail ({ product, quantity = 1 }) {
+  if (!product) throw new Error('OrderDetail.constructor require a instance of Product for key \'product\'')
 
   this.product = product
   this.quantity = parseInt(quantity)
@@ -86,25 +86,25 @@ function Product ({ id, name, slug, image, price, url = '', sub_price = 0 }) {
 
 const CART_DATA = function () {
   const data = localStorage.getItem('CART_DATA')
-  if (!data) { return { pos: new POS({}) } }
+  if (!data) { return { order: new Order({}) } }
   dataJson = JSON.parse(data)
 
   // Mapping dataJson into dataModel
-  const dataModel = { pos: new POS({}) }
-  if (dataJson.pos && dataJson.pos.posdetails && dataJson.pos.posdetails.length) {
-    const posdetails = []
-    dataJson.pos.posdetails.forEach(function (posdetail) {
-      const productModel = new Product(posdetail.product)
-      const posdetailModel = new POSDetail({ product: productModel, quantity: posdetail.quantity })
-      posdetails.push(posdetailModel)
+  const dataModel = { order: new Order({}) }
+  if (dataJson.order && dataJson.order.orderdetails && dataJson.order.orderdetails.length) {
+    const orderdetails = []
+    dataJson.order.orderdetails.forEach(function (orderdetail) {
+      const productModel = new Product(orderdetail.product)
+      const orderdetailModel = new OrderDetail({ product: productModel, quantity: orderdetail.quantity })
+      orderdetails.push(orderdetailModel)
     })
-    const posModel = new POS({
-      amount_total: dataJson.pos.amount_total,
-      amount_sub_total: dataJson.pos.amount_sub_total,
-      amount_price: dataJson.pos.amount_price,
-      posdetails
+    const orderModel = new Order({
+      amount_total: dataJson.order.amount_total,
+      amount_sub_total: dataJson.order.amount_sub_total,
+      amount_price: dataJson.order.amount_price,
+      orderdetails
     })
-    dataModel.pos = posModel
+    dataModel.order = orderModel
   }
 
   return dataModel
@@ -112,36 +112,36 @@ const CART_DATA = function () {
 
 $(document).ready(function () {
   // Cart top
-  $('.pos-detail-count').html(CART_DATA.pos.posdetails.length)
-  $('.pos-amount-price').html(CART_DATA.pos.amount_price.toLocaleString() + 'đ')
-  $('.pos-amount-sub-total').html(CART_DATA.pos.amount_sub_total.toLocaleString() + 'đ')
-  $('.pos-amount-total').html(CART_DATA.pos.amount_total.toLocaleString() + 'đ')
+  $('.cart-sum-item').html(CART_DATA.order.orderdetails.length)
+  $('.cart-amount-price').html(CART_DATA.order.amount_price.toLocaleString() + 'đ')
+  $('.cart-amount-sub-total').html(CART_DATA.order.amount_sub_total.toLocaleString() + 'đ')
+  $('.cart-amount-total').html(CART_DATA.order.amount_total.toLocaleString() + 'đ')
 
   // Cart
-  $.each(CART_DATA.pos.posdetails, function (index, posdetail) {
-    let price = `<strong class="currency">${(posdetail.price_unit * posdetail.quantity).toLocaleString()}đ</strong>`
-    if (posdetail.sub_price_unit) {
+  $.each(CART_DATA.order.orderdetails, function (index, orderdetail) {
+    let price = `<strong class="currency">${(orderdetail.price_unit * orderdetail.quantity).toLocaleString()}đ</strong>`
+    if (orderdetail.sub_price_unit) {
       price = `
-        <strong class="currency">${(posdetail.sub_price_unit * posdetail.quantity).toLocaleString()}đ</strong>
-        <span class="price-discount currency">${(posdetail.price_unit * posdetail.quantity).toLocaleString()}₫</span>
+        <strong class="currency">${(orderdetail.sub_price_unit * orderdetail.quantity).toLocaleString()}đ</strong>
+        <span class="price-discount currency">${(orderdetail.price_unit * orderdetail.quantity).toLocaleString()}₫</span>
       `
     }
     $('.cart-list').prepend(`
       <div
         class="cart-item item"
-        data-posdetail-id="${posdetail.id}"
-        data-posdetail-quantity="${posdetail.quantity}"
-        data-product-id="${posdetail.product.id}"
-        data-product-price="${posdetail.product.price}"
-        data-product-discount-price="${posdetail.product.sub_price}"
+        data-orderdetail-id="${orderdetail.id}"
+        data-orderdetail-quantity="${orderdetail.quantity}"
+        data-product-id="${orderdetail.product.id}"
+        data-product-price="${orderdetail.product.price}"
+        data-product-discount-price="${orderdetail.product.sub_price}"
       >
-        <img alt="${posdetail.product.name}" src="${posdetail.product.image}" width="60" height="60">
+        <img alt="${orderdetail.product.name}" src="${orderdetail.product.image}" width="60" height="60">
         <div class="colinfo">
-          <a href="${posdetail.product.url}" class="name">${posdetail.product.name}</a>
+          <a href="${orderdetail.product.url}" class="name">${orderdetail.product.name}</a>
           <div class="quantity">
             <div class="quantitynum">
               <i class="noselect">-</i>
-              <input autocomplete="off" type="number" min="1" max="50" class="qty" value="${posdetail.quantity}">
+              <input autocomplete="off" type="number" min="1" max="50" class="qty" value="${orderdetail.quantity}">
               <i class="noselect">+</i>
             </div>
             <a class="delete">Xóa</a>
@@ -165,14 +165,14 @@ $(document).ready(function () {
         sub_price: $product.data('product-discount-price'),
         url: $product.data('product-url'),
       })
-      CART_DATA.pos.addProduct(product)
-      CART_DATA.pos.compute()
+      CART_DATA.order.addProduct(product)
+      CART_DATA.order.compute()
       localStorage.setItem('CART_DATA', JSON.stringify(CART_DATA))
 
-      $('.pos-detail-count').html(CART_DATA.pos.posdetails.length)
-      $('.pos-amount-price').html(CART_DATA.pos.amount_price.toLocaleString() + 'đ')
-      $('.pos-amount-sub-total').html(CART_DATA.pos.amount_sub_total.toLocaleString() + 'đ')
-      $('.pos-amount-total').html(CART_DATA.pos.amount_total.toLocaleString() + 'đ')
+      $('.cart-sum-item').html(CART_DATA.order.orderdetails.length)
+      $('.cart-amount-price').html(CART_DATA.order.amount_price.toLocaleString() + 'đ')
+      $('.cart-amount-sub-total').html(CART_DATA.order.amount_sub_total.toLocaleString() + 'đ')
+      $('.cart-amount-total').html(CART_DATA.order.amount_total.toLocaleString() + 'đ')
     }
   })
 
@@ -181,15 +181,15 @@ $(document).ready(function () {
     const productId = $cartItem.data('product-id')
 
     const product = new Product({ id: productId })
-    CART_DATA.pos.addProduct(product, 0)
-    CART_DATA.pos.compute()
+    CART_DATA.order.addProduct(product, 0)
+    CART_DATA.order.compute()
     localStorage.setItem('CART_DATA', JSON.stringify(CART_DATA))
 
     $cartItem.remove()
-    $('.pos-detail-count').html(CART_DATA.pos.posdetails.length)
-    $('.pos-amount-price').html(CART_DATA.pos.amount_price.toLocaleString() + 'đ')
-    $('.pos-amount-sub-total').html(CART_DATA.pos.amount_sub_total.toLocaleString() + 'đ')
-    $('.pos-amount-total').html(CART_DATA.pos.amount_total.toLocaleString() + 'đ')
+    $('.cart-sum-item').html(CART_DATA.order.orderdetails.length)
+    $('.cart-amount-price').html(CART_DATA.order.amount_price.toLocaleString() + 'đ')
+    $('.cart-amount-sub-total').html(CART_DATA.order.amount_sub_total.toLocaleString() + 'đ')
+    $('.cart-amount-total').html(CART_DATA.order.amount_total.toLocaleString() + 'đ')
   })
 
   $('.cart-item .quantity .qty').on('change', function () {
@@ -198,13 +198,13 @@ $(document).ready(function () {
     const quantity = parseInt($(this).val())
 
     const product = new Product({ id: productId })
-    CART_DATA.pos.addProduct(product, quantity)
-    CART_DATA.pos.compute()
+    CART_DATA.order.addProduct(product, quantity)
+    CART_DATA.order.compute()
     localStorage.setItem('CART_DATA', JSON.stringify(CART_DATA))
 
-    let posdetail = CART_DATA.pos.getPOSDetail(productId)
-    let quantity_sub_price_unit = posdetail.sub_price_unit * posdetail.quantity
-    let quantity_price = posdetail.price_unit * posdetail.quantity
+    let orderdetail = CART_DATA.order.getOrderDetail(productId)
+    let quantity_sub_price_unit = orderdetail.sub_price_unit * orderdetail.quantity
+    let quantity_price = orderdetail.price_unit * orderdetail.quantity
     if (quantity_sub_price_unit) {
       $cartItem.find('.colmoney strong').html(quantity_sub_price_unit.toLocaleString()+'₫')
       $cartItem.find('.colmoney span').html(quantity_price.toLocaleString()+'₫')
@@ -212,10 +212,10 @@ $(document).ready(function () {
       $cartItem.find('.colmoney strong').html(quantity_price.toLocaleString()+'₫')
     }
 
-    $('.pos-detail-count').html(CART_DATA.pos.posdetails.length)
-    $('.pos-amount-price').html(CART_DATA.pos.amount_price.toLocaleString() + 'đ')
-    $('.pos-amount-sub-total').html(CART_DATA.pos.amount_sub_total.toLocaleString() + 'đ')
-    $('.pos-amount-total').html(CART_DATA.pos.amount_total.toLocaleString() + 'đ')
+    $('.cart-sum-item').html(CART_DATA.order.orderdetails.length)
+    $('.cart-amount-price').html(CART_DATA.order.amount_price.toLocaleString() + 'đ')
+    $('.cart-amount-sub-total').html(CART_DATA.order.amount_sub_total.toLocaleString() + 'đ')
+    $('.cart-amount-total').html(CART_DATA.order.amount_total.toLocaleString() + 'đ')
   })
 
   $('.quantitynum i:first-child').on('click', function () {

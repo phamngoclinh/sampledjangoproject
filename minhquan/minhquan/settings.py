@@ -50,7 +50,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'store.middleware.PartnerAuthenticationMiddleware'
+    'store.middleware.PartnerAuthenticationMiddleware',
+    'store.middleware.CommonUIMiddleware'
 ]
 
 ROOT_URLCONF = 'minhquan.urls'

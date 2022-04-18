@@ -13,23 +13,23 @@
         <div class="block">
           <div class="lst-product onlyone">
             <div class="cart-list lstproductbuy lstproductoff">
-              {% if pos.posdetail_set %}
-                {% for posdetail in pos.posdetail_set.all %}
+              {% if order.orderdetail_set %}
+                {% for orderdetail in order.orderdetail_set.all %}
                   <div
                     class="cart-item item"
-                    data-posdetail-id="{{ posdetail.id }}"
-                    data-posdetail-quantity="{{ posdetail.quantity }}"
-                    data-product-id="{{ posdetail.product.id }}"
-                    data-product-price="{{ posdetail.product.price }}"
-                    data-product-discount-price="{{ posdetail.product.sub_price }}"
+                    data-orderdetail-id="{{ orderdetail.id }}"
+                    data-orderdetail-quantity="{{ orderdetail.quantity }}"
+                    data-product-id="{{ orderdetail.product.id }}"
+                    data-product-price="{{ orderdetail.product.price }}"
+                    data-product-discount-price="{{ orderdetail.product.sub_price }}"
                   >
-                    <img alt="{{ posdetail.product.name }}" src="{{ posdetail.product.image.url }}" width="60" height="60">
+                    <img alt="{{ orderdetail.product.name }}" src="{{ orderdetail.product.image.url }}" width="60" height="60">
                     <div class="colinfo">
-                      <a href="{% url 'product_detail' posdetail.product.id %}" class="name">{{ posdetail.product.name }}</a>
+                      <a href="{% url 'product_detail' orderdetail.product.id %}" class="name">{{ orderdetail.product.name }}</a>
                       <div class="quantity">
                         <div class="quantitynum">
                           <i class="noselect">-</i>
-                          <input autocomplete="off" type="number" min="1" max="50" class="qty" value="{{ posdetail.quantity }}">
+                          <input autocomplete="off" type="number" min="1" max="50" class="qty" value="{{ orderdetail.quantity }}">
                           <i class="noselect">+</i>
                         </div>
                         <a class="delete">Xóa</a>
@@ -37,14 +37,14 @@
                       <div class="npromotion"></div>
                     </div>
                     <div class="colmoney">
-                      {% with sub_price_unit=posdetail.sub_price_unit %}
+                      {% with sub_price_unit=orderdetail.sub_price_unit %}
                         {% if sub_price_unit %}
-                          {% widthratio sub_price_unit 1 posdetail.quantity as quantity_sub_price_unit %}
+                          {% widthratio sub_price_unit 1 orderdetail.quantity as quantity_sub_price_unit %}
                           <strong class="currency">{{ quantity_sub_price_unit|floatformat:"g" }}đ</strong>
-                          {% widthratio posdetail.price_unit 1 posdetail.quantity as quantity_price %}
+                          {% widthratio orderdetail.price_unit 1 orderdetail.quantity as quantity_price %}
                           <span class="price-discount currency">{{ quantity_price|floatformat:"g" }}₫</span>
                         {% else %}
-                          {% widthratio posdetail.price_unit 1 posdetail.quantity as quantity_price %}
+                          {% widthratio orderdetail.price_unit 1 orderdetail.quantity as quantity_price %}
                           <strong class="currency">{{ quantity_price|floatformat:"g" }}đ</strong>
                         {% endif %}
                       {% endwith %}
@@ -59,21 +59,21 @@
                       <span>
                         Thành tiền:
                       </span>
-                      <label><b class="pos-amount-price">{{ pos.amount_price|default:0|floatformat:"g" }}₫</b></label>
+                      <label><b class="cart-amount-price">{{ order.amount_price|default:0|floatformat:"g" }}₫</b></label>
                     </div>
                     <div class="cost">
                       <span>
                         Chiết khấu:
                       </span>
                       <label>
-                        <b class="pos-amount-discount-total">{{ pos.amount_discount_total|default:0|floatformat:"g" }}₫</b>
+                        <b class="cart-amount-discount-total">{{ order.amount_discount_total|default:0|floatformat:"g" }}₫</b>
                       </label>
                     </div>
                     <div class="cost">
                       <span>
                         Tổng tiền:
                       </span>
-                      <label><b class="pos-amount-sub-total">{{ pos.amount_sub_total|default:0|floatformat:"g" }}₫</b></label>
+                      <label><b class="cart-amount-sub-total">{{ order.amount_sub_total|default:0|floatformat:"g" }}₫</b></label>
                     </div>
                     <!-- <div class="cost">
                       <span>Phí giao hàng</span>
@@ -98,7 +98,7 @@
                 <div class="cost">
                   <span>Tổng tiền thanh toán:</span>
                   <label id="carttotal">
-                    <b class="pos-amount-total">{{ pos.amount_total|default:0|floatformat:"g" }}₫</b>
+                    <b class="cart-amount-total">{{ order.amount_total|default:0|floatformat:"g" }}₫</b>
                   </label>
                 </div>
                 <!-- <div class="bcusrank">Miễn phí giao với đơn hàng từ 300.000đ trở lên</div>
@@ -108,8 +108,8 @@
               </div>
             </div>
             <div class="btn-order">
-              {% if pos %}
-                <a href="{% url 'checkout' pos.id %}" class="btn-og btn-step">ĐẶT HÀNG</a>
+              {% if order %}
+                <a href="{% url 'checkout' order.id %}" class="btn-og btn-step">ĐẶT HÀNG</a>
               {% else %}
                 <a href="{% url 'login' %}" class="btn-og btn-step">ĐĂNG NHẬP ĐỂ ĐẶT HÀNG</a>
               {% endif %}

@@ -46,39 +46,39 @@ def carts(request):
 
   if request.partner:
     user_email = request.partner.email
-    context['carts'] = services.get_none_draft_poss(customer__email=user_email)
+    context['carts'] = services.get_none_draft_orders(customer__email=user_email)
 
   return TemplateResponse(request, 'store/carts.html', context)
 
-def checkout(request, pos_id):
+def checkout(request, order_id):
   context = { 'title': 'Checkout' }
 
   if request.partner:
-    pos = services.get_draft_pos(pk=pos_id)
+    order = services.get_draft_order(pk=order_id)
     
-    if not pos:
-      return redirect('checkout_success', pos_id=pos_id)
+    if not order:
+      return redirect('checkout_success', order_id=order_id)
 
-    # validate pos_customer is current partner here
+    # validate order_customer is current partner here
     # TODO
 
-    context['cart'] = pos
-    context['coupon_programs'] = services.get_available_coupon_programs()
+    context['cart'] = order
+    # context['coupon_programs'] = services.get_available_coupon_programs()
     context['shipping_addresses'] = services.get_address_by_customer(request.partner)
 
     shipping = {
-      'city': pos.shipping_address and pos.shipping_address.city or '',
-      'district': pos.shipping_address and pos.shipping_address.district or '',
-      'award': pos.shipping_address and pos.shipping_address.award or '',
-      'address': pos.shipping_address and pos.shipping_address.address or '',
-      'receive_name': pos.receive_name or pos.customer.full_name,
-      'receive_phone': pos.receive_phone or pos.customer.phone,
-      'receive_email': pos.receive_email or pos.customer.email,
-      'note': pos.note or '',
+      'city': order.shipping_address and order.shipping_address.city or '',
+      'district': order.shipping_address and order.shipping_address.district or '',
+      'award': order.shipping_address and order.shipping_address.award or '',
+      'address': order.shipping_address and order.shipping_address.address or '',
+      'receive_name': order.receive_name or order.customer.full_name,
+      'receive_phone': order.receive_phone or order.customer.phone,
+      'receive_email': order.receive_email or order.customer.email,
+      'note': order.note or '',
     }
     shipping_form = ShippingForm(shipping)
 
-    coupon = services.get_coupon_by_pos(pos)
+    coupon = services.get_coupon_by_order(order)
     if coupon:
       coupon_form = CouponForm({ 'code': coupon.code, 'coupon_program_id': coupon.program.id })
     else:
@@ -88,17 +88,17 @@ def checkout(request, pos_id):
       shipping_form = ShippingForm(request.POST)
       coupon_form = CouponForm(request.POST)
       if shipping_form.is_valid() and coupon_form.is_valid():
-        succeed, exception = services.checkout(pos, shipping_form, coupon_form)
+        succeed, exception = services.checkout(order, shipping_form, coupon_form)
 
     context['shipping_form'] = shipping_form
     context['coupon_form'] = coupon_form
 
   return TemplateResponse(request, 'store/checkout.html', context)
 
-def checkout_success(request, pos_id):
+def checkout_success(request, order_id):
   context = { 'title': 'Checkout' }
 
-  context['cart'] = services.get_none_draft_poss(pk=pos_id)  
+  context['cart'] = services.get_none_draft_orders(pk=order_id)  
 
   return TemplateResponse(request, 'store/checkout-success.html', context)
 

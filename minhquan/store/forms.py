@@ -105,7 +105,7 @@ class CouponForm(forms.Form):
     code = self.cleaned_data['code']
     try:
       if code:
-        Coupon.objects.get(code=code, pos__isnull=True, expired_date__gte=datetime.today(), start_date__lte=datetime.today())
+        Coupon.objects.get(code=code, order__isnull=True, expired_date__gte=datetime.today(), start_date__lte=datetime.today())
     except Coupon.DoesNotExist:
       raise ValidationError('Coupon Code không tồn tại hoặc đã được sử dụng.')
     return code

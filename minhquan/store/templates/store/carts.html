@@ -23,10 +23,10 @@
           <td>{{ cart.id }}</td>
           <td>
             <ul>
-              {% for posdetail in cart.posdetail_set.all %}
+              {% for orderdetail in cart.orderdetail_set.all %}
                 <li>
-                  <a href="{% url 'product_detail' posdetail.product.id %}">{{ posdetail.product.name }}</a>
-                  <span>(x{{ posdetail.quantity }})</span>
+                  <a href="{% url 'product_detail' orderdetail.product.id %}">{{ orderdetail.product.name }}</a>
+                  <span>(x{{ orderdetail.quantity }})</span>
                 </li>
               {% endfor %}
             </ul>

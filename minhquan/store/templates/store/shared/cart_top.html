@@ -17,12 +17,12 @@
   <a href="{% url 'cart' %}" class="temcart no">
     <div>
       <i class="bhx-cart" style="margin-bottom: 0px;"></i>
-      <span class="pos-detail-count" class="">{{ pos.posdetail_set.count|default:0 }}</span>
+      <span class="cart-sum-item">{{ order.orderdetail_set.count|default:0 }}</span>
     </div>
     <div>
       <b class="card">THANH TOÁN</b>
-      <b class="sumorder pos-amount-total">
-        {{ pos.amount_total|default:0|floatformat:"g" }}₫
+      <b class="sumorder cart-amount-total">
+        {{ order.amount_total|default:0|floatformat:"g" }}₫
       </b>
     </div>
   </a>

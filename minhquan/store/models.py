@@ -81,7 +81,7 @@ class Coupon(BaseModel):
   code = models.CharField(max_length=200)
   start_date = models.DateTimeField()
   expired_date = models.DateTimeField()
-  pos = models.ForeignKey('POS', on_delete=models.CASCADE, null=True, blank=True)
+  order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.code
@@ -135,8 +135,8 @@ class Product(BaseModel):
     return self.couponprogram_set.first()
   
 
-class POS(BaseModel):
-  POS_STATUS = (
+class Order(BaseModel):
+  ORDER_STATUS = (
     ('draft', 'Draft'),
     ('processing', 'Processing'),
     ('shipping', 'Shipping'),
@@ -147,17 +147,17 @@ class POS(BaseModel):
   receive_name = models.CharField(max_length=100, null=True, blank=True)
   receive_phone = models.IntegerField(default=0, null=True, blank=True)
   receive_email = models.EmailField(null=False, blank=True)
-  # Formular: amount_price = sum(POSDetail.amount_price)
+  # Formular: amount_price = sum(OrderDetail.amount_price)
   amount_price = models.FloatField(default=0)
-  # Formular: amount_sub_total = sum(POSDetail.sub_total)
+  # Formular: amount_sub_total = sum(OrderDetail.sub_total)
   amount_sub_total = models.FloatField(default=0)
-  # Formular: amount_discount = CouponProgram.cal_price_discount(POS.amount_sub_total)
+  # Formular: amount_discount = CouponProgram.cal_price_discount(Order.amount_sub_total)
   amount_discount = models.FloatField(default=0)
-  # Formular: amount_total = POS.amount_sub_total - POS.amount_discount
+  # Formular: amount_total = Order.amount_sub_total - Order.amount_discount
   amount_total = models.FloatField(default=0) # Include discount amount, tax amount
-  # Formular: amount_discount_total = sum(POSDetail.price_discount) + POS.amount_discount
+  # Formular: amount_discount_total = sum(OrderDetail.price_discount) + Order.amount_discount
   amount_discount_total = models.FloatField(default=0)
-  status = models.CharField(default='draft', max_length=100, choices=POS_STATUS)
+  status = models.CharField(default='draft', max_length=100, choices=ORDER_STATUS)
   shipping_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
   note = models.CharField(max_length=200, null=True, blank=True)
 
@@ -166,10 +166,10 @@ class POS(BaseModel):
   
   def calculate(self):
     amount_price = amount_sub_total = amount_discount_total = 0
-    for posdetail in self.posdetail_set.all():
-      amount_price += posdetail.amount_price
-      amount_sub_total += posdetail.sub_total
-      amount_discount_total += posdetail.price_discount
+    for orderdetail in self.orderdetail_set.all():
+      amount_price += orderdetail.amount_price
+      amount_sub_total += orderdetail.sub_total
+      amount_discount_total += orderdetail.price_discount
     
     if self.coupon_set:
       amount_discount = 0
@@ -183,9 +183,9 @@ class POS(BaseModel):
     self.amount_discount_total = amount_discount_total + self.amount_discount
 
 
-class POSDetail(BaseModel):
+class OrderDetail(BaseModel):
   product = models.ForeignKey(Product, on_delete=models.CASCADE)
-  pos = models.ForeignKey(POS, on_delete=models.CASCADE)
+  order = models.ForeignKey(Order, on_delete=models.CASCADE)
   quantity = models.FloatField(default=1)
   price_unit = models.FloatField(default=0)
   sub_price_unit = models.FloatField(default=0)
@@ -197,7 +197,7 @@ class POSDetail(BaseModel):
   sub_total = models.FloatField(default=0) # Include discount, exclude tax
 
   def __str__(self):
-    return '%d - %s' % (self.pos.id, self.product.name)
+    return '%d - %s' % (self.order.id, self.product.name)
 
   def calculate(self):
     self.price_discount = self.quantity * (self.price_unit - self.sub_price_unit)
