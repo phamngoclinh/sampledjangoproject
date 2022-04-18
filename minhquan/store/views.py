@@ -11,58 +11,41 @@ from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm, Shipping
 from . import services
 
 def index(request):
-  context = { 'title': 'Home' }
-
-  context['products'] = services.get_all_products()
-  
+  context = { 'products': services.get_all_products() }
   return TemplateResponse(request, 'store/index.html', context)
 
 def product_category(request, category_id):
-  context = { 'title': 'Product category' }
-
-  context['products'] = services.get_products_in_category(category_id)
-
+  context = { 'products': services.get_products_in_category(category_id) }
   return TemplateResponse(request, 'store/product_category.html', context)
 
 def product_detail(request, product_id):
-  context = { 'title': 'Product detail' }
-
-  context['product'] = services.get_product_by_id(product_id)
-
+  context = { 'product': services.get_product_by_id(product_id) }
   return TemplateResponse(request, 'store/product_detail.html', context)
 
 def search(request):
-  context = { 'title': 'Search' }
-  
   product_name = request.GET.get('product_name', '')
-  context['products'] = services.search_product(product_name)
-
+  context = { 'products': services.search_product(product_name) }
   return TemplateResponse(request, 'store/search.html', context)
 
 def shopping_cart(request):
-  context = { 'title': 'Cart' }
-
-  return TemplateResponse(request, 'store/shopping-cart.html', context)
+  return TemplateResponse(request, 'store/shopping-cart.html', {})
 
 @partners_only
 def orders(request):
-  context = { 'title': 'Orders' }
-
-  context['orders'] = services.get_none_draft_orders(customer=request.partner)
-
+  context = { 'orders': services.get_none_draft_orders(customer=request.partner) }
   return TemplateResponse(request, 'store/orders.html', context)
 
 @partners_only
 def checkout(request, order_id):
-  context = { 'title': 'Checkout' }
-
   order = services.get_draft_order(pk=order_id)
   
   if not order or (order.customer != request.partner):
     return redirect('checkout_result', order_id=order_id)
   
-  # context['coupon_programs'] = services.get_available_coupon_programs()
-  context['shipping_addresses'] = services.get_address_by_customer(request.partner)
+  context = {
+    # 'coupon_programs': services.get_available_coupon_programs(),
+    'shipping_addresses': services.get_address_by_customer(request.partner),
+  }
 
   shipping = {
     'city': order.shipping_address and order.shipping_address.city or '',
@@ -91,7 +74,7 @@ def checkout(request, order_id):
         messages.success(request, message='Thanh toán thành công')
         return redirect('checkout_result', order_id=order_id)
       else:
-        messages.error(request, message='Thanh toán không thành công')
+        messages.error(request, message='Thanh toán thất bại')
 
   context['shipping_form'] = shipping_form
   context['coupon_form'] = coupon_form
@@ -100,28 +83,19 @@ def checkout(request, order_id):
 
 @partners_only
 def checkout_result(request, order_id):
-  context = { 'title': 'Checkout' }
-
   order = services.get_none_draft_orders(pk=order_id, customer=request.partner).first()
-  
   if not order:
     messages.error(request, message=f'Đơn hàng không tồn tại')
   else:
     messages.success(request, message=f'Đơn hàng {order_id} đang được xử lý')
 
-  return TemplateResponse(request, 'store/checkout-result.html', context)
+  return TemplateResponse(request, 'store/checkout-result.html', {})
 
 def login(request):
-  if request.method == 'GET':
-    cache.set('next', request.GET.get('next', None))
+  next_url = request.GET.get('next', 'index')
 
   if request.session.get('partner_id'):
-    next_url = cache.get('next')
-    if next_url:
-      cache.delete('next')
-      return redirect(next_url)
-    else:
-      return redirect('index')
+    return redirect(next_url)
 
   context = {}
 
@@ -136,13 +110,7 @@ def login(request):
 
       if succeed:
         request.session['partner_id'] = partner.id
-
-        next_url = cache.get('next')
-        if next_url:
-          cache.delete('next')
-          return redirect(next_url)
-
-        return redirect('index')
+        return redirect(next_url)
       else:
         form.add_error(None, exception.args)
   
@@ -156,30 +124,21 @@ def login(request):
 
 @login_required
 def login_user(request):
-  if request.method == 'GET':
-    cache.set('next', request.GET.get('next', None))
+  next_url = request.GET.get('next', 'index')
 
   if request.session.get('partner_id'):
-    next_url = cache.get('next')
-    if next_url:
-      cache.delete('next')
-      return redirect(next_url)
-    else:
-      return redirect('index')
+    return redirect(next_url)
 
   login_form = LoginUserForm(request.POST)
   if login_form.is_valid():
     succeed, partner, exception = services.login_user(request, login_form.cleaned_data['email'])
     if succeed:
       request.session['partner_id'] = partner.id
-      next_url = cache.get('next')
-      if next_url:
-        cache.delete('next')
-        return redirect(next_url)
-
-      return redirect('index')
+      return redirect(next_url)
     else:
       messages.error(request, exception.args)
+  
+  return TemplateResponse(request, 'store/accounts/login.html', {})
 
 def logout(request):
   if request.session.get('partner_id'):
