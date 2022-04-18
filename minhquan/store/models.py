@@ -72,7 +72,7 @@ class CouponProgram(BaseModel):
   discount_type = models.CharField(default='percent', max_length=50, choices=DISCOUNT_TYPE)
   discount = models.FloatField(default=0)
 
-  def cal_price_discount(self, price):
+  def get_discount(self, price):
     return price * self.discount / 100.0 if self.discount_type == 'percent' else (0 if self.discount > price else self.discount)
 
 
@@ -125,7 +125,7 @@ class Product(BaseModel):
     coupon_program = self.get_coupon_program()
     if not coupon_program:
       return 0
-    return coupon_program.cal_price_discount(self.price)
+    return coupon_program.get_discount(self.price)
 
   @property
   def sub_price(self):
@@ -151,7 +151,7 @@ class Order(BaseModel):
   amount_price = models.FloatField(default=0)
   # Formular: amount_sub_total = sum(OrderDetail.sub_total)
   amount_sub_total = models.FloatField(default=0)
-  # Formular: amount_discount = CouponProgram.cal_price_discount(Order.amount_sub_total)
+  # Formular: amount_discount = CouponProgram.get_discount(Order.amount_sub_total)
   amount_discount = models.FloatField(default=0)
   # Formular: amount_total = Order.amount_sub_total - Order.amount_discount
   amount_total = models.FloatField(default=0) # Include discount amount, tax amount
@@ -164,23 +164,35 @@ class Order(BaseModel):
   def __str__(self):
     return 'DH - %d' % self.id
   
-  def calculate(self):
+  def compute(self):
+    # Sum of orderdetails
     amount_price = amount_sub_total = amount_discount_total = 0
     for orderdetail in self.orderdetail_set.all():
       amount_price += orderdetail.amount_price
       amount_sub_total += orderdetail.sub_total
       amount_discount_total += orderdetail.price_discount
     
+    # Calculate discount on whole order
     if self.coupon_set:
       amount_discount = 0
       for coupon in self.coupon_set.all():
-        amount_discount += (self.amount_sub_total - coupon.program.cal_price_discount(self.amount_sub_total))
+        amount_discount += coupon.program.get_discount(self.amount_sub_total)
       self.amount_discount = amount_discount
     
     self.amount_price = amount_price
     self.amount_sub_total = amount_sub_total
     self.amount_total = amount_sub_total - self.amount_discount
     self.amount_discount_total = amount_discount_total + self.amount_discount
+  
+  def complete_current_process(self):
+    if self.status == 'draft':
+      self.status = 'processing'
+    elif self.status == 'processing':
+      self.status = 'shipping'
+    elif self.status == 'shipping':
+      self.status = 'done'
+    else:
+      pass
 
 
 class OrderDetail(BaseModel):
@@ -197,9 +209,9 @@ class OrderDetail(BaseModel):
   sub_total = models.FloatField(default=0) # Include discount, exclude tax
 
   def __str__(self):
-    return '%d - %s' % (self.order.id, self.product.name)
+    return 'DH %d - Product %s' % (self.order.id, self.product.name)
 
-  def calculate(self):
+  def compute(self):
     self.price_discount = self.quantity * (self.price_unit - self.sub_price_unit)
     self.amount_price = self.quantity * self.price_unit
     self.sub_total = self.amount_price - self.price_discount

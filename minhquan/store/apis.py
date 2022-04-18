@@ -62,23 +62,19 @@ def add_to_cart(request):
     )
     
     if is_new_orderdetail:
-      orderdetail.calculate()
       orderdetail.save()
     else:
       if 'quantity' not in body:
         orderdetail.quantity += 1
-        orderdetail.calculate()
         orderdetail.save()
       else:
         quantity = body['quantity']
         if quantity: # set a specific quantity
           orderdetail.quantity = quantity
-          orderdetail.calculate()
           orderdetail.save()
         else: # delete order detail
           orderdetail.delete()
 
-    order.calculate()
     order.save()
 
     return JsonResponse({

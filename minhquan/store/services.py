@@ -104,8 +104,7 @@ def checkout(order, shipping_form, coupon_form):
     order.receive_email = shipping_form.cleaned_data['receive_email']
     order.note = shipping_form.cleaned_data['note']
     order.shipping_address = address
-    order.status = 'processing'
-    order.calculate()
+    order.complete_current_process()
     order.save()
     # Update coupon program
 
@@ -144,7 +143,6 @@ def sync_shopping_cart(email, shopping_cart):
       total += orderdetail.sub_total
 
     if (order.amount_sub_total != total):
-      order.calculate()
       order.save()
     
     return True, partner, None
