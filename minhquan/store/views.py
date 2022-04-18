@@ -88,10 +88,10 @@ def checkout(request, order_id):
     if shipping_form.is_valid() and coupon_form.is_valid():
       succeed, exception = services.checkout(order, shipping_form, coupon_form)
       if succeed:
-        messages.success(request, message=f'Đơn hàng {order_id} thanh toán thành công')
+        messages.success(request, message='Thanh toán thành công')
         return redirect('checkout_result', order_id=order_id)
       else:
-        messages.error(request, message=f'Thanh toán không thành công {exception.args}')
+        messages.error(request, message='Thanh toán không thành công')
 
   context['shipping_form'] = shipping_form
   context['coupon_form'] = coupon_form
