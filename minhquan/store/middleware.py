@@ -55,5 +55,6 @@ class CommonUIMiddleware:
         return response
     
     def process_template_response(self, request, response):
+        # Attach common context into all of templates
         response.context_data.update(get_base_context(request))
         return response

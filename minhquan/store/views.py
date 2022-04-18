@@ -1,7 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+
+from .decorators import partners_only
 
 from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
 
@@ -36,75 +39,89 @@ def search(request):
 
   return TemplateResponse(request, 'store/search.html', context)
 
-def cart(request):
+def shopping_cart(request):
   context = { 'title': 'Cart' }
 
-  return TemplateResponse(request, 'store/cart.html', context)
+  return TemplateResponse(request, 'store/shopping-cart.html', context)
 
-def carts(request):
-  context = { 'title': 'Carts' }
+@partners_only
+def orders(request):
+  context = { 'title': 'Orders' }
 
-  if request.partner:
-    user_email = request.partner.email
-    context['carts'] = services.get_none_draft_orders(customer__email=user_email)
+  context['orders'] = services.get_none_draft_orders(customer=request.partner)
 
-  return TemplateResponse(request, 'store/carts.html', context)
+  return TemplateResponse(request, 'store/orders.html', context)
 
+@partners_only
 def checkout(request, order_id):
   context = { 'title': 'Checkout' }
 
-  if request.partner:
-    order = services.get_draft_order(pk=order_id)
-    
-    if not order:
-      return redirect('checkout_success', order_id=order_id)
+  order = services.get_draft_order(pk=order_id)
+  
+  if not order or (order.customer != request.partner):
+    return redirect('checkout_result', order_id=order_id)
+  
+  # context['coupon_programs'] = services.get_available_coupon_programs()
+  context['shipping_addresses'] = services.get_address_by_customer(request.partner)
 
-    # validate order_customer is current partner here
-    # TODO
+  shipping = {
+    'city': order.shipping_address and order.shipping_address.city or '',
+    'district': order.shipping_address and order.shipping_address.district or '',
+    'award': order.shipping_address and order.shipping_address.award or '',
+    'address': order.shipping_address and order.shipping_address.address or '',
+    'receive_name': order.receive_name or order.customer.full_name,
+    'receive_phone': order.receive_phone or order.customer.phone,
+    'receive_email': order.receive_email or order.customer.email,
+    'note': order.note or '',
+  }
+  shipping_form = ShippingForm(shipping)
 
-    context['cart'] = order
-    # context['coupon_programs'] = services.get_available_coupon_programs()
-    context['shipping_addresses'] = services.get_address_by_customer(request.partner)
+  coupon = services.get_coupon_by_order(order)
+  if coupon:
+    coupon_form = CouponForm({ 'code': coupon.code, 'coupon_program_id': coupon.program.id })
+  else:
+    coupon_form = CouponForm()
 
-    shipping = {
-      'city': order.shipping_address and order.shipping_address.city or '',
-      'district': order.shipping_address and order.shipping_address.district or '',
-      'award': order.shipping_address and order.shipping_address.award or '',
-      'address': order.shipping_address and order.shipping_address.address or '',
-      'receive_name': order.receive_name or order.customer.full_name,
-      'receive_phone': order.receive_phone or order.customer.phone,
-      'receive_email': order.receive_email or order.customer.email,
-      'note': order.note or '',
-    }
-    shipping_form = ShippingForm(shipping)
+  if request.method == 'POST':
+    shipping_form = ShippingForm(request.POST)
+    coupon_form = CouponForm(request.POST)
+    if shipping_form.is_valid() and coupon_form.is_valid():
+      succeed, exception = services.checkout(order, shipping_form, coupon_form)
+      if succeed:
+        messages.success(request, message=f'Đơn hàng {order_id} thanh toán thành công')
+        return redirect('checkout_result', order_id=order_id)
+      else:
+        messages.error(request, message=f'Thanh toán không thành công {exception.args}')
 
-    coupon = services.get_coupon_by_order(order)
-    if coupon:
-      coupon_form = CouponForm({ 'code': coupon.code, 'coupon_program_id': coupon.program.id })
-    else:
-      coupon_form = CouponForm()
-
-    if request.method == 'POST':
-      shipping_form = ShippingForm(request.POST)
-      coupon_form = CouponForm(request.POST)
-      if shipping_form.is_valid() and coupon_form.is_valid():
-        succeed, exception = services.checkout(order, shipping_form, coupon_form)
-
-    context['shipping_form'] = shipping_form
-    context['coupon_form'] = coupon_form
+  context['shipping_form'] = shipping_form
+  context['coupon_form'] = coupon_form
 
   return TemplateResponse(request, 'store/checkout.html', context)
 
-def checkout_success(request, order_id):
+@partners_only
+def checkout_result(request, order_id):
   context = { 'title': 'Checkout' }
 
-  context['cart'] = services.get_none_draft_orders(pk=order_id)  
+  order = services.get_none_draft_orders(pk=order_id, customer=request.partner).first()
+  
+  if not order:
+    messages.error(request, message=f'Đơn hàng không tồn tại')
+  else:
+    messages.success(request, message=f'Đơn hàng {order_id} đang được xử lý')
 
-  return TemplateResponse(request, 'store/checkout-success.html', context)
+  return TemplateResponse(request, 'store/checkout-result.html', context)
 
 def login(request):
+  if request.method == 'GET':
+    cache.set('next', request.GET.get('next', None))
+
   if request.session.get('partner_id'):
-    return redirect('index')
+    next_url = cache.get('next')
+    if next_url:
+      cache.delete('next')
+      return redirect(next_url)
+    else:
+      return redirect('index')
 
   context = {}
 
@@ -119,6 +136,12 @@ def login(request):
 
       if succeed:
         request.session['partner_id'] = partner.id
+
+        next_url = cache.get('next')
+        if next_url:
+          cache.delete('next')
+          return redirect(next_url)
+
         return redirect('index')
       else:
         form.add_error(None, exception.args)
@@ -133,13 +156,27 @@ def login(request):
 
 @login_required
 def login_user(request):
+  if request.method == 'GET':
+    cache.set('next', request.GET.get('next', None))
+
   if request.session.get('partner_id'):
-    return redirect('index')
+    next_url = cache.get('next')
+    if next_url:
+      cache.delete('next')
+      return redirect(next_url)
+    else:
+      return redirect('index')
+
   login_form = LoginUserForm(request.POST)
   if login_form.is_valid():
     succeed, partner, exception = services.login_user(request, login_form.cleaned_data['email'])
     if succeed:
       request.session['partner_id'] = partner.id
+      next_url = cache.get('next')
+      if next_url:
+        cache.delete('next')
+        return redirect(next_url)
+
       return redirect('index')
     else:
       messages.error(request, exception.args)
@@ -164,16 +201,12 @@ def register(request):
 
   return TemplateResponse(request, 'store/accounts/register.html', { 'form': form })
 
+@partners_only
 def profile(request):
-  if not request.partner:
-    return redirect('index')
-
-  partner = services.get_partner_by_email(request.partner.email)
-
-  form = ProfileForm(instance=partner)
+  form = ProfileForm(instance=request.partner)
 
   if request.method == 'POST':
-    form = ProfileForm(request.POST, instance=partner)
+    form = ProfileForm(request.POST, instance=request.partner)
     if form.is_valid():
       try:
         form.save()
