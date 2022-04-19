@@ -1,11 +1,18 @@
-function POS ({ total = 0, posdetails = [] }) {
-  this.total = parseInt(total)
-  this.posdetails = posdetails
+function Order ({ amount_total = 0, amount_price = 0, amount_sub_total = 0, orderdetails = [] }) {
+  this.amount_total = parseInt(amount_total)
+  this.amount_sub_total = parseInt(amount_sub_total)
+  this.amount_price = parseInt(amount_price)
+  this.orderdetails = orderdetails
 
   this.compute = function () {
-    let total = 0
-    this.posdetails.forEach(function (posdetail) { total += posdetail.sub_total })
-    this.total = total
+    let amount_sub_total = 0, amount_price = 0
+    this.orderdetails.forEach(function (orderdetail) {
+      amount_sub_total += orderdetail.sub_total
+      amount_price += (orderdetail.price_unit * orderdetail.quantity)
+    })
+    this.amount_total = amount_sub_total
+    this.amount_price = amount_price
+    this.amount_sub_total = amount_sub_total
   }
 
   /**
@@ -18,40 +25,41 @@ function POS ({ total = 0, posdetails = [] }) {
    */
   this.addProduct = function (product, quantity) {
     if (!(product instanceof Product))
-      throw new Error('POS.addProduct require a instance of Product')
+      throw new Error('Order.addProduct require a instance of Product')
 
-    const posdetail = this.posdetails.find(function (posdetail) {
-      return posdetail.product.id === product.id
+    const orderdetail = this.orderdetails.find(function (orderdetail) {
+      return orderdetail.product.id === product.id
     })
-    if (posdetail) {
+    if (orderdetail) {
       if (quantity > 0) // Increase, decrease quantity in cart item
-        posdetail.setQuantity(quantity)
+        orderdetail.setQuantity(quantity)
       else if (quantity === 0)
-        this.posdetails = this.posdetails.filter(function (posdetail) { // Remove cart item
-          return posdetail.product.id !== product.id
+        this.orderdetails = this.orderdetails.filter(function (orderdetail) { // Remove cart item
+          return orderdetail.product.id !== product.id
         })
       else
-        posdetail.setQuantity(posdetail.quantity + 1) // Add more 1 unit of quantity
+        orderdetail.setQuantity(orderdetail.quantity + 1) // Add more 1 unit of quantity
     } else {
-      this.posdetails.push(new POSDetail({ product })) // Add new a cart item
+      this.orderdetails.push(new OrderDetail({ product })) // Add new a cart item
     }
   }
 
-  this.getPOSDetail = function (productId) {
-    return this.posdetails.find(function (posdetail) { return posdetail.product.id === productId })
+  this.getOrderDetail = function (productId) {
+    return this.orderdetails.find(function (orderdetail) { return orderdetail.product.id === productId })
   }
 }
 
-function POSDetail ({ product, quantity = 1 }) {
-  if (!product) throw new Error('POSDetail.constructor require a instance of Product for key \'product\'')
+function OrderDetail ({ product, quantity = 1 }) {
+  if (!product) throw new Error('OrderDetail.constructor require a instance of Product for key \'product\'')
 
   this.product = product
   this.quantity = parseInt(quantity)
-  this.discount_price = this.product.discount_price
-  this.price = this.product.price
-  this.sub_total = this.discount_price
-                    ? this.discount_price * this.quantity
-                    : this.price * this.quantity
+  this.sub_price_unit = product.sub_price
+  this.price_unit = product.price
+  this.amount_price = product.price * parseInt(quantity)
+  this.sub_total = product.sub_price
+                    ? product.sub_price * quantity
+                    : product.price * quantity
 
   this.setQuantity = function (quantity) {
     this.quantity = parseInt(quantity)
@@ -59,38 +67,44 @@ function POSDetail ({ product, quantity = 1 }) {
   }
 
   this.computeSubTotal = function () {
-    this.sub_total = this.discount_price
-                      ? this.discount_price * this.quantity
-                      : this.price * this.quantity
+    this.sub_total = this.sub_price_unit
+                      ? this.sub_price_unit * this.quantity
+                      : this.price_unit * this.quantity
+    this.amount_price = this.quantity * this.price_unit
   }
 }
 
-function Product ({ id, name, slug, image, price, url = '', discount_price = 0 }) {
+function Product ({ id, name, slug, image, price, url = '', sub_price = 0 }) {
   this.id = id
   this.name = name
   this.slug = slug
   this.image = image
   this.price = parseInt(price)
-  this.discount_price = parseInt(discount_price)
+  this.sub_price = parseInt(sub_price)
   this.url = url
 }
 
 const CART_DATA = function () {
   const data = localStorage.getItem('CART_DATA')
-  if (!data) { return { pos: new POS({}) } }
+  if (!data) { return { order: new Order({}) } }
   dataJson = JSON.parse(data)
 
   // Mapping dataJson into dataModel
-  const dataModel = { pos: new POS({}) }
-  if (dataJson.pos && dataJson.pos.posdetails && dataJson.pos.posdetails.length) {
-    const posdetails = []
-    dataJson.pos.posdetails.forEach(function (posdetail) {
-      const productModel = new Product(posdetail.product)
-      const posdetailModel = new POSDetail({ product: productModel, quantity: posdetail.quantity })
-      posdetails.push(posdetailModel)
+  const dataModel = { order: new Order({}) }
+  if (dataJson.order && dataJson.order.orderdetails && dataJson.order.orderdetails.length) {
+    const orderdetails = []
+    dataJson.order.orderdetails.forEach(function (orderdetail) {
+      const productModel = new Product(orderdetail.product)
+      const orderdetailModel = new OrderDetail({ product: productModel, quantity: orderdetail.quantity })
+      orderdetails.push(orderdetailModel)
     })
-    const posModel = new POS({ total: dataJson.pos.total, posdetails })
-    dataModel.pos = posModel
+    const orderModel = new Order({
+      amount_total: dataJson.order.amount_total,
+      amount_sub_total: dataJson.order.amount_sub_total,
+      amount_price: dataJson.order.amount_price,
+      orderdetails
+    })
+    dataModel.order = orderModel
   }
 
   return dataModel
@@ -98,34 +112,36 @@ const CART_DATA = function () {
 
 $(document).ready(function () {
   // Cart top
-  $('.pos-detail-count').html(CART_DATA.pos.posdetails.length)
-  $('.pos-total').html(CART_DATA.pos.total.toLocaleString() + 'đ')
+  $('.cart-sum-item').html(CART_DATA.order.orderdetails.length)
+  $('.cart-amount-price').html(CART_DATA.order.amount_price.toLocaleString() + 'đ')
+  $('.cart-amount-sub-total').html(CART_DATA.order.amount_sub_total.toLocaleString() + 'đ')
+  $('.cart-amount-total').html(CART_DATA.order.amount_total.toLocaleString() + 'đ')
 
   // Cart
-  $.each(CART_DATA.pos.posdetails, function (index, posdetail) {
-    let price = `<strong class="currency">${(posdetail.price * posdetail.quantity).toLocaleString()}đ</strong>`
-    if (posdetail.discount_price) {
+  $.each(CART_DATA.order.orderdetails, function (index, orderdetail) {
+    let price = `<strong class="currency">${(orderdetail.price_unit * orderdetail.quantity).toLocaleString()}đ</strong>`
+    if (orderdetail.sub_price_unit) {
       price = `
-        <strong class="currency">${(posdetail.discount_price * posdetail.quantity).toLocaleString()}đ</strong>
-        <span class="price-discount currency">${(posdetail.price * posdetail.quantity).toLocaleString()}₫</span>
+        <strong class="currency">${(orderdetail.sub_price_unit * orderdetail.quantity).toLocaleString()}đ</strong>
+        <span class="price-discount currency">${(orderdetail.price_unit * orderdetail.quantity).toLocaleString()}₫</span>
       `
     }
     $('.cart-list').prepend(`
       <div
         class="cart-item item"
-        data-posdetail-id="${posdetail.id}"
-        data-posdetail-quantity="${posdetail.quantity}"
-        data-product-id="${posdetail.product.id}"
-        data-product-price="${posdetail.product.price}"
-        data-product-discount-price="${posdetail.product.discount_price}"
+        data-orderdetail-id="${orderdetail.id}"
+        data-orderdetail-quantity="${orderdetail.quantity}"
+        data-product-id="${orderdetail.product.id}"
+        data-product-price="${orderdetail.product.price}"
+        data-product-discount-price="${orderdetail.product.sub_price}"
       >
-        <img alt="${posdetail.product.name}" src="${posdetail.product.image}" width="60" height="60">
+        <img alt="${orderdetail.product.name}" src="${orderdetail.product.image}" width="60" height="60">
         <div class="colinfo">
-          <a href="${posdetail.product.url}" class="name">${posdetail.product.name}</a>
+          <a href="${orderdetail.product.url}" class="name">${orderdetail.product.name}</a>
           <div class="quantity">
             <div class="quantitynum">
               <i class="noselect">-</i>
-              <input autocomplete="off" type="number" min="1" max="50" class="qty" value="${posdetail.quantity}">
+              <input autocomplete="off" type="number" min="1" max="50" class="qty" value="${orderdetail.quantity}">
               <i class="noselect">+</i>
             </div>
             <a class="delete">Xóa</a>
@@ -146,15 +162,17 @@ $(document).ready(function () {
         slug: $product.data('product-slug'),
         image: $product.data('product-image'),
         price: $product.data('product-price'),
-        discount_price: $product.data('product-discount-price'),
+        sub_price: $product.data('product-discount-price'),
         url: $product.data('product-url'),
       })
-      CART_DATA.pos.addProduct(product)
-      CART_DATA.pos.compute()
+      CART_DATA.order.addProduct(product)
+      CART_DATA.order.compute()
       localStorage.setItem('CART_DATA', JSON.stringify(CART_DATA))
 
-      $('.pos-total').html(CART_DATA.pos.total.toLocaleString() + 'đ')
-      $('.pos-detail-count').html(CART_DATA.pos.posdetails.length)
+      $('.cart-sum-item').html(CART_DATA.order.orderdetails.length)
+      $('.cart-amount-price').html(CART_DATA.order.amount_price.toLocaleString() + 'đ')
+      $('.cart-amount-sub-total').html(CART_DATA.order.amount_sub_total.toLocaleString() + 'đ')
+      $('.cart-amount-total').html(CART_DATA.order.amount_total.toLocaleString() + 'đ')
     }
   })
 
@@ -163,13 +181,15 @@ $(document).ready(function () {
     const productId = $cartItem.data('product-id')
 
     const product = new Product({ id: productId })
-    CART_DATA.pos.addProduct(product, 0)
-    CART_DATA.pos.compute()
+    CART_DATA.order.addProduct(product, 0)
+    CART_DATA.order.compute()
     localStorage.setItem('CART_DATA', JSON.stringify(CART_DATA))
 
     $cartItem.remove()
-    $('.pos-total').html(CART_DATA.pos.total.toLocaleString() + 'đ')
-    $('.pos-detail-count').html(CART_DATA.pos.posdetails.length)
+    $('.cart-sum-item').html(CART_DATA.order.orderdetails.length)
+    $('.cart-amount-price').html(CART_DATA.order.amount_price.toLocaleString() + 'đ')
+    $('.cart-amount-sub-total').html(CART_DATA.order.amount_sub_total.toLocaleString() + 'đ')
+    $('.cart-amount-total').html(CART_DATA.order.amount_total.toLocaleString() + 'đ')
   })
 
   $('.cart-item .quantity .qty').on('change', function () {
@@ -178,22 +198,24 @@ $(document).ready(function () {
     const quantity = parseInt($(this).val())
 
     const product = new Product({ id: productId })
-    CART_DATA.pos.addProduct(product, quantity)
-    CART_DATA.pos.compute()
+    CART_DATA.order.addProduct(product, quantity)
+    CART_DATA.order.compute()
     localStorage.setItem('CART_DATA', JSON.stringify(CART_DATA))
 
-    let posdetail = CART_DATA.pos.getPOSDetail(productId)
-    let quantity_discount_price = posdetail.discount_price * posdetail.quantity
-    let quantity_price = posdetail.price * posdetail.quantity
-    if (quantity_discount_price) {
-      $cartItem.find('.colmoney strong').html(quantity_discount_price.toLocaleString()+'₫')
+    let orderdetail = CART_DATA.order.getOrderDetail(productId)
+    let quantity_sub_price_unit = orderdetail.sub_price_unit * orderdetail.quantity
+    let quantity_price = orderdetail.price_unit * orderdetail.quantity
+    if (quantity_sub_price_unit) {
+      $cartItem.find('.colmoney strong').html(quantity_sub_price_unit.toLocaleString()+'₫')
       $cartItem.find('.colmoney span').html(quantity_price.toLocaleString()+'₫')
     } else {
       $cartItem.find('.colmoney strong').html(quantity_price.toLocaleString()+'₫')
     }
 
-    $('.pos-total').html(CART_DATA.pos.total.toLocaleString() + 'đ')
-    $('.pos-detail-count').html(CART_DATA.pos.posdetails.length)
+    $('.cart-sum-item').html(CART_DATA.order.orderdetails.length)
+    $('.cart-amount-price').html(CART_DATA.order.amount_price.toLocaleString() + 'đ')
+    $('.cart-amount-sub-total').html(CART_DATA.order.amount_sub_total.toLocaleString() + 'đ')
+    $('.cart-amount-total').html(CART_DATA.order.amount_total.toLocaleString() + 'đ')
   })
 
   $('.quantitynum i:first-child').on('click', function () {

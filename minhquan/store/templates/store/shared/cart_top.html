@@ -14,15 +14,15 @@
     </div>
     <button type="submit" aria-label="Search"> <i class="bhx-search"></i> </button>
   </form>
-  <a href="{% url 'cart' %}" class="temcart no">
+  <a href="{% url 'shopping_cart' %}" class="temcart no">
     <div>
       <i class="bhx-cart" style="margin-bottom: 0px;"></i>
-      <span class="pos-detail-count" class="">{{ pos.posdetail_set.count|default:0 }}</span>
+      <span class="cart-sum-item">{{ shopping_cart.orderdetail_set.count|default:0 }}</span>
     </div>
     <div>
       <b class="card">THANH TOÁN</b>
-      <b class="sumorder pos-total">
-        {{ pos.total|default:0|floatformat:"g" }}₫
+      <b class="sumorder cart-amount-total">
+        {{ shopping_cart.amount_total|default:0|floatformat:"g" }}₫
       </b>
     </div>
   </a>

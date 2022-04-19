@@ -4,6 +4,16 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 
+ORDER_DELIVERY_STATUS_CHOICES = (
+  ('draft', 'Chưa thanh toán'),
+  ('confirmed', 'Đã tiếp nhận'),
+  ('processing', 'Đang xử lý'),
+  ('shipping', 'Đang giao hàng'),
+  ('done', 'Hoàn thành'),
+  ('canceled', 'Đã hủy')
+)
+
+
 class BaseModel(models.Model):
   created_date = models.DateTimeField(default=datetime.now, blank=True)
   updated_date = models.DateTimeField(default=datetime.now, blank=True)
@@ -27,6 +37,14 @@ class Partner(BaseModel):
   is_customer = models.BooleanField(default=True)
   is_vendor = models.BooleanField(default=False)
 
+  # class Meta:
+  #     constraints = [
+  #         models.CheckConstraint(
+  #             check=Q(phone__isnull=True, email__isnull=False) | Q(phone__isnull=False, email__isnull=True),
+  #             name='only_phone_or_email'
+  #         )
+  #     ]
+
   def __str__(self):
     return self.email or self.phone or self.full_name or self.first_name
 
@@ -39,12 +57,23 @@ class UOM(BaseModel): # Unit of measure
   name = models.CharField(max_length=200)
 
 
+class Address(BaseModel):
+  city = models.CharField(max_length=50)
+  district = models.CharField(max_length=50)
+  award = models.CharField(max_length=50)
+  address = models.CharField(max_length=100)
+
+  def __str__(self):
+      return ', '.join([self.address, self.award, self.district, self.city])
+
+
 class CouponProgram(BaseModel):
   DISCOUNT_TYPE = (
     ('percent', 'Percent'),
     ('fixed', 'Fixed Amount'),
   )
   
+  products = models.ManyToManyField('Product')
   name = models.CharField(max_length=200)
   rule_product = models.CharField(max_length=200)
   rule_customer = models.CharField(max_length=200)
@@ -53,12 +82,11 @@ class CouponProgram(BaseModel):
   discount_type = models.CharField(default='percent', max_length=50, choices=DISCOUNT_TYPE)
   discount = models.FloatField(default=0)
 
-  @property
-  def products(self):
-    return Product.objects.raw(f'SELECT * FROM store_product WHERE {self.rule_product}')
+  def calcute_discount(self, price):
+    return price * self.discount / 100.0 if self.discount_type == 'percent' else (0 if self.discount > price else self.discount)
   
-  def discount_price(self, price):
-    return price * (100.0 - self.discount) / 100.0 if self.discount_type == 'percent' else (price - self.discount  if price - self.discount > 0 else 0)
+  def is_available(self):
+    return self.start_date <= datetime.today() and self.expired_date >= datetime.today()
 
 
 class Coupon(BaseModel):
@@ -66,6 +94,7 @@ class Coupon(BaseModel):
   code = models.CharField(max_length=200)
   start_date = models.DateTimeField()
   expired_date = models.DateTimeField()
+  order = models.ForeignKey('Order', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return self.code
@@ -103,59 +132,128 @@ class Product(BaseModel):
   description = models.CharField(max_length=500)
   image = models.ImageField(max_length=200)
   price = models.FloatField(default=0)
-  cost = models.FloatField(default=0) # Gia mua
 
-  def coupon_programs(self):
-    coupon_programs = CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
-    product_coupon_programs = []
-    for coupon_program in coupon_programs:
-      for product in coupon_program.products:
-        if product.id == self.id:
-          product_coupon_programs.append(coupon_program)
-    return product_coupon_programs
+  @property
+  def price_discount(self):
+    coupon_program = self.get_coupon_program()
+    if not coupon_program or not coupon_program.is_available():
+      return 0
+    return coupon_program.calcute_discount(self.price)
+
+  @property
+  def sub_price(self):
+    return self.price - self.price_discount
+
+  def get_coupon_program(self):
+    return self.couponprogram_set.first()
   
-  def coupon_program(self):
-    coupon_programs = self.coupon_programs()
-    return coupon_programs[0] if coupon_programs else []
 
-  def discount_price(self):
-    coupon_program = self.coupon_program()
-    return coupon_program.discount_price(self.price) if coupon_program else 0
-
-
-class POS(BaseModel):
-  POS_STATUS = (
-    ('draft', 'Draft'),
-    ('processing', 'Processing'),
-    ('shipping', 'Shipping'),
-    ('done', 'Done')
-  )
-
+class Order(BaseModel):
   customer = models.ForeignKey(Partner, on_delete=models.CASCADE, null=True, blank=True)
-  total = models.FloatField(default=0)
-  status = models.CharField(default='draft', max_length=100, choices=POS_STATUS)
+  orderdeliver = models.OneToOneField('OrderDeliver', related_name='orderdeliver', on_delete=models.CASCADE, null=True)
+  receive_name = models.CharField(max_length=100, null=True, blank=True)
+  receive_phone = models.IntegerField(default=0, null=True, blank=True)
+  receive_email = models.EmailField(null=False, blank=True)
+  # Formular: amount_price = sum(OrderDetail.amount_price)
+  amount_price = models.FloatField(default=0)
+  # Formular: amount_sub_total = sum(OrderDetail.sub_total)
+  amount_sub_total = models.FloatField(default=0)
+  # Formular: amount_discount = CouponProgram.calcute_discount(Order.amount_sub_total)
+  amount_discount = models.FloatField(default=0)
+  # Formular: amount_total = Order.amount_sub_total - Order.amount_discount
+  amount_total = models.FloatField(default=0) # Include discount amount, tax amount
+  # Formular: amount_discount_total = sum(OrderDetail.price_discount) + Order.amount_discount
+  amount_discount_total = models.FloatField(default=0)
+  shipping_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
+  note = models.CharField(max_length=200, null=True, blank=True)
 
   def __str__(self):
     return 'DH - %d' % self.id
   
-  def calculate(self):
-    total = 0
-    for posdetail in self.posdetail_set.all():
-      product_discount_price = posdetail.product.discount_price()
-      if product_discount_price:
-        total += product_discount_price * posdetail.quantity
-      else:
-        total += posdetail.product.price * posdetail.quantity
-    self.total = total
+  def compute(self):
+    # Sum of orderdetails
+    amount_price = amount_sub_total = amount_discount_total = 0
+    for orderdetail in self.orderdetail_set.all():
+      amount_price += orderdetail.amount_price
+      amount_sub_total += orderdetail.sub_total
+      amount_discount_total += orderdetail.price_discount
+    
+    # Calculate discount on whole order
+    if self.coupon_set:
+      amount_discount = 0
+      for coupon in self.coupon_set.all():
+        amount_discount += coupon.program.calcute_discount(self.amount_sub_total)
+      self.amount_discount = amount_discount
+    
+    self.amount_price = amount_price
+    self.amount_sub_total = amount_sub_total
+    self.amount_total = amount_sub_total - self.amount_discount
+    self.amount_discount_total = amount_discount_total + self.amount_discount
+  
+  def confirm_deliver(self):
+    if self.orderdeliver.status == 'draft':
+      self.orderdeliver.confirm()
+      self.orderdeliver = OrderDeliver.objects.get(order=self, status='confirmed')
+  
+  def start_deliver(self, user):
+    self.orderdeliver.started_date = datetime.today()
+    self.orderdeliver.created_user = user
+    self.orderdeliver.save()
+
+  def complete_deliver(self, user):
+    self.orderdeliver.completed = True
+    self.orderdeliver.completed_date = datetime.today()
+    self.orderdeliver.completed_user = user
+    self.orderdeliver.save()
 
 
-class POSDetail(BaseModel):
-  product = models.ForeignKey(Product, on_delete=models.CASCADE)
-  pos = models.ForeignKey(POS, on_delete=models.CASCADE)
-  quantity = models.FloatField(default=1)
-  price = models.FloatField(default=0)
-  discount = models.FloatField(default=0)
-  sub_total = models.FloatField(default=0)
+class OrderDeliver(BaseModel):
+  status = models.CharField(default='draft', max_length=100, choices=ORDER_DELIVERY_STATUS_CHOICES)
+  order = models.ForeignKey(Order, related_name='order', on_delete=models.CASCADE, null=False, blank=True)
+  completed = models.BooleanField(default=False)
+  started_date = models.DateTimeField(default=None, null=True, blank=True)
+  completed_date = models.DateTimeField(default=None, null=True, blank=True)
+  created_user = models.OneToOneField(User, related_name='created_user', on_delete=models.CASCADE, null=True, blank=True)
+  completed_user = models.OneToOneField(User, related_name='completed_user', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
-    return '%d - %s' % (self.pos.id, self.product.name)
+    return f'DH {self.order.id} - {dict(ORDER_DELIVERY_STATUS_CHOICES)[self.status]}'
+  
+  def confirm(self):
+    if self.status == 'draft':
+      self.completed_date = datetime.today()
+      self.completed = True
+      self.save()
+  
+  def start(self, user):
+    self.started_date = datetime.today()
+    self.created_user = user
+    self.save()
+
+  def complete(self, user):
+    self.completed = True
+    self.completed_date = datetime.today()
+    self.completed_user = user
+    self.save()
+
+
+class OrderDetail(BaseModel):
+  product = models.ForeignKey(Product, on_delete=models.CASCADE)
+  order = models.ForeignKey(Order, on_delete=models.CASCADE)
+  quantity = models.FloatField(default=1)
+  price_unit = models.FloatField(default=0)
+  sub_price_unit = models.FloatField(default=0)
+  # (Số tiền được chiết khấu) price_discount = (price_unit - sub_price_unit) * quantity
+  price_discount = models.FloatField(default=0)
+  # amount_price = price_unit * quantity
+  amount_price = models.FloatField(default=0) # Exclude discount, exclude tax
+  # sub_total = amount_price - price_discount
+  sub_total = models.FloatField(default=0) # Include discount, exclude tax
+
+  def __str__(self):
+    return 'DH %d - Product %s' % (self.order.id, self.product.name)
+
+  def compute(self):
+    self.price_discount = self.quantity * (self.price_unit - self.sub_price_unit)
+    self.amount_price = self.quantity * self.price_unit
+    self.sub_total = self.amount_price - self.price_discount

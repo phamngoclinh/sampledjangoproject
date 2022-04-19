@@ -2,17 +2,41 @@
 
 {% block content %}
 <div class="small-form center">
-  <h1>Thông tin tài khoản</h1>
-
-  <form method="post" action="{% url 'profile' %}">
-    {% csrf_token %}
-    {% for message in messages %}
-      <div class="form-success">{{ message }}</div>
-    {% endfor %}
-    {{ form }}
-    <button type="submit">Xác nhận cập nhật</button>
-  </form>
-  <hr/>
+  <a href="{% url 'profile' %}?display=address_form">Địa chỉ giao hàng</a> | 
+  <a href="{% url 'profile' %}">Thông tin cá nhân</a>
+  <br/><br/>
+  {% with display=request.GET.display %}
+    {% if display == 'address_form' %}
+      <h1>Danh sách địa chỉ</h1>
+      <form class="address-forms" method="post" action="{% url 'profile' %}?form=address_form">
+        {% csrf_token %}
+        {{ address_formset.management_form }}
+        {% for address_form in address_formset %}
+          <div class="address-form">
+            {{ address_form }}
+            <!-- {{address_form.DELETE}} -->
+            <!-- <p>
+              <input class="delete-form" type="checkbox" id="id_form-{{forloop.counter0}}-DELETE" name="form-{{forloop.counter0}}-DELETE"/>
+              <label for="id_form-{{forloop.counter0}}-DELETE">Xóa địa chỉ?</label>
+            </p> -->
+          </div>
+        {% endfor %}
+        <hr/>
+        <button type="submit">Xác nhận cập nhật</button>
+      </form>
+    {% else %}
+      <h1>Thông tin tài khoản</h1>
+      <form method="post" action="{% url 'profile' %}?form=profile_form">
+        {% csrf_token %}
+        {% for message in messages %}
+          <div class="form-success">{{ message }}</div>
+        {% endfor %}
+        {{ form }}
+        <hr/>
+        <button type="submit">Xác nhận cập nhật</button>
+      </form>
+    {% endif %}
+  {% endwith %}
   <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>
 </div>
 

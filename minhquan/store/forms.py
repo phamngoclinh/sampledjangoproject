@@ -1,11 +1,13 @@
+from datetime import datetime
 import json
 
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.forms import modelformset_factory
 
-from .models import Partner
+from .models import Address, Coupon, Partner
 
 
 class ProfileForm(forms.ModelForm):
@@ -81,3 +83,49 @@ class RegisterForm(forms.Form):
     except Partner.DoesNotExist:
       pass
     return phone
+
+
+class ShippingForm(forms.Form):
+  address_id = forms.IntegerField(widget=forms.HiddenInput(attrs={'id': 'address-id'}), required=False)
+  receive_name = forms.CharField(max_length=100, label='Người nhận hàng')
+  receive_phone = forms.IntegerField(label='Số điện thoại')
+  city = forms.CharField(max_length=50, label='Tỉnh/thành phố')
+  district = forms.CharField(max_length=50, label='Quận/huyện')
+  award = forms.CharField(max_length=50, label='Phường/thị xã')
+  address = forms.CharField(max_length=100, label='Số nhà, đường')
+  receive_email = forms.EmailField(label='Địa chỉ email', required=False)
+  note = forms.CharField(max_length=200, label='Lưu ý cho người giao hàng', required=False)
+
+
+class CouponForm(forms.Form):
+  code = forms.CharField(max_length=100, required=False)
+  coupon_program_id = forms.CharField(widget=forms.HiddenInput(), max_length=10, required=False)
+
+  # check coupon
+  def clean_code(self):
+    code = self.cleaned_data['code']
+    try:
+      if code:
+        Coupon.objects.get(code=code, order__isnull=True, expired_date__gte=datetime.today(), start_date__lte=datetime.today())
+    except Coupon.DoesNotExist:
+      raise ValidationError('Coupon Code không tồn tại hoặc đã được sử dụng.')
+    return code
+
+
+AddressFormSet = modelformset_factory(
+  Address,
+  fields = ['city', 'district', 'award', 'address'],
+  labels = {
+    'city': 'Tỉnh/thành phố',
+    'district': 'Quận/huyện',
+    'award': 'Xã/phường',
+    'address': 'Số nhà, đường',
+    'DELETE':'Xoas'
+  },
+  error_messages = {
+    'city': {
+      'max_length': 'Tên tỉnh/thành phố quá dài',
+    },
+  },
+  can_delete=True,
+)

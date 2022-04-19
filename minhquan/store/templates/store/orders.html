@@ -5,10 +5,11 @@
 {% block content %}
 <br/><br/><br/><br/>
 <div class="cart-list">
-  {% for cart in carts %}
+  {% for order in orders %}
   <div class="cart">
     <div class="heading">
-      Trạng thái: {{ cart.get_status_display }} - Ngày tạo: {{ cart.created_date|date:"D d M Y" }}
+      Trạng thái: {{ order.orderdeliver.get_status_display }} - Ngày tạo: {{ order.created_date|date:"D d M Y" }}
+      - <a href="{% url 'order' order.id %}">Xem chi tiết</a>
     </div>
     <table>
       <thead>
@@ -20,18 +21,18 @@
       </thead>
       <tbody>
         <tr>
-          <td>{{ cart.id }}</td>
+          <td>{{ order.id }}</td>
           <td>
             <ul>
-              {% for posdetail in cart.posdetail_set.all %}
+              {% for orderdetail in order.orderdetail_set.all %}
                 <li>
-                  <a href="{% url 'product_detail' posdetail.product.id %}">{{ posdetail.product.name }}</a>
-                  <span>(x{{ posdetail.quantity }})</span>
+                  <a href="{% url 'product_detail' orderdetail.product.id %}">{{ orderdetail.product.name }}</a>
+                  <span>(x{{ orderdetail.quantity }})</span>
                 </li>
               {% endfor %}
             </ul>
           </td>
-          <td>{{ cart.total|floatformat:"g" }}đ</td>
+          <td>{{ order.amount_total|floatformat:"g" }}đ</td>
         </tr>
       </tbody>
     </table>

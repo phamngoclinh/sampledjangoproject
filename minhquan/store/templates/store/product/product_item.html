@@ -5,7 +5,7 @@
   data-product-image="{{ product.image.url }}"
   data-product-slug="{{ product.slug }}"
   data-product-price="{{ product.price }}"
-  data-product-discount-price="{{ product.discount_price }}"
+  data-product-discount-price="{{ product.sub_price }}"
   data-product-url="{% url 'product_detail' product.id %}"
 >
   <a href="{% url 'product_detail' product.id %}" title="{{ product.name }}">
@@ -14,14 +14,16 @@
     </div>
     <h3 class="product-name">{{ product.name }}</h3>
     <div class="price">
-      {% with discount_price=product.discount_price %}
-        {% if discount_price %}
-          <strong>{{ discount_price|floatformat:"g" }}đ</strong>
+      {% with price_discount=product.price_discount %}
+        {% if price_discount %}
+          <strong>{{ product.sub_price|floatformat:"g" }}đ</strong>
           <span>{{ product.price|floatformat:"g" }}₫</span>
-          <label>
-            -{{ product.coupon_program.discount|floatformat:"g" }}
-            {% if product.coupon_program.discount_type == 'percent' %}%{% else %}đ{% endif %}
-          </label>
+          {% with coupon_program=product.get_coupon_program %}
+            <label>
+              -{{ coupon_program.discount|floatformat:"g" }}
+              {% if coupon_program.discount_type == 'percent' %}%{% else %}đ{% endif %}
+            </label>
+          {% endwith %}
         {% else %}
           <strong>{{ product.price|floatformat:"g" }}đ</strong>
         {% endif %}

@@ -1,0 +1,13 @@
+{% extends "store/base/base_cart.html" %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<br /><br /><br /><br /><br />
+<div id="checkout" class="checkout-wrap">
+  {% for message in messages %}
+    <div>{{ message }}</div>
+  {% endfor %}
+</div>
+
+{% endblock %}
