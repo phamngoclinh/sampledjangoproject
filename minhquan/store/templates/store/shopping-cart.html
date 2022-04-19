@@ -108,7 +108,7 @@
               </div>
             </div>
             <div class="btn-order">
-              {% if order %}
+              {% if request.partner %}
                 <a href="{% url 'checkout' shopping_cart.id %}" class="btn-og btn-step">ĐẶT HÀNG</a>
               {% else %}
                 <a href="{% url 'login' %}?next={{request.get_full_path|urlencode}}" class="btn-og btn-step">ĐĂNG NHẬP ĐỂ ĐẶT HÀNG</a>
