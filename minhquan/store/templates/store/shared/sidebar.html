@@ -9,12 +9,12 @@
             {% for product_category_children in product_category.children %}
               <div class="nav-item">
                 <div class="parent">
-                  <a href="{% url 'product_category' product_category_children.id %}" class="link-hover menu-haschild">{{ product_category_children.name }}</a>
+                  <a href="{% url 'product_category' product_category_children.slug %}" class="link-hover menu-haschild">{{ product_category_children.name }}</a>
                 </div>
                 {% for product_category_children_children in product_category_children.children %}
                   <div class="nav-item">
                     <div class="parent">
-                      <a href="{% url 'product_category' product_category_children_children.id %}" class="link-hover menu-haschild">{{ product_category_children_children.name }}</a>
+                      <a href="{% url 'product_category' product_category_children_children.slug %}" class="link-hover menu-haschild">{{ product_category_children_children.name }}</a>
                     </div>
                   </div>
                 {% endfor %}

@@ -25,7 +25,7 @@
                   >
                     <img alt="{{ orderdetail.product.name }}" src="{{ orderdetail.product.image.url }}" width="60" height="60">
                     <div class="colinfo">
-                      <a href="{% url 'product_detail' orderdetail.product.id %}" class="name">{{ orderdetail.product.name }}</a>
+                      <a href="{% url 'product_detail' orderdetail.product.slug %}" class="name">{{ orderdetail.product.name }}</a>
                       <div class="quantity">
                         <div class="quantitynum">
                           <i class="noselect">-</i>

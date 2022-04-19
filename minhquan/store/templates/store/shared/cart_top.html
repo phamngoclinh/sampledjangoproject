@@ -1,9 +1,9 @@
 <div class="hiscart">
-  <form class="mainsearch" method="get" action="/search">
+  <form class="mainsearch" method="get" action="{% url 'search' %}">
     <div class="easy-autocomplete" style="width: 385px;">
       <input
         type="text"
-        name="product_name"
+        name="tu-khoa"
         id="text-search"
         placeholder="Bạn tìm gì?"
         maxlength="80"

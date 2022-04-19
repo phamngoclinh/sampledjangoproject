@@ -23,20 +23,23 @@ def get_product_categories_tree():
       roots.append(item)
   return roots
 
-def get_products_in_category(category_id):
-  category = get_or_none(ProductCategory, id=category_id)
+def get_products_in_category(slug):
+  category = get_or_none(ProductCategory, slug=slug)
   if not category:
-    return []
+    return [], None
   category_childrens = category.get_childrens()
   category_children_ids = [i.id for i in category_childrens]
-  products = Product.objects.filter(Q(category_id__in=category_children_ids) | Q(category_id=category_id))
-  return products
+  products = Product.objects.filter(Q(category_id__in=category_children_ids) | Q(category_id=category.id))
+  return products, category
 
 def get_all_products():
   return Product.objects.all()
 
 def get_product_by_id(product_id):
   return get_or_none(Product, pk=product_id)
+
+def get_product_by_slug(product_slug):
+  return get_or_none(Product, slug=product_slug)
 
 def search_product(search_text):
   return Product.objects.filter(Q(name__icontains=search_text) | Q(slug__icontains=search_text))

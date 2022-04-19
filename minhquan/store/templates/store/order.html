@@ -25,7 +25,7 @@
             <ul>
               {% for orderdetail in order.orderdetail_set.all %}
               <li>
-                <a href="{% url 'product_detail' orderdetail.product.id %}">{{ orderdetail.product.name }}</a>
+                <a href="{% url 'product_detail' orderdetail.product.slug %}">{{ orderdetail.product.name }}</a>
                 <span>(x{{ orderdetail.quantity }})</span>
               </li>
               {% endfor %}
