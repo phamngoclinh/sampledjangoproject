@@ -36,6 +36,18 @@
       ],
       "django": true,
       "justMyCode": true
+    },
+    {
+      "name": "Python: Django - Seed Data",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/minhquan/manage.py",
+      "args": [
+        "seed",
+        "--mode=refresh",
+      ],
+      "django": true,
+      "justMyCode": true
     }
   ]
 }

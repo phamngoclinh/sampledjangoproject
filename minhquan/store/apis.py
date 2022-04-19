@@ -9,7 +9,7 @@ from django.views.decorators.http import require_http_methods
 
 from .models import Order, Coupon, Partner, Product
 
-from .services import get_or_none
+from .services import get_draft_order, get_or_none
 
 
 @csrf_exempt
@@ -51,7 +51,9 @@ def add_to_cart(request):
       return JsonResponse({ 'success': False, 'messages': 'Sản phẩm không tồn tại' })
 
     customer, is_new_customer = Partner.objects.get_or_create(email=user_email)
-    order, is_now_order = Order.objects.get_or_create(customer_id=customer.id, status='draft')
+    order = get_draft_order(customer=customer)
+    if not order:
+      order = Order.objects.create(customer=customer)
 
     orderdetail, is_new_orderdetail = order.orderdetail_set.get_or_create(
       product_id=product.id,

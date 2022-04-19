@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Address, Coupon, CouponProgram, Partner, Order, OrderDetail, ProductCategory, Product, UOM, UOMCategory
+from .models import Address, Coupon, CouponProgram, OrderDeliver, Partner, Order, OrderDetail, ProductCategory, Product, UOM, UOMCategory
 
 
 class CouponInline(admin.TabularInline):
@@ -26,8 +26,13 @@ class OrderDetailInline(admin.TabularInline):
   extra = 3
 
 
+class OrderDeliverInline(admin.TabularInline):
+  model = OrderDeliver
+  extra = 0
+
+
 class OrderAdmin(admin.ModelAdmin):
-  inlines = [OrderDetailInline]
+  inlines = [OrderDetailInline, OrderDeliverInline]
 
 
 admin.site.register(CouponProgram, CouponProgramAdmin)
@@ -37,6 +42,7 @@ admin.site.register(UOMCategory, UOMCategoryAdmin)
 admin.site.register(UOM)
 admin.site.register(ProductCategory)
 admin.site.register(Product)
+admin.site.register(OrderDeliver)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderDetail)
 admin.site.register(Address)

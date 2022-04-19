@@ -42,10 +42,10 @@ def search_product(search_text):
   return Product.objects.filter(Q(name__icontains=search_text) | Q(slug__icontains=search_text))
 
 def get_draft_order(**kwargs):
-  return get_or_none(Order, **kwargs, status='draft')
+  return get_or_none(Order, **kwargs, orderdeliver__status='draft')
 
 def get_none_draft_orders(**kwargs):
-  return Order.objects.filter(**kwargs).exclude(status='draft')
+  return Order.objects.filter(**kwargs).exclude(orderdeliver__status='draft')
 
 def get_available_coupon_programs():
   return CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
@@ -104,7 +104,7 @@ def checkout(order, shipping_form, coupon_form):
     order.receive_email = shipping_form.cleaned_data['receive_email']
     order.note = shipping_form.cleaned_data['note']
     order.shipping_address = address
-    order.complete_current_process()
+    order.confirm_deliver()
     order.save()
     # Update coupon program
 
@@ -115,8 +115,9 @@ def checkout(order, shipping_form, coupon_form):
 def sync_shopping_cart(email, shopping_cart):
   try:
     partner = get_or_none(Partner, email=email)
-    order, is_new_order = Order.objects.get_or_create(customer=partner, status='draft')
-
+    order = get_draft_order(customer=partner)
+    if not order:
+      order = Order.objects.create(customer=partner)
     total = order.amount_sub_total
     for sp_orderdetail in shopping_cart['order']['orderdetails']:
       product = Product.objects.get(pk=sp_orderdetail['product']['id'])

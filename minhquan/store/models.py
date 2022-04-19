@@ -4,6 +4,16 @@ from django.contrib.auth.models import User
 from datetime import datetime
 
 
+ORDER_DELIVERY_STATUS_CHOICES = (
+  ('draft', 'Đang tiếp nhận'),
+  ('confirmed', 'Đã tiếp nhận'),
+  ('processing', 'Đang xử lý'),
+  ('shipping', 'Đang giao hàng'),
+  ('done', 'Hoàn thành'),
+  ('canceled', 'Đã hủy')
+)
+
+
 class BaseModel(models.Model):
   created_date = models.DateTimeField(default=datetime.now, blank=True)
   updated_date = models.DateTimeField(default=datetime.now, blank=True)
@@ -72,7 +82,7 @@ class CouponProgram(BaseModel):
   discount_type = models.CharField(default='percent', max_length=50, choices=DISCOUNT_TYPE)
   discount = models.FloatField(default=0)
 
-  def get_discount(self, price):
+  def calcute_discount(self, price):
     return price * self.discount / 100.0 if self.discount_type == 'percent' else (0 if self.discount > price else self.discount)
 
 
@@ -125,7 +135,7 @@ class Product(BaseModel):
     coupon_program = self.get_coupon_program()
     if not coupon_program:
       return 0
-    return coupon_program.get_discount(self.price)
+    return coupon_program.calcute_discount(self.price)
 
   @property
   def sub_price(self):
@@ -136,14 +146,8 @@ class Product(BaseModel):
   
 
 class Order(BaseModel):
-  ORDER_STATUS = (
-    ('draft', 'Draft'),
-    ('processing', 'Processing'),
-    ('shipping', 'Shipping'),
-    ('done', 'Done')
-  )
-
   customer = models.ForeignKey(Partner, on_delete=models.CASCADE, null=True, blank=True)
+  orderdeliver = models.OneToOneField('OrderDeliver', related_name='orderdeliver', on_delete=models.CASCADE, null=True)
   receive_name = models.CharField(max_length=100, null=True, blank=True)
   receive_phone = models.IntegerField(default=0, null=True, blank=True)
   receive_email = models.EmailField(null=False, blank=True)
@@ -151,13 +155,12 @@ class Order(BaseModel):
   amount_price = models.FloatField(default=0)
   # Formular: amount_sub_total = sum(OrderDetail.sub_total)
   amount_sub_total = models.FloatField(default=0)
-  # Formular: amount_discount = CouponProgram.get_discount(Order.amount_sub_total)
+  # Formular: amount_discount = CouponProgram.calcute_discount(Order.amount_sub_total)
   amount_discount = models.FloatField(default=0)
   # Formular: amount_total = Order.amount_sub_total - Order.amount_discount
   amount_total = models.FloatField(default=0) # Include discount amount, tax amount
   # Formular: amount_discount_total = sum(OrderDetail.price_discount) + Order.amount_discount
   amount_discount_total = models.FloatField(default=0)
-  status = models.CharField(default='draft', max_length=100, choices=ORDER_STATUS)
   shipping_address = models.ForeignKey(Address, on_delete=models.CASCADE, null=True, blank=True)
   note = models.CharField(max_length=200, null=True, blank=True)
 
@@ -176,7 +179,7 @@ class Order(BaseModel):
     if self.coupon_set:
       amount_discount = 0
       for coupon in self.coupon_set.all():
-        amount_discount += coupon.program.get_discount(self.amount_sub_total)
+        amount_discount += coupon.program.calcute_discount(self.amount_sub_total)
       self.amount_discount = amount_discount
     
     self.amount_price = amount_price
@@ -184,15 +187,51 @@ class Order(BaseModel):
     self.amount_total = amount_sub_total - self.amount_discount
     self.amount_discount_total = amount_discount_total + self.amount_discount
   
-  def complete_current_process(self):
+  def confirm_deliver(self):
+    if self.orderdeliver.status == 'draft':
+      self.orderdeliver.confirm()
+      self.orderdeliver = OrderDeliver.objects.get(order=self, status='confirmed')
+  
+  def start_deliver(self, user):
+    self.orderdeliver.started_date = datetime.today()
+    self.orderdeliver.created_user = user
+    self.orderdeliver.save()
+
+  def complete_deliver(self, user):
+    self.orderdeliver.completed = True
+    self.orderdeliver.completed_date = datetime.today()
+    self.orderdeliver.completed_user = user
+    self.orderdeliver.save()
+
+
+class OrderDeliver(BaseModel):
+  status = models.CharField(default='draft', max_length=100, choices=ORDER_DELIVERY_STATUS_CHOICES)
+  order = models.ForeignKey(Order, related_name='order', on_delete=models.CASCADE, null=False, blank=True)
+  completed = models.BooleanField(default=False)
+  started_date = models.DateTimeField(default=None, null=True, blank=True)
+  completed_date = models.DateTimeField(default=None, null=True, blank=True)
+  created_user = models.OneToOneField(User, related_name='created_user', on_delete=models.CASCADE, null=True, blank=True)
+  completed_user = models.OneToOneField(User, related_name='completed_user', on_delete=models.CASCADE, null=True, blank=True)
+
+  def __str__(self):
+    return f'DH {self.order.id} - {dict(ORDER_DELIVERY_STATUS_CHOICES)[self.status]}'
+  
+  def confirm(self):
     if self.status == 'draft':
-      self.status = 'processing'
-    elif self.status == 'processing':
-      self.status = 'shipping'
-    elif self.status == 'shipping':
-      self.status = 'done'
-    else:
-      pass
+      self.completed_date = datetime.today()
+      self.completed = True
+      self.save()
+  
+  def start(self, user):
+    self.started_date = datetime.today()
+    self.created_user = user
+    self.save()
+
+  def complete(self, user):
+    self.completed = True
+    self.completed_date = datetime.today()
+    self.completed_user = user
+    self.save()
 
 
 class OrderDetail(BaseModel):
