@@ -1,12 +1,11 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.cache import cache
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
 from .decorators import partners_only
 
-from .forms import ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
+from .forms import AddressFormSet, ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
 
 from . import services
 
@@ -172,14 +171,27 @@ def register(request):
 @partners_only
 def profile(request):
   form = ProfileForm(instance=request.partner)
+  queryset = services.get_address_by_customer(request.partner)
+  address_formset = AddressFormSet(queryset=queryset)
 
   if request.method == 'POST':
-    form = ProfileForm(request.POST, instance=request.partner)
-    if form.is_valid():
-      try:
-        form.save()
-        messages.success(request, 'Cập nhật thông tin thành công!')
-      except Exception as e:
-        form.add_error(None, e.args)
+    which_form = request.GET.get('form')
+    if which_form == 'profile_form':
+      form = ProfileForm(request.POST, instance=request.partner)
+      if form.is_valid():
+        try:
+          form.save()
+          messages.success(request, 'Cập nhật thông tin thành công!')
+        except Exception as e:
+          form.add_error(None, e.args)
 
-  return TemplateResponse(request, 'store/accounts/profile.html', { 'form': form })
+    if which_form == 'address_form':
+      address_formset = AddressFormSet(request.POST, queryset=queryset)
+      if address_formset.is_valid():
+        instances = address_formset.save()
+        # or
+        # instances = address_formset.save(commit=False)
+        # for instance in instances:
+        #   instance.save()
+    
+  return TemplateResponse(request, 'store/accounts/profile.html', { 'form': form, 'address_formset': address_formset })

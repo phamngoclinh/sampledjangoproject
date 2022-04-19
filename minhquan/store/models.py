@@ -5,7 +5,7 @@ from datetime import datetime
 
 
 ORDER_DELIVERY_STATUS_CHOICES = (
-  ('draft', 'Đang tiếp nhận'),
+  ('draft', 'Chưa thanh toán'),
   ('confirmed', 'Đã tiếp nhận'),
   ('processing', 'Đang xử lý'),
   ('shipping', 'Đang giao hàng'),

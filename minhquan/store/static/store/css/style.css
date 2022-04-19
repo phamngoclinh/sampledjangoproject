@@ -1349,7 +1349,6 @@ footer {
 }
 
 .small-form {
-  width: 300px;
   background-color: #ffffff;
   border-radius: 5px;
   -webkit-border-radius: 5px;
@@ -1359,7 +1358,10 @@ footer {
   padding: 25px 10px;
 }
 
-.small-form input,
+.small-form input[type="text"],
+.small-form input[type="number"],
+.small-form input[type="email"],
+.small-form input[type="date"],
 .small-form button {
   padding: 10px;
   display: block;
@@ -1424,6 +1426,23 @@ footer {
   color: #ffffff;
 }
 
+.address-forms {
+  --spacing: 10px;
+  --column: 4;
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: calc(var(--spacing) * -1);
+}
+
+.address-form {
+  margin-right: var(--spacing);
+  margin-bottom: var(--spacing);
+  width: calc(calc(100%/var(--column)) - calc(var(--spacing)));
+  padding-bottom: var(--spacing);
+  padding-top: var(--spacing);
+  border-bottom: 1px solid #cccccc;
+}
+
 /* carts */
 .cart-list {
   width: 600px;
@@ -1457,7 +1476,10 @@ form label {
 }
 
 /* Checkout */
-input {
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="date"] {
   height: 35px;
   border: 1px solid #e0e0e0;
   text-indent: 10px;

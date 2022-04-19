@@ -5,8 +5,9 @@ from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.forms import modelformset_factory
 
-from .models import Coupon, Partner
+from .models import Address, Coupon, Partner
 
 
 class ProfileForm(forms.ModelForm):
@@ -109,3 +110,22 @@ class CouponForm(forms.Form):
     except Coupon.DoesNotExist:
       raise ValidationError('Coupon Code không tồn tại hoặc đã được sử dụng.')
     return code
+
+
+AddressFormSet = modelformset_factory(
+  Address,
+  fields = ['city', 'district', 'award', 'address'],
+  labels = {
+    'city': 'Tỉnh/thành phố',
+    'district': 'Quận/huyện',
+    'award': 'Xã/phường',
+    'address': 'Số nhà, đường',
+    'DELETE':'Xoas'
+  },
+  error_messages = {
+    'city': {
+      'max_length': 'Tên tỉnh/thành phố quá dài',
+    },
+  },
+  can_delete=True,
+)
