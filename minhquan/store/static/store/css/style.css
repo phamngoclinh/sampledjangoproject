@@ -1592,6 +1592,46 @@ input {
   background: #03542e;
 }
 
+/* Process */
+.order-process {
+  display: flex;
+  justify-content: space-around;
+  background: #ffffff;
+  padding: 20px 10px;
+}
+
+.process-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #cccccc;
+  padding: 10px;
+  border-radius: 5px;
+  background: #ffffff;
+  position: relative;
+  width: 150px;
+  flex-shrink: 0;
+}
+
+li.process-item:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 100%;
+  height: 1px;
+  width: 100%;
+  background: #cccccc;
+  z-index: 0;
+}
+
+li.process-item:last-child:after {
+  display: none;
+}
+
+.process-item .process-item__status {
+  font-weight: 600;
+}
+
 @media screen and (max-width: 1200px) {
   .container {
     width: 900px;

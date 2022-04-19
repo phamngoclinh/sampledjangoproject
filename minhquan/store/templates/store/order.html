@@ -1,0 +1,52 @@
+{% extends "store/base/base_cart.html" %}
+
+{% block footer %}{% endblock %}
+
+{% block content %}
+<br /><br /><br /><br />
+<div class="container">
+  {% if order %}
+  <div class="cart">
+    <div class="heading">
+      Trạng thái: {{ order.orderdeliver.get_status_display }} - Ngày tạo: {{ order.created_date|date:"D d M Y" }}
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Đơn hàng #1</th>
+          <th>Sản phẩm</th>
+          <th>Tổng tiền</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ order.id }}</td>
+          <td>
+            <ul>
+              {% for orderdetail in order.orderdetail_set.all %}
+              <li>
+                <a href="{% url 'product_detail' orderdetail.product.id %}">{{ orderdetail.product.name }}</a>
+                <span>(x{{ orderdetail.quantity }})</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </td>
+          <td>{{ order.amount_total|floatformat:"g" }}đ</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ul class="order-process">
+    {% for orderdeliver in deliveries %}
+    <li class="process-item">
+      <span class="process-item__status">{{orderdeliver.get_status_display}}</span>
+      <span class="process-item__started_date">{{orderdeliver.started_date|date:"D d M Y"}}</span>
+      {% if orderdeliver.created_user %}
+        <p class="process-item__created_user">{{orderdeliver.created_user.first_name}} {{orderdeliver.created_user.last_name}}</p>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+</div>
+{% endblock %}

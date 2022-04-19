@@ -2,7 +2,7 @@ from datetime import datetime
 
 from django.db.models import Q
 
-from .models import Address, Coupon, CouponProgram, Order, OrderDetail, Partner, Product, ProductCategory
+from .models import Address, Coupon, CouponProgram, Order, OrderDeliver, OrderDetail, Partner, Product, ProductCategory
 
 def get_or_none(classmodel, **kwargs):
   try:
@@ -47,6 +47,17 @@ def get_draft_order(**kwargs):
 def get_none_draft_orders(**kwargs):
   return Order.objects.filter(**kwargs).exclude(orderdeliver__status='draft')
 
+def get_partner_order_by_id(order_id, partner):
+  order = get_or_none(Order, pk=order_id)
+  if not order:
+    return None
+  if order.customer != partner:
+    return None
+  return order
+
+def get_order_delivers_by_order(order):
+  return OrderDeliver.objects.filter(order=order)
+
 def get_available_coupon_programs():
   return CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
 
@@ -70,7 +81,7 @@ def get_base_context(request):
   context = {}
   if request.partner:
     user_email = request.partner.email
-    context['order'] = get_draft_order(customer__email=user_email)
+    context['shopping_cart'] = get_draft_order(customer__email=user_email)
   context['product_categories'] = get_product_categories_tree()
   return context
 

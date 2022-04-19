@@ -8,7 +8,8 @@
   {% for order in orders %}
   <div class="cart">
     <div class="heading">
-      Trạng thái: {{ order.get_status_display }} - Ngày tạo: {{ order.created_date|date:"D d M Y" }}
+      Trạng thái: {{ order.orderdeliver.get_status_display }} - Ngày tạo: {{ order.created_date|date:"D d M Y" }}
+      - <a href="{% url 'order' order.id %}">Xem chi tiết</a>
     </div>
     <table>
       <thead>

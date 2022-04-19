@@ -32,8 +32,17 @@ def shopping_cart(request):
 
 @partners_only
 def orders(request):
-  context = { 'orders': services.get_none_draft_orders(customer=request.partner) }
+  context = { 'orders': services.get_none_draft_orders(customer=request.partner).order_by('-created_date') }
   return TemplateResponse(request, 'store/orders.html', context)
+
+@partners_only
+def order(request, order_id):
+  context = {}
+  order = services.get_partner_order_by_id(order_id, request.partner)
+  context['order'] = order
+  if order:
+    context['deliveries'] = services.get_order_delivers_by_order(order)
+  return TemplateResponse(request, 'store/order.html', context)
 
 @partners_only
 def checkout(request, order_id):
