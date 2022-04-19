@@ -84,6 +84,9 @@ class CouponProgram(BaseModel):
 
   def calcute_discount(self, price):
     return price * self.discount / 100.0 if self.discount_type == 'percent' else (0 if self.discount > price else self.discount)
+  
+  def is_available(self):
+    return self.start_date <= datetime.today() and self.expired_date >= datetime.today()
 
 
 class Coupon(BaseModel):
@@ -133,7 +136,7 @@ class Product(BaseModel):
   @property
   def price_discount(self):
     coupon_program = self.get_coupon_program()
-    if not coupon_program:
+    if not coupon_program or not coupon_program.is_available():
       return 0
     return coupon_program.calcute_discount(self.price)
 
