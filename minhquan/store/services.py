@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db.models import Q
 
@@ -199,3 +199,26 @@ def register(email, phone):
     return True, partner, None
   except Exception as e:
     return False, None, e
+
+def generate_otp(request):
+  try:
+    # Send OTP to Email/MobilePhone
+    # TODO
+    request.session['otp_code'] = 12345678
+    request.session['otp_expired'] = (datetime.today() + timedelta(seconds=60)).timestamp()
+    return True
+  except:
+    return False
+
+def validate_otp(request, code):
+  return code == str(request.session.get('otp_code')) and request.session.get('otp_expired') > (datetime.today()).timestamp()
+
+def save_temporary_login_form(request, form):
+  request.session['login_form_email'] = form.cleaned_data['email']
+  request.session['login_form_shopping_cart'] = form.cleaned_data['shopping_cart']
+
+def clear_temporary_data_after_login(request):
+  request.session.__delitem__('otp_code')
+  request.session.__delitem__('otp_expired')
+  request.session.__delitem__('login_form_email')
+  request.session.__delitem__('login_form_shopping_cart')

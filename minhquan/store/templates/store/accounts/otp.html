@@ -1,0 +1,23 @@
+{% extends "store/base/base_auth.html" %}
+
+{% block content %}
+<div class="small-form center">
+  <h1>Đăng nhập - OTP</h1>
+
+  <form method="post" action="{% url 'login_otp' %}">
+    {% csrf_token %}
+    {% for message in messages %}
+      <div class="form-success">{{ message }}</div>
+    {% endfor %}
+    {{ login_otp_form }}
+    <button type="submit">Xác nhận</button>
+  </form>
+
+  <form method="post" action="{% url 'resend_otp' %}">
+    {% csrf_token %}
+    <button type="submit">Gửi lại mã OTP</button>
+  </form>
+  <br/>
+  <a href="{% url 'index' %}" style="display:block; text-align:center">Về trang chủ</a>
+</div>
+{% endblock %}

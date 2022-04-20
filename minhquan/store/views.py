@@ -1,11 +1,13 @@
+from datetime import datetime
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect
+from django.shortcuts import redirect, reverse
 from django.template.response import TemplateResponse
 
 from .decorators import partners_only
 
-from .forms import AddressFormSet, ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
+from .forms import AddressFormSet, LoginOtpForm, ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
 
 from . import services
 
@@ -119,7 +121,7 @@ def checkout_result(request, order_id):
   return TemplateResponse(request, 'store/checkout-result.html', { 'title': 'Kết quả thanh toán' })
 
 def login(request):
-  next_url = request.GET.get('next', 'index')
+  next_url = request.GET.get('next', reverse('index'))
 
   if request.session.get('partner_id'):
     return redirect(next_url)
@@ -128,26 +130,22 @@ def login(request):
 
   form = LoginForm()
 
+  if request.user.is_authenticated and request.user.email:
+    user_form = LoginUserForm({ 'email': request.user.email })
+    context['user_form'] = user_form
+
   if request.method == 'POST':
     form = LoginForm(request.POST)
 
     if form.is_valid():
-      
-
-      # Synchrozire local shopping_cart with database
-      succeed, partner, exception = services.sync_shopping_cart(form.cleaned_data['email'], form.cleaned_data['shopping_cart'])
-
-      if succeed:
-        request.session['partner_id'] = partner.id
-        return redirect(next_url)
+      # Begin storing form_login and otp to session
+      if services.generate_otp(request):
+        services.save_temporary_login_form(request, form)
+        return redirect(reverse('login_otp') + f'?next={next_url}')
       else:
-        form.add_error(None, exception.args)
+        form.add_error(None, 'Hệ thống không thể tạo OTP vào lúc này')
   
   context['form'] = form
-
-  if request.user.is_authenticated and request.user.email:
-    user_form = LoginUserForm({ 'email': request.user.email })
-    context['user_form'] = user_form
 
   return TemplateResponse(request, 'store/accounts/login.html', context)
 
@@ -168,6 +166,49 @@ def login_user(request):
       messages.error(request, exception.args)
   
   return TemplateResponse(request, 'store/accounts/login.html', {})
+
+def login_otp(request):
+  next_url = request.GET.get('next', reverse('index'))
+
+  if request.session.get('partner_id'):
+    return redirect(next_url)
+  
+  if not request.session['otp_code']:
+    return redirect('login')
+  
+  context = { 'title': 'Đăng nhập - OTP' }
+
+  login_otp_form = LoginOtpForm()
+
+  if request.method == 'POST':
+    login_otp_form = LoginOtpForm(request.POST)
+    if login_otp_form.is_valid():
+      otp_code_input = login_otp_form.cleaned_data['otp_code']
+      if services.validate_otp(request, otp_code_input):
+        # Synchrozire local shopping_cart with database
+        succeed, partner, exception = services.sync_shopping_cart(request.session.get('login_form_email'), request.session.get('login_form_shopping_cart'))
+
+        if succeed:
+          request.session['partner_id'] = partner.id
+
+          # Finish storing form_login and otp to session
+          services.clear_temporary_data_after_login(request)
+
+          return redirect(next_url)
+        else:
+          login_otp_form.add_error(None, exception.args)
+      else:
+        login_otp_form.add_error(None, 'Mã OTP không chính xác hoặc quá hạn')
+
+  context['login_otp_form'] = login_otp_form
+
+  return TemplateResponse(request, 'store/accounts/otp.html', context)
+
+def resend_otp(request):
+  succeed = services.generate_otp(request)
+  if not succeed:
+    messages.error(request, message='Hệ thống không thể tạo OTP vào lúc này')
+  return redirect('login_otp')
 
 def logout(request):
   if request.session.get('partner_id'):

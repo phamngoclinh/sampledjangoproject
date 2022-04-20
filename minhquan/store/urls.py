@@ -16,6 +16,8 @@ urlpatterns = [
   path('dang-ky/', views.register, name='register'),
   path('dang-nhap/', views.login, name='login'),
   path('dang-nhap-he-thong/', views.login_user, name='login_user'),
+  path('dang-nhap-otp/', views.login_otp, name='login_otp'),
+  path('gui-lai-ma-otp/', views.resend_otp, name='resend_otp'),
   path('dang-xuat/', views.logout, name='logout'),
   path('thong-tin-ca-nhan/', views.profile, name='profile'),
   path('api/', include('store.apis'))

@@ -62,6 +62,10 @@ class LoginUserForm(forms.Form):
     return email
 
 
+class LoginOtpForm(forms.Form):
+  otp_code = forms.CharField(max_length=8)
+
+
 class RegisterForm(forms.Form):
   email = forms.EmailField(max_length=200)
   phone = forms.IntegerField(label='Điện thoại')
