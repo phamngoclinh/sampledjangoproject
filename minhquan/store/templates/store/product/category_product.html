@@ -1,12 +1,22 @@
+{% load store_custom_tags %}
+
 <div class="groupfeature groupfeaturepromotion orange">
   <div class="title">
-    <h2 class="grouptitle">Đồ ăn, đồ uống</h2>
+    <h2 class="grouptitle">{{ category_product.category.name }}</h2>
     <div class="cate-list owl-carousel owl-theme owl-loaded owl-drag">
-      <div class="fresh-thit-ca cate-item active"><span>Trà sữa</span></div>
-      <div class="fresh-thit-ca cate-item"><span>Lẩu</span></div>
-      <div class="fresh-thit-ca cate-item"><span>Nướng</span></div>
+      {% for children_category in category_product.categories %}
+        <div
+          class="fresh-thit-ca cate-item"
+          data-category-slug="{{ children_category.slug }}"
+          data-category-chilrens="{{ children_category.get_childrens|to_slugs }}"
+        >  
+          <span>{{ children_category.name }}</span>
+        </div>
+      {% endfor %}
     </div>
   </div>
 
-  {% include "store/product/product_list.html" %}
+  {% with products=category_product.products %}
+    {% include "store/product/product_list.html" %}
+  {% endwith %}
 </div>

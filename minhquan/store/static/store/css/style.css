@@ -293,11 +293,17 @@ header {
   margin-top: 60px;
 }
 
+.groupfeature.groupfeaturepromotion {
+  margin-bottom: 25px;
+}
+
 .groupfeature.groupfeaturepromotion .cate {
   background: #fff;
 }
 
-.groupfeature.groupfeaturepromotion * {
+.groupfeature.groupfeaturepromotion .no-product {
+  background: #fff;
+  padding: 10px;
 }
 
 .groupfeature.groupfeaturepromotion .title {
@@ -312,6 +318,8 @@ header {
   text-transform: uppercase;
   color: #fff;
   padding-left: 10px;
+  width: 250px;
+  flex-shrink: 0;
 }
 
 .groupfeature.groupfeaturepromotion .cate-list {
@@ -391,6 +399,10 @@ header {
   margin: 0;
   position: relative;
   padding-bottom: 60px;
+}
+
+.cate .product.hidden {
+  display: none;
 }
 
 .cate .product .boximg,
@@ -719,7 +731,7 @@ nav li .nav-parent {
   cursor: pointer;
 }
 
-nav li .nav-parent:before,
+/* nav li .nav-parent:before, */
 nav li .nav-parent:after {
   content: '';
   width: 0;
@@ -732,7 +744,7 @@ nav li .nav-parent:after {
   top: 5px;
 }
 
-nav li .nav-parent:before,
+/* nav li .nav-parent:before, */
 nav li .nav-parent:after {
   content: '';
   width: 0;
@@ -743,6 +755,10 @@ nav li .nav-parent:after {
   position: absolute;
   right: 5px;
   top: 5px;
+}
+
+nav li .nav-parent.collapse:after {
+  transform: rotate(180deg);
 }
 
 nav li .nav-parent:after {
@@ -751,7 +767,7 @@ nav li .nav-parent:after {
 
 nav li .nav-parent:after {
   border-top-width: 4px;
-  border-top-color: #e9edf0;
+  border-top-color: #9f9f9f;
   top: 4px;
 }
 

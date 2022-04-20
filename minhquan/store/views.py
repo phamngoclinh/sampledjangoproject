@@ -10,14 +10,17 @@ from .forms import AddressFormSet, ProfileForm, LoginForm, LoginUserForm, Regist
 from . import services
 
 def index(request):
-  context = { 'title': 'Trang chủ', 'products': services.get_all_products() }
+  context = {
+    'title': 'Trang chủ',
+    'group_products': services.get_group_products()
+  }
   return TemplateResponse(request, 'store/index.html', context)
 
 def product_category(request, slug):
-  products, category = services.get_products_in_category(slug)
+  group_products = services.get_group_products(slug)
   context = {
-    'products': products,
-    'title': 'Danh mục ' + category.name
+    'group_products': group_products,
+    'title': 'Danh mục ' + group_products[0]['category'].name
   }
   return TemplateResponse(request, 'store/product_category.html', context)
 

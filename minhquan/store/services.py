@@ -32,6 +32,22 @@ def get_products_in_category(slug):
   products = Product.objects.filter(Q(category_id__in=category_children_ids) | Q(category_id=category.id))
   return products, category
 
+def get_group_products(category_slug=None):
+  if not category_slug:
+    root_categories = ProductCategory.objects.filter(parent_id__isnull=True)
+  else:
+    root_categories = ProductCategory.objects.filter(slug=category_slug)
+  products = []
+  for root_category in root_categories:
+    _products, c = get_products_in_category(root_category.slug)
+    product_category = {
+      'category': root_category,
+      'categories': root_category.get_childrens(),
+      'products': _products
+    }
+    products.append(product_category)
+  return products
+
 def get_all_products():
   return Product.objects.all()
 

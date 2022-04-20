@@ -2,6 +2,8 @@
 
 {% block content %}
 <div class="content-section">
-  {% include "store/product/category_product.html" %}
+  {% for category_product in group_products %}
+    {% include "store/product/category_product.html" %}
+  {% endfor %}
 </div>
 {% endblock %}

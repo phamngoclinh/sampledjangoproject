@@ -6,7 +6,8 @@
   data-product-slug="{{ product.slug }}"
   data-product-price="{{ product.price }}"
   data-product-discount-price="{{ product.sub_price }}"
-  data-product-url="{% url 'product_detail' product.id %}"
+  data-product-url="{% url 'product_detail' product.slug %}"
+  data-product-category="{{ product.category.slug }}"
 >
   <a href="{% url 'product_detail' product.slug %}" title="{{ product.name }}">
     <div class="boximg" title="{{ product.name }}">
