@@ -14,7 +14,7 @@ def compute_orderdetail(sender, instance, raw, using, update_fields, **kwargs):
   current_object.compute()
 
 @receiver(post_save, sender=Order)
-def create_order_status(sender, instance, created, raw, using, update_fields, **kwargs):
+def create_order_deliver(sender, instance, created, raw, using, update_fields, **kwargs):
   current_object = instance
   if created:
     current_object.orderdeliver = OrderDeliver.objects.create(order=current_object, started_date=datetime.today())
@@ -22,3 +22,4 @@ def create_order_status(sender, instance, created, raw, using, update_fields, **
     OrderDeliver.objects.create(order=current_object, status='processing')
     OrderDeliver.objects.create(order=current_object, status='shipping')
     OrderDeliver.objects.create(order=current_object, status='done')
+    current_object.save()

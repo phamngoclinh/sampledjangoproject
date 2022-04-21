@@ -1,0 +1,64 @@
+<h1>Đơn hàng của bạn</h1>
+<a href="{% url 'create_order' %}">Tạo đơn hàng</a>
+<table>
+  <thead>
+    <tr>
+      <td>STT</td>
+      <td>Mã ĐH</td>
+      <td>Khách hàng</td>
+      <td>Tổng tiền</td>
+      <td>Trạng thái</td>
+      <td>Thao tác</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for order in orders %}
+    <tr>
+      <td></td>
+      <td>{{ order.id }}</td>
+      <td>{{ order.customer }}</td>
+      <td>{{ order.amount_total }}</td>
+      <td>{{ order.orderdeliver.get_status_display }}</td>
+      <td>
+        <a href="{% url 'edit_order' order.id %}">Chi tiết</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">Bạn chưa có đơn hàng</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h1>Đơn hàng đang chờ xác nhận</h1>
+<table>
+  <thead>
+    <tr>
+      <td>STT</td>
+      <td>Mã ĐH</td>
+      <td>Khách hàng</td>
+      <td>Tổng tiền</td>
+      <td>Trạng thái</td>
+      <td>Thao tác</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for order in unprocessing_orders %}
+    <tr>
+      <td></td>
+      <td>{{ order.id }}</td>
+      <td>{{ order.customer }}</td>
+      <td>{{ order.amount_total }}</td>
+      <td>{{ order.orderdeliver.get_status_display }}</td>
+      <td>
+        <a href="{% url 'edit_order' order.id %}">Chi tiết</a>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5">Không có đơn hàng</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>

@@ -20,6 +20,7 @@ urlpatterns = [
   path('gui-lai-ma-otp/', views.resend_otp, name='resend_otp'),
   path('dang-xuat/', views.logout, name='logout'),
   path('thong-tin-ca-nhan/', views.profile, name='profile'),
+  path('quan-ly/', include('store.management')),
   path('api/', include('store.apis'))
 ]
 

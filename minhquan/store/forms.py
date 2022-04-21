@@ -1,13 +1,23 @@
 from datetime import datetime
 import json
+from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
+from django.contrib.admin import (
+    widgets,
+    site as admin_site
+    )
+
+from django.urls import reverse
+from django.utils.safestring import mark_safe
+from django.forms import widgets
+from django.conf import settings
 
 from django import forms
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.forms import modelformset_factory
+from django.forms import inlineformset_factory, modelformset_factory
 
-from .models import Address, Coupon, Partner
+from .models import Address, Coupon, Order, OrderDetail, Partner
 
 
 class ProfileForm(forms.ModelForm):
@@ -133,3 +143,75 @@ AddressFormSet = modelformset_factory(
   },
   can_delete=True,
 )
+
+
+class OrderModelForm(forms.ModelForm):
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+  
+    self.fields['customer'].widget = (
+      RelatedFieldWidgetWrapper( 
+        self.fields['customer'].widget,
+        self.instance._meta.get_field('customer').remote_field,            
+        admin_site,
+      )
+    )
+    self.fields['shipping_address'].widget = (
+      RelatedFieldWidgetWrapper( 
+        self.fields['shipping_address'].widget,
+        self.instance._meta.get_field('shipping_address').remote_field,            
+        admin_site,
+      )
+    )
+
+    self.fields['amount_price'].widget.attrs['readonly'] = True
+    self.fields['amount_sub_total'].widget.attrs['readonly'] = True
+    self.fields['amount_discount'].widget.attrs['readonly'] = True
+    self.fields['amount_discount_total'].widget.attrs['readonly'] = True
+    self.fields['amount_total'].widget.attrs['readonly'] = True
+    
+  class Meta:
+    model = Order
+    fields = ['customer', 'shipping_address', 'receive_name', 'receive_phone', 'receive_email', 'amount_price', 'amount_sub_total', 'amount_discount', 'amount_discount_total', 'amount_total', 'note',]
+    exclude = ['created_date', 'updated_date', 'active', 'orderdeliver', 'created_user',]
+    labels = {
+      'customer': 'Khách hàng',
+      'receive_name': 'Tên người nhận hàng',
+      'receive_phone': 'Số điện thoại nhận hàng',
+      'receive_email': 'Email nhận hàng',
+      'amount_price': 'Tiền chiết khấu',
+      'amount_sub_total': 'Thành tiền',
+      'amount_discount': 'Chiết khấu trên đơn hàng',
+      'amount_total': 'Tổng tiền thanh toán',
+      'amount_discount_total': 'Tổng tiền chiết khấu',
+      'shipping_address': 'Địa chỉ giao hàng',
+      'note': 'Ghi chú',
+    }
+
+
+class OrderDetailModelForm(forms.ModelForm):
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    self.fields['price_unit'].widget.attrs['readonly'] = True
+    self.fields['sub_price_unit'].widget.attrs['readonly'] = True
+    self.fields['price_discount'].widget.attrs['readonly'] = True
+    self.fields['amount_price'].widget.attrs['readonly'] = True
+    self.fields['sub_total'].widget.attrs['readonly'] = True
+
+  class Meta:
+    model = OrderDetail
+    fields = '__all__'
+    exclude = ['created_date', 'updated_date', 'active',]
+
+
+OrderDetailInlineFormSet = inlineformset_factory(
+  Order,
+  OrderDetail,
+  form=OrderDetailModelForm,
+  fields='__all__',
+  extra=1,
+  can_delete=True,
+  can_order=False
+)
+

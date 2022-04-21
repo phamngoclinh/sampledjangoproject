@@ -1,0 +1,66 @@
+<form id="father-form" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  <table>
+    {{ form }}
+  </table>
+
+  <hr />
+  {{ inlines.management_form }}
+  <div id="formset" class="orderdetail-formset">
+    {% for inline in inlines %}
+    <div class="order-detail-form">
+      {{ inline }}
+    </div>
+    {% endfor %}
+  </div>
+  <div id="empty-form" style="display:none">
+    <div class="order-detail-form">
+      {{ inlines.empty_form.as_table }}
+    </div>
+  </div>
+  <button type="button" id="add-more">Thêm sản phẩm</button>
+  <button type="submit">Sửa đơn hàng</button>
+</form>
+<form method="post" action="{% url 'confirm_order' order.id %}">
+  {% csrf_token %}
+  <button type="submit">Xác nhận đơn hàng</button>
+</form>
+
+<script>
+  function docReady(fn) {
+    // see if DOM is already available
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      // call on next available tick
+      setTimeout(fn, 1);
+    } else {
+      document.addEventListener("DOMContentLoaded", fn);
+    }
+  }
+
+  docReady(function () {
+    const $formSet = document.querySelector('#formset')
+    const $addAnotherButton = document.querySelector('#add-more')
+
+    $addAnotherButton.addEventListener('click', function (event) {
+      const $totalForms = document.querySelector('[name$=TOTAL_FORMS]')
+      const totalForms = parseInt($totalForms.value)
+      const $emptyForm = document.querySelector('#empty-form .order-detail-form')
+      const $newForm = $emptyForm.cloneNode(true)
+
+      const newTotalForms = totalForms + 1
+      const matchValue = '__prefix__'
+      const match = new RegExp(matchValue)
+      const replace = newTotalForms.toString()
+
+      attrs = ['name', 'id', 'for']
+      attrs.forEach(function (attr) {
+        $newForm.querySelectorAll('[' + attr + '*=' + matchValue + ']').forEach(function (el) {
+          el.setAttribute(attr, el.getAttribute(attr).replace(match, replace))
+        })
+      })
+
+      $totalForms.setAttribute('value', newTotalForms)
+      $formSet.append($newForm)
+    })
+  })
+</script>

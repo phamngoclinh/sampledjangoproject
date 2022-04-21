@@ -60,8 +60,17 @@ def get_product_by_slug(product_slug):
 def search_product(search_text):
   return Product.objects.filter(Q(name__icontains=search_text) | Q(slug__icontains=search_text))
 
+def get_order_by_id(order_id, **kwargs):
+  return get_or_none(Order, **kwargs, pk=order_id)
+
 def get_draft_order(**kwargs):
   return get_or_none(Order, **kwargs, orderdeliver__status='draft')
+
+def get_draft_orders(**kwargs):
+  return Order.objects.filter(**kwargs, orderdeliver__status='draft')
+
+def get_unprocessing_orders():
+  return Order.objects.filter(Q(orderdeliver__status='draft') | (Q(orderdeliver__status='confirmed') and Q(orderdeliver__completed=False)))
 
 def get_none_draft_orders(**kwargs):
   return Order.objects.filter(**kwargs).exclude(orderdeliver__status='draft')
@@ -73,6 +82,10 @@ def get_partner_order_by_id(order_id, partner):
   if order.customer != partner:
     return None
   return order
+
+def get_user_orders(user):
+  orders = Order.objects.filter(created_user=user)
+  return orders
 
 def get_order_delivers_by_order(order):
   return OrderDeliver.objects.filter(order=order)
@@ -100,7 +113,7 @@ def get_base_context(request):
   context = {}
   if request.partner:
     user_email = request.partner.email
-    context['shopping_cart'] = get_draft_order(customer__email=user_email)
+    context['shopping_cart'] = get_draft_orders(customer__email=user_email)
   context['product_categories'] = get_product_categories_tree()
   return context
 

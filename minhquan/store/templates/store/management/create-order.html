@@ -1,0 +1,14 @@
+<form id="father-form" method="POST" enctype="multipart/form-data" action="{% url 'create_order' %}">
+  {% csrf_token %}
+  <table>
+  {{ form }}
+  </table>
+
+  <hr/>
+  {{ inlines.management_form }}
+  <table>
+  {{ inlines }}
+  </table>
+
+  <button type="submit">Tạo đơn hàng</button>
+</form>

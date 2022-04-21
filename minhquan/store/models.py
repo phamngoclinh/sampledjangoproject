@@ -150,6 +150,7 @@ class Product(BaseModel):
 
 class Order(BaseModel):
   customer = models.ForeignKey(Partner, on_delete=models.CASCADE, null=True, blank=True)
+  created_user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
   orderdeliver = models.OneToOneField('OrderDeliver', related_name='orderdeliver', on_delete=models.CASCADE, null=True)
   receive_name = models.CharField(max_length=100, null=True, blank=True)
   receive_phone = models.IntegerField(default=0, null=True, blank=True)
