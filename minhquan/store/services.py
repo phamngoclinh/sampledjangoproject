@@ -57,8 +57,8 @@ def get_product_by_id(product_id):
 def get_product_by_slug(product_slug):
   return get_or_none(Product, slug=product_slug)
 
-def search_product(search_text):
-  return Product.objects.filter(Q(name__icontains=search_text) | Q(slug__icontains=search_text))
+def search_product(search_text, **kwargs):
+  return Product.objects.filter(Q(**kwargs), Q(name__icontains=search_text) | Q(slug__icontains=search_text))
 
 def get_order_by_id(order_id, **kwargs):
   return get_or_none(Order, **kwargs, pk=order_id)
@@ -147,7 +147,7 @@ def checkout(order, shipping_form, coupon_form):
     order.receive_email = shipping_form.cleaned_data['receive_email']
     order.note = shipping_form.cleaned_data['note']
     order.shipping_address = address
-    order.confirm_deliver()
+    order.complete_deliver()
     order.save()
     # Update coupon program
 

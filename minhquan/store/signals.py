@@ -22,4 +22,5 @@ def create_order_deliver(sender, instance, created, raw, using, update_fields, *
     OrderDeliver.objects.create(order=current_object, status='processing')
     OrderDeliver.objects.create(order=current_object, status='shipping')
     OrderDeliver.objects.create(order=current_object, status='done')
+    OrderDeliver.objects.create(order=current_object, status='canceled')
     current_object.save()

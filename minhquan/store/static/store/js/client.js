@@ -24,5 +24,8 @@ const SERVICES = {
   },
   getCoupon: function ({ data, ...others }) {
     HTTP_CLIENT.sendRequest({ method: 'POST', url: '/get-coupon/', data, ...others })
-  }
+  },
+  searchProduct: function ({ data, ...others }) {
+    HTTP_CLIENT.sendRequest({ method: 'POST', url: '/search-product/', data, ...others })
+  },
 }

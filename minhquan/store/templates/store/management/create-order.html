@@ -1,14 +1,29 @@
-<form id="father-form" method="POST" enctype="multipart/form-data" action="{% url 'create_order' %}">
+{% extends "store/management/base-management.html" %}
+
+{% block content %}
+{% include 'store/management/order-process-bar.html' %}
+
+<form id="father-form" method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <table>
-  {{ form }}
+    {{ form }}
   </table>
 
-  <hr/>
+  <hr />
   {{ inlines.management_form }}
-  <table>
-  {{ inlines }}
-  </table>
-
+  <div id="formset" class="orderdetail-formset">
+    {% for inline in inlines %}
+    <div class="order-detail-form">
+      {{ inline }}
+    </div>
+    {% endfor %}
+  </div>
+  <div id="empty-form" style="display:none">
+    <div class="order-detail-form">
+      {{ inlines.empty_form.as_table }}
+    </div>
+  </div>
+  <button type="button" id="add-more">Thêm sản phẩm</button>
   <button type="submit">Tạo đơn hàng</button>
 </form>
+{% endblock content %}

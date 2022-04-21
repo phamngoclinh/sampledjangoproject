@@ -1,0 +1,91 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{title}}{% endblock %} - Minh Quân</title>
+  <script>
+    const CSRF_TOKEN = "{{ csrf_token }}"
+  </script>
+  <script src="{% static 'store/js/jquery-3.6.0.min.js' %}"></script>
+  <script src="{% static 'store/js/client.js' %}"></script>
+</head>
+
+<body>
+  {% block content %}{% endblock %}
+
+  <script>
+    $(document).ready(function () {
+      const $formSet = document.querySelector('#formset')
+      const $addAnotherButton = document.querySelector('#add-more')
+  
+      $addAnotherButton.addEventListener('click', function (event) {
+        const $totalForms = document.querySelector('[name$=TOTAL_FORMS]')
+        const totalForms = parseInt($totalForms.value)
+        const $emptyForm = document.querySelector('#empty-form .order-detail-form')
+        const $newForm = $emptyForm.cloneNode(true)
+  
+        const newTotalForms = totalForms
+        const matchValue = '__prefix__'
+        const match = new RegExp(matchValue, 'g')
+        const replace = newTotalForms.toString()
+  
+        attrs = ['name', 'id', 'for']
+        attrs.forEach(function (attr) {
+          $newForm.querySelectorAll('[' + attr + '*=' + matchValue + ']').forEach(function (el) {
+            el.setAttribute(attr, el.getAttribute(attr).replace(match, replace))
+          })
+        })
+  
+        $totalForms.setAttribute('value', newTotalForms + 1)
+        $formSet.append($newForm)
+      })
+  
+      $(document).on('change', 'select[name$=product]', function () {
+        const productId = $(this).val()
+        const $orderdetail = $(this).parents('.order-detail-form')
+  
+        SERVICES.searchProduct({
+          data: { product_id: productId },
+          success: function (result) {
+            if (result.success) {
+              product = result.product
+              quantity = parseInt($orderdetail.find('[name$=quantity]').val())
+  
+              $orderdetail.find('[name$=price_unit]').val(product.price)
+              $orderdetail.find('[name$=sub_price_unit]').val(product.sub_price)
+              $orderdetail.find('[name$=price_discount]').val(product.price_discount * quantity)
+              $orderdetail.find('[name$=amount_price]').val(product.price * quantity)
+              $orderdetail.find('[name$=sub_total]').val(product.price * quantity - product.price_discount * quantity)
+            } else {
+              alert(result.messages)
+            }
+          }
+        })
+      })
+  
+      $(document).on('change', 'input[name$=quantity]', function () {
+        const quantity = parseInt($(this).val())
+        const $orderdetail = $(this).parents('.order-detail-form')
+  
+        productPrice = parseInt($orderdetail.find('[name$=price_unit]').val())
+        productSubPrice = parseInt($orderdetail.find('[name$=sub_price_unit]').val())
+        productPriceDiscount = productPrice - productSubPrice
+  
+        console.log('quantity', quantity, productPrice, productSubPrice, productPriceDiscount)
+  
+        $orderdetail.find('[name$=price_unit]').val(productPrice)
+        $orderdetail.find('[name$=sub_price_unit]').val(productSubPrice)
+        $orderdetail.find('[name$=price_discount]').val(productPriceDiscount * quantity)
+        $orderdetail.find('[name$=amount_price]').val(productPrice * quantity)
+        $orderdetail.find('[name$=sub_total]').val(productPrice * quantity - productPriceDiscount * quantity)
+      })
+    })
+  </script>
+</body>
+
+</html>

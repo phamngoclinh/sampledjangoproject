@@ -1,0 +1,54 @@
+<form method="post" action="{% url 'cancel_order' order.id %}">
+  {% csrf_token %}
+  <button type="submit">Hủy đơn hàng</button>
+</form>
+{% if order.orderdeliver.status == 'draft' and not order.orderdeliver.completed %}
+  <form method="post" action="{% url 'confirm_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Xác nhận đơn hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'draft' and order.orderdeliver.completed %}
+  <form method="post" action="{% url 'start_process_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Tiếp nhận đơn hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'confirmed' and not order.orderdeliver.completed %}
+  <form method="post" action="{% url 'finish_process_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Hoàn thành tiếp nhận đơn hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'confirmed' and order.orderdeliver.completed %}
+  <form method="post" action="{% url 'start_process_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Bắt đầu xử lý đơn hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'processing' and not order.orderdeliver.completed %}
+  <form method="post" action="{% url 'finish_process_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Hoàn thành xử lý đơn hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'processing' and order.orderdeliver.completed %}
+  <form method="post" action="{% url 'start_process_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Bắt đầu giao hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'shipping' and not order.orderdeliver.completed %}
+  <form method="post" action="{% url 'finish_process_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Hoàn thành giao hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'shipping' and order.orderdeliver.completed %}
+  <form method="post" action="{% url 'start_process_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Bắt đầu nghiệm thu đơn hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'done' and not order.orderdeliver.completed %}
+  <form method="post" action="{% url 'finish_process_order' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Hoàn thành nghiệm thu đơn hàng</button>
+  </form>
+{% elif order.orderdeliver.status == 'done' %}
+  <div>Đơn hàng đã hoàn thành</div>
+{% else %}
+  <div>Đơn hàng đã bị hủy</div>
+{% endif %}

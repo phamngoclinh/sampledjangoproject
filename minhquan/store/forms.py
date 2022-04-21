@@ -210,7 +210,7 @@ OrderDetailInlineFormSet = inlineformset_factory(
   OrderDetail,
   form=OrderDetailModelForm,
   fields='__all__',
-  extra=1,
+  extra=0,
   can_delete=True,
   can_order=False
 )

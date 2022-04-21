@@ -191,22 +191,36 @@ class Order(BaseModel):
     self.amount_total = amount_sub_total - self.amount_discount
     self.amount_discount_total = amount_discount_total + self.amount_discount
   
-  def confirm_deliver(self):
-    if self.orderdeliver.status == 'draft':
-      self.orderdeliver.confirm()
-      self.orderdeliver = OrderDeliver.objects.get(order=self, status='confirmed')
-  
   def start_deliver(self, user):
-    self.orderdeliver.started_date = datetime.today()
-    self.orderdeliver.created_user = user
-    self.orderdeliver.save()
+    if self.orderdeliver.completed:
+      if self.orderdeliver.status == 'draft':
+        self.orderdeliver = OrderDeliver.objects.get(order=self, status='confirmed')
+      elif self.orderdeliver.status == 'confirmed':
+        self.orderdeliver = OrderDeliver.objects.get(order=self, status='processing')
+      elif self.orderdeliver.status == 'processing':
+        self.orderdeliver = OrderDeliver.objects.get(order=self, status='shipping')
+      elif self.orderdeliver.status == 'shipping':
+        self.orderdeliver = OrderDeliver.objects.get(order=self, status='done')
+      self.orderdeliver.started_date = datetime.today()
+      self.orderdeliver.created_user = user
+      self.orderdeliver.save()
+      self.save()
 
   def complete_deliver(self, user):
-    self.orderdeliver.completed = True
-    self.orderdeliver.completed_date = datetime.today()
-    self.orderdeliver.completed_user = user
-    self.orderdeliver.save()
+    if not self.orderdeliver.completed:
+      self.orderdeliver.completed = True
+      self.orderdeliver.completed_date = datetime.today()
+      self.orderdeliver.completed_user = user
+      self.orderdeliver.save()
 
+  def cancel_deliver(self, user):
+    self.orderdeliver = OrderDeliver.objects.get(order=self, status='canceled')
+    self.orderdeliver.started_date = datetime.today()
+    self.orderdeliver.completed_date = datetime.today()
+    self.orderdeliver.created_user = user
+    self.orderdeliver.completed_user = user
+    self.orderdeliver.completed = True
+    self.save()
 
 class OrderDeliver(BaseModel):
   status = models.CharField(default='draft', max_length=100, choices=ORDER_DELIVERY_STATUS_CHOICES)
@@ -214,8 +228,8 @@ class OrderDeliver(BaseModel):
   completed = models.BooleanField(default=False)
   started_date = models.DateTimeField(default=None, null=True, blank=True)
   completed_date = models.DateTimeField(default=None, null=True, blank=True)
-  created_user = models.OneToOneField(User, related_name='created_user', on_delete=models.CASCADE, null=True, blank=True)
-  completed_user = models.OneToOneField(User, related_name='completed_user', on_delete=models.CASCADE, null=True, blank=True)
+  created_user = models.ForeignKey(User, related_name='created_user', on_delete=models.CASCADE, null=True, blank=True)
+  completed_user = models.ForeignKey(User, related_name='completed_user', on_delete=models.CASCADE, null=True, blank=True)
 
   def __str__(self):
     return f'DH {self.order.id} - {dict(ORDER_DELIVERY_STATUS_CHOICES)[self.status]}'

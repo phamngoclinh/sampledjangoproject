@@ -9,7 +9,7 @@ from django.views.decorators.http import require_http_methods
 
 from .models import Order, Coupon, Partner, Product
 
-from .services import get_draft_order, get_or_none
+from .services import get_draft_order, get_or_none, search_product, get_product_by_id
 
 
 @csrf_exempt
@@ -93,8 +93,33 @@ def add_to_cart(request):
   except Exception as e:
     return JsonResponse({ 'success': False, 'messages': e.args })
 
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_product(request):
+  try:
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+
+    product_id = body['product_id']
+    product = get_product_by_id(product_id)
+    return JsonResponse({
+      'success': True,
+      'product': {
+        'id': product.id,
+        'name': product.name,
+        'slug': product.slug,
+        'price': product.price,
+        'sub_price': product.sub_price,
+        'price_discount': product.price_discount,
+      } 
+    })
+  except Coupon.DoesNotExist:
+    return JsonResponse({ 'success': False, 'messages': 'Sản phầm không tồn tại' })  
+
+
 
 urlpatterns = [
   path('get-coupon/', get_coupon, name='get_coupon'),
-  path('add-to-cart/', add_to_cart, name='add_to_cart')
+  path('add-to-cart/', add_to_cart, name='add_to_cart'),
+  path('search-product/', search_product, name='search_product'),
 ]
