@@ -2,11 +2,11 @@ from datetime import datetime
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.template.response import TemplateResponse
 from django.urls import path, reverse_lazy
-from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from django.views.generic.edit import CreateView, UpdateView
+from django.views.generic.list import ListView
 
 from .models import Order
 
@@ -14,14 +14,20 @@ from .forms import OrderDetailInlineFormSet, OrderModelForm
 
 from . import services
 
-@login_required
-def order_list(request):
-  context = {
-    'title': 'Quản lý - Danh sách hóa đơn',
-    'unprocessing_orders': services.get_unprocessing_orders(),
-    'orders': services.get_user_orders(request.user)
-  }
-  return TemplateResponse(request, 'store/management/order-list.html', context)
+
+class OrderListView(ListView):
+  model = Order
+  paginate_by = 100
+  template_name = 'store/management/order-list.html'
+
+  def get_queryset(self, **kwargs):
+    qs = super().get_queryset(**kwargs)
+    return qs.filter(created_user=self.request.user)
+
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    context['incomming_orders'] = services.get_incomming_orders_exclude_user(self.request.user)
+    return context
 
 class OrderCreateView(CreateView):
   model = Order
@@ -83,7 +89,16 @@ class OrderUpdateView(UpdateView):
     else:
       ctx['form'] = OrderModelForm(instance=self.object)
       ctx['inlines'] = OrderDetailInlineFormSet(instance=self.object)
+      ctx['order'] = self.object
     return ctx
+
+@login_required
+def init_order_status(request, pk):
+  order = services.get_order_by_id(pk)
+  orderdeliver = services.get_order_delivers_by_order(order, status='draft').first()
+  order.orderdeliver = orderdeliver
+  order.save()
+  return redirect('edit_order', pk=pk)
 
 @login_required
 def confirm_order(request, pk):
@@ -106,7 +121,8 @@ def finish_process_order(request, pk):
 @login_required
 def cancel_order(request, pk):
   order = services.get_order_by_id(pk)
-  order.cancel_deliver(request.user)
+  note = request.POST.get('note')
+  order.cancel_deliver(request.user, note)
   return redirect('edit_order', pk=pk)
 
 @login_required
@@ -120,12 +136,13 @@ def create_partner(request):
 
 
 urlpatterns = [
-  path('danh-sach-don-hang/', order_list, name='order_list'),
+  path('danh-sach-don-hang/', OrderListView.as_view(), name='order_list'),
   path('tao-don-hang/', OrderCreateView.as_view(), name='create_order'),
   path('sua-don-hang/<int:pk>', OrderUpdateView.as_view(), name='edit_order'),
+  path('khoi-tao-trang-thai/<int:pk>', init_order_status, name='init_order_status'),
   path('xac-nhan-don-hang/<int:pk>', confirm_order, name='confirm_order'),
   path('xu-ly-don-hang/<int:pk>', start_process_order, name='start_process_order'),
-  path('ket-thuc-xu-ly-don-hang/<int:pk>', finish_process_order, name='finish_process_order'),
+  path('ket-thuc-xu-ly-don-hang/<int:pk>', finish_process_order, name='finish_process_order'),  
   path('huy-don-hang/<int:pk>', cancel_order, name='cancel_order'),
   path('tao-khach-hang/', create_partner, name='create_partner'),
 ]

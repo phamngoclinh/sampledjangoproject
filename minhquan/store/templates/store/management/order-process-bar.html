@@ -1,8 +1,10 @@
-<form method="post" action="{% url 'cancel_order' order.id %}">
-  {% csrf_token %}
-  <button type="submit">Hủy đơn hàng</button>
-</form>
-{% if order.orderdeliver.status == 'draft' and not order.orderdeliver.completed %}
+<div class="order-process-bar">
+{% if not order.orderdeliver.status %}
+  <form method="post" action="{% url 'init_order_status' order.id %}">
+    {% csrf_token %}
+    <button type="submit">Khởi tạo trạng thái</button>
+  </form>
+{% elif order.orderdeliver.status == 'draft' and not order.orderdeliver.completed %}
   <form method="post" action="{% url 'confirm_order' order.id %}">
     {% csrf_token %}
     <button type="submit">Xác nhận đơn hàng</button>
@@ -49,6 +51,21 @@
   </form>
 {% elif order.orderdeliver.status == 'done' %}
   <div>Đơn hàng đã hoàn thành</div>
-{% else %}
+{% elif order.orderdeliver.status == 'canceled' %}
   <div>Đơn hàng đã bị hủy</div>
 {% endif %}
+
+{% if order.orderdeliver.status and order.orderdeliver.status != 'done' and order.orderdeliver.status != 'canceled' %}
+  <form method="post" action="{% url 'cancel_order' order.id %}">
+    {% csrf_token %}
+    <input text="text" name="note" placeholder="Lý do hủy đơn hàng" />
+    <button type="submit">Hủy đơn hàng</button>
+  </form>
+{% endif %}
+</div>
+
+<style>
+  .order-process-bar {
+    display: flex;
+  }
+</style>

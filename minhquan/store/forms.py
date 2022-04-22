@@ -185,7 +185,7 @@ class OrderModelForm(forms.ModelForm):
       'amount_total': 'Tổng tiền thanh toán',
       'amount_discount_total': 'Tổng tiền chiết khấu',
       'shipping_address': 'Địa chỉ giao hàng',
-      'note': 'Ghi chú',
+      'note': 'Ghi chú của khách hàng',
     }
 
 
@@ -203,6 +203,16 @@ class OrderDetailModelForm(forms.ModelForm):
     model = OrderDetail
     fields = '__all__'
     exclude = ['created_date', 'updated_date', 'active',]
+    labels = {
+      'product': 'Sản phẩm',
+      'quantity': 'Số lượng',
+      'price_unit': 'Đơn giá',
+      'sub_price_unit': 'Giá bán',
+      'price_discount': 'Tiền chiết khấu',
+      'amount_price': 'Thành tiền',
+      'sub_total': 'Tổng tiền',
+      'note': 'Ghi chú của khách hàng',
+    }
 
 
 OrderDetailInlineFormSet = inlineformset_factory(

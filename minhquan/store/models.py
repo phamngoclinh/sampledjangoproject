@@ -213,13 +213,15 @@ class Order(BaseModel):
       self.orderdeliver.completed_user = user
       self.orderdeliver.save()
 
-  def cancel_deliver(self, user):
+  def cancel_deliver(self, user, note):
     self.orderdeliver = OrderDeliver.objects.get(order=self, status='canceled')
     self.orderdeliver.started_date = datetime.today()
     self.orderdeliver.completed_date = datetime.today()
     self.orderdeliver.created_user = user
     self.orderdeliver.completed_user = user
     self.orderdeliver.completed = True
+    self.orderdeliver.note = note
+    self.orderdeliver.save()
     self.save()
 
 class OrderDeliver(BaseModel):
@@ -230,26 +232,10 @@ class OrderDeliver(BaseModel):
   completed_date = models.DateTimeField(default=None, null=True, blank=True)
   created_user = models.ForeignKey(User, related_name='created_user', on_delete=models.CASCADE, null=True, blank=True)
   completed_user = models.ForeignKey(User, related_name='completed_user', on_delete=models.CASCADE, null=True, blank=True)
+  note = models.CharField(max_length=200, null=True, blank=True)
 
   def __str__(self):
     return f'DH {self.order.id} - {dict(ORDER_DELIVERY_STATUS_CHOICES)[self.status]}'
-  
-  def confirm(self):
-    if self.status == 'draft':
-      self.completed_date = datetime.today()
-      self.completed = True
-      self.save()
-  
-  def start(self, user):
-    self.started_date = datetime.today()
-    self.created_user = user
-    self.save()
-
-  def complete(self, user):
-    self.completed = True
-    self.completed_date = datetime.today()
-    self.completed_user = user
-    self.save()
 
 
 class OrderDetail(BaseModel):

@@ -69,8 +69,18 @@ def get_draft_order(**kwargs):
 def get_draft_orders(**kwargs):
   return Order.objects.filter(**kwargs, orderdeliver__status='draft')
 
-def get_unprocessing_orders():
-  return Order.objects.filter(Q(orderdeliver__status='draft') | (Q(orderdeliver__status='confirmed') and Q(orderdeliver__completed=False)))
+def get_incomming_orders(**kwargs):
+  return Order.objects.filter(
+    Q(**kwargs) &
+    (Q(orderdeliver__status='draft') | Q(orderdeliver__status='confirmed'))
+  )
+
+def get_incomming_orders_exclude_user(user, **kwargs):
+  return Order.objects.filter(
+    ~Q(created_user=user) &
+    Q(**kwargs) &
+    (Q(orderdeliver__status='draft') | Q(orderdeliver__status='confirmed'))
+  )
 
 def get_none_draft_orders(**kwargs):
   return Order.objects.filter(**kwargs).exclude(orderdeliver__status='draft')
@@ -87,8 +97,8 @@ def get_user_orders(user):
   orders = Order.objects.filter(created_user=user)
   return orders
 
-def get_order_delivers_by_order(order):
-  return OrderDeliver.objects.filter(order=order)
+def get_order_delivers_by_order(order, **kwargs):
+  return OrderDeliver.objects.filter(**kwargs, order=order)
 
 def get_available_coupon_programs():
   return CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())

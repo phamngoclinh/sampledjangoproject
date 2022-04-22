@@ -18,9 +18,11 @@ def create_order_deliver(sender, instance, created, raw, using, update_fields, *
   current_object = instance
   if created:
     current_object.orderdeliver = OrderDeliver.objects.create(order=current_object, started_date=datetime.today())
-    OrderDeliver.objects.create(order=current_object, status='confirmed')
-    OrderDeliver.objects.create(order=current_object, status='processing')
-    OrderDeliver.objects.create(order=current_object, status='shipping')
-    OrderDeliver.objects.create(order=current_object, status='done')
-    OrderDeliver.objects.create(order=current_object, status='canceled')
+    OrderDeliver.objects.bulk_create([
+      OrderDeliver(order=current_object, status='confirmed'),
+      OrderDeliver(order=current_object, status='processing'),
+      OrderDeliver(order=current_object, status='shipping'),
+      OrderDeliver(order=current_object, status='done'),
+      OrderDeliver(order=current_object, status='canceled'),
+    ])
     current_object.save()

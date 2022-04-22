@@ -1,8 +1,6 @@
 {% extends "store/management/base-management.html" %}
 
 {% block content %}
-{% include 'store/management/order-process-bar.html' %}
-
 <form id="father-form" method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <table>

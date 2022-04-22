@@ -1,5 +1,6 @@
 <h1>Đơn hàng của bạn</h1>
 <a href="{% url 'create_order' %}">Tạo đơn hàng</a>
+<br/><br/>
 <table>
   <thead>
     <tr>
@@ -8,17 +9,21 @@
       <td>Khách hàng</td>
       <td>Tổng tiền</td>
       <td>Trạng thái</td>
+      <td>Ngày khởi tạo</td>
+      <td>Hoạt động gần nhất</td>
       <td>Thao tác</td>
     </tr>
   </thead>
   <tbody>
-    {% for order in orders %}
+    {% for order in object_list %}
     <tr>
-      <td></td>
+      <td>{{ forloop.counter }}</td>
       <td>{{ order.id }}</td>
       <td>{{ order.customer }}</td>
       <td>{{ order.amount_total }}</td>
       <td>{{ order.orderdeliver.get_status_display }}</td>
+      <td>{{ order.created_date|date:"SHORT_DATE_FORMAT" }}</td>
+      <td>{{ order.orderdeliver.completed_date|date:"SHORT_DATE_FORMAT"|default:order.orderdeliver.started_date|date:"SHORT_DATE_FORMAT" }}</td>
       <td>
         <a href="{% url 'edit_order' order.id %}">Chi tiết</a>
       </td>
@@ -31,7 +36,7 @@
   </tbody>
 </table>
 
-<h1>Đơn hàng đang chờ xác nhận</h1>
+<h1>Đơn hàng đang chờ xử lý</h1>
 <table>
   <thead>
     <tr>
@@ -40,17 +45,21 @@
       <td>Khách hàng</td>
       <td>Tổng tiền</td>
       <td>Trạng thái</td>
+      <td>Ngày khởi tạo</td>
+      <td>Hoạt động gần nhất</td>
       <td>Thao tác</td>
     </tr>
   </thead>
   <tbody>
-    {% for order in unprocessing_orders %}
+    {% for order in incomming_orders %}
     <tr>
-      <td></td>
+      <td>{{ forloop.counter }}</td>
       <td>{{ order.id }}</td>
       <td>{{ order.customer }}</td>
       <td>{{ order.amount_total }}</td>
       <td>{{ order.orderdeliver.get_status_display }}</td>
+      <td>{{ order.created_date|date:"SHORT_DATE_FORMAT" }}</td>
+      <td>{{ order.orderdeliver.completed_date|date:"SHORT_DATE_FORMAT"|default:order.orderdeliver.started_date|date:"SHORT_DATE_FORMAT" }}</td>
       <td>
         <a href="{% url 'edit_order' order.id %}">Chi tiết</a>
       </td>
