@@ -1,6 +1,11 @@
+import random
+import re
+import os
 from datetime import datetime, timedelta
 
 from django.db.models import Q
+from django.core import mail
+from django.template.loader import render_to_string, get_template
 
 from .models import Address, Coupon, CouponProgram, Order, OrderDeliver, OrderDetail, Partner, Product, ProductCategory
 
@@ -225,12 +230,35 @@ def register(email, phone):
 
 def generate_otp(request):
   try:
-    # Send OTP to Email/MobilePhone
-    # TODO
-    request.session['otp_code'] = 12345678
-    request.session['otp_expired'] = (datetime.today() + timedelta(seconds=60)).timestamp()
-    return True
-  except:
+    # Send OTP to Email
+    # TODO Send OTP to MobilePhone
+    otp_code = random.randint(100000,999999)
+    send_email_status = 0
+    a = os.environ
+    with mail.get_connection() as connection:
+      ctx = {
+        'otp_code': otp_code
+      }
+      message = get_template('store/email/otp_email.html').render(ctx)
+      subject_pattern = r'<title>(.+\w)<\/title>'
+      subject = re.search(subject_pattern, message)
+
+      email = mail.EmailMessage(
+        subject and subject.group(1) or '',
+        message,
+        to=[request.POST.get('email') or request.session.get('login_form_email')],
+        connection=connection,
+      )
+      email.content_subtype = "html"
+      send_email_status = email.send()
+    
+    if send_email_status:
+      request.session['otp_code'] = otp_code
+      request.session['otp_expired'] = (datetime.today() + timedelta(seconds=60)).timestamp()
+      return True
+
+    return False
+  except Exception as e:
     return False
 
 def validate_otp(request, code):
