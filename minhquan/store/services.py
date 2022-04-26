@@ -154,7 +154,7 @@ def get_base_context(request):
   context = {}
   if request.partner:
     user_email = request.partner.email
-    context['shopping_cart'] = get_draft_orders(customer__email=user_email)
+    context['shopping_cart'] = get_draft_orders(customer__email=user_email).first()
   context['product_categories'] = get_product_categories_tree()
   return context
 
