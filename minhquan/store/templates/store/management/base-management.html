@@ -1,45 +1,56 @@
 {% extends 'base/base.html' %}
 
 {% block body %}
-{% block content %}{% endblock %}
+
+<header>
+  <ul style="list-style-type: none; padding-left: 0;">
+    <li style="display: inline-block; margin-right: 10px;"><a href="{% url 'order_list' %}">DANH SÁCH ĐƠN HÀNG</a></li>
+    <li style="display: inline-block; margin-right: 10px;"><a href="{% url 'program_list' %}">KHUYẾN MÃI</a></li>
+  </ul>
+</header>
+<hr/>
+
+{% block content %}{% endblock content %}
 
 <script>
   $(document).ready(function () {
     const $formSet = document.querySelector('#formset')
     const $addAnotherButton = document.querySelector('#add-more')
 
-    $addAnotherButton.addEventListener('click', function (event) {
-      const $totalForms = document.querySelector('[name$=TOTAL_FORMS]')
-      const totalForms = parseInt($totalForms.value)
-      const $emptyForm = document.querySelector('#empty-form .order-detail-form')
-      const $newForm = $emptyForm.cloneNode(true)
-
-      const newTotalForms = totalForms
-      const matchValue = '__prefix__'
-      const match = new RegExp(matchValue, 'g')
-      const replace = newTotalForms.toString()
-
-      attrs = ['name', 'id', 'for', 'class']
-      attrs.forEach(function (attr) {
-        $newForm.querySelectorAll('[' + attr + '*=' + matchValue + ']').forEach(function (el) {
-          el.setAttribute(attr, el.getAttribute(attr).replace(match, replace))
+    if ($addAnotherButton) {
+      $addAnotherButton.addEventListener('click', function (event) {
+        const $totalForms = document.querySelector('[name$=TOTAL_FORMS]')
+        const totalForms = parseInt($totalForms.value)
+        const $emptyForm = document.querySelector('#empty-form .order-detail-form')
+        const $newForm = $emptyForm.cloneNode(true)
+  
+        const newTotalForms = totalForms
+        const matchValue = '__prefix__'
+        const match = new RegExp(matchValue, 'g')
+        const replace = newTotalForms.toString()
+  
+        attrs = ['name', 'id', 'for', 'class']
+        attrs.forEach(function (attr) {
+          $newForm.querySelectorAll('[' + attr + '*=' + matchValue + ']').forEach(function (el) {
+            el.setAttribute(attr, el.getAttribute(attr).replace(match, replace))
+          })
         })
+  
+        $newForm.innerHTML = $newForm.innerHTML.replace(match, replace)
+  
+        $totalForms.setAttribute('value', newTotalForms + 1)
+        $formSet.append($newForm)
+  
+        /*
+        $($newForm).find('.search_input_widget_agent').each(function () {
+          const idPattern = $(this)[0].id
+          console.log($(this)[0].id)
+          const idPatternNameRegexp = /(^id_.+)_search_input_widget_agent/g
+          const matchs = idPatternNameRegexp.exec(idPattern);
+        })
+        */
       })
-
-      $newForm.innerHTML = $newForm.innerHTML.replace(match, replace)
-
-      $totalForms.setAttribute('value', newTotalForms + 1)
-      $formSet.append($newForm)
-
-      /*
-      $($newForm).find('.search_input_widget_agent').each(function () {
-        const idPattern = $(this)[0].id
-        console.log($(this)[0].id)
-        const idPatternNameRegexp = /(^id_.+)_search_input_widget_agent/g
-        const matchs = idPatternNameRegexp.exec(idPattern);
-      })
-      */
-    })
+    }
 
     $(document).on('change', '[name$=product]', function (e, product) {
       const productId = $(this).val()

@@ -1,7 +1,7 @@
 {% extends "store/management/base-management.html" %}
 
 {% block content %}
-<a href="{% url 'order_list' %}">Danh sách đơn hàng</a>
+<h1>Cập nhật đơn hàng</h1>
 <span>Trạng thái: {{ order.orderdeliver.get_status_display|default:"Không tồn tại" }}</span>
 <br/><br/>
 {% if order.orderdeliver.status == 'draft' or order.orderdeliver.status == 'confirmed' or order.orderdeliver.status == 'processing' %}

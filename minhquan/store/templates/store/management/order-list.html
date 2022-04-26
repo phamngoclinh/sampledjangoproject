@@ -1,3 +1,6 @@
+{% extends "store/management/base-management.html" %}
+
+{% block content %}
 <h1>Đơn hàng của bạn</h1>
 <a href="{% url 'create_order' %}">Tạo đơn hàng</a>
 <br/><br/>
@@ -71,3 +74,5 @@
     {% endfor %}
   </tbody>
 </table>
+
+{% endblock content %}

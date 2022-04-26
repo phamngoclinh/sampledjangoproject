@@ -15,6 +15,11 @@ from .forms import OrderDetailInlineFormSet, OrderModelForm
 from . import services
 
 
+def index(request):
+  return render(request, 'store/management/index.html', {
+    'title': 'Sale Management'
+  })
+
 class OrderListView(ListView):
   model = Order
   paginate_by = 100
@@ -26,6 +31,7 @@ class OrderListView(ListView):
 
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
+    context['title'] = 'Quản lý - Danh sách đơn hàng'
     context['incomming_orders'] = services.get_incomming_orders_exclude_user(self.request.user)
     return context
 
@@ -126,8 +132,17 @@ def cancel_order(request, pk):
   return redirect('edit_order', pk=pk)
 
 
+def program_list(request):
+  return render(request, 'store/management/program-list.html', {
+    'title': 'Quản lý - Danh sách khuyến mãi'
+  })
+
+
 urlpatterns = [
+  path('', index, name='management'),
   path('danh-sach-don-hang/', OrderListView.as_view(), name='order_list'),
+  path('chien-luoc-san-pham/', program_list, name='program_list'),
+
   path('tao-don-hang/', OrderCreateView.as_view(), name='create_order'),
   path('sua-don-hang/<int:pk>', OrderUpdateView.as_view(), name='edit_order'),
   path('khoi-tao-trang-thai/<int:pk>', init_order_status, name='init_order_status'),
