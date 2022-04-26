@@ -125,15 +125,6 @@ def cancel_order(request, pk):
   order.cancel_deliver(request.user, note)
   return redirect('edit_order', pk=pk)
 
-@login_required
-def create_partner(request):
-  search_text = request.GET.get('tu-khoa', '')
-  context = {
-    'products': services.search_product(search_text),
-    'title': 'Tìm kiếm từ khóa ' + search_text
-  }
-  return TemplateResponse(request, 'store/search.html', context)
-
 
 urlpatterns = [
   path('danh-sach-don-hang/', OrderListView.as_view(), name='order_list'),
@@ -144,5 +135,4 @@ urlpatterns = [
   path('xu-ly-don-hang/<int:pk>', start_process_order, name='start_process_order'),
   path('ket-thuc-xu-ly-don-hang/<int:pk>', finish_process_order, name='finish_process_order'),  
   path('huy-don-hang/<int:pk>', cancel_order, name='cancel_order'),
-  path('tao-khach-hang/', create_partner, name='create_partner'),
 ]

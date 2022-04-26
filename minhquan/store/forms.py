@@ -17,6 +17,8 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.forms import inlineformset_factory, modelformset_factory
 
+from minhquan.widgets import SearchInputWidget
+
 from .models import Address, Coupon, Order, OrderDetail, Partner
 
 
@@ -125,6 +127,17 @@ class CouponForm(forms.Form):
       raise ValidationError('Coupon Code không tồn tại hoặc đã được sử dụng.')
     return code
 
+class AddressModelForm(forms.ModelForm):
+  class Meta:
+    model = Address
+    fields = '__all__'
+    exclude = ['created_date', 'updated_date', 'active',]
+    labels = {
+      'city': 'Tỉnh/thành phố',
+      'district': 'Quận/huyện',
+      'award': 'Phường/thị xã',
+      'address': 'Số nhà, đường',
+    }
 
 AddressFormSet = modelformset_factory(
   Address,
@@ -148,21 +161,6 @@ AddressFormSet = modelformset_factory(
 class OrderModelForm(forms.ModelForm):
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
-  
-    self.fields['customer'].widget = (
-      RelatedFieldWidgetWrapper( 
-        self.fields['customer'].widget,
-        self.instance._meta.get_field('customer').remote_field,            
-        admin_site,
-      )
-    )
-    self.fields['shipping_address'].widget = (
-      RelatedFieldWidgetWrapper( 
-        self.fields['shipping_address'].widget,
-        self.instance._meta.get_field('shipping_address').remote_field,            
-        admin_site,
-      )
-    )
 
     self.fields['amount_price'].widget.attrs['readonly'] = True
     self.fields['amount_sub_total'].widget.attrs['readonly'] = True
@@ -186,6 +184,25 @@ class OrderModelForm(forms.ModelForm):
       'amount_discount_total': 'Tổng tiền chiết khấu',
       'shipping_address': 'Địa chỉ giao hàng',
       'note': 'Ghi chú của khách hàng',
+    }
+    widgets = {
+      'customer': SearchInputWidget(attrs={
+        'search_fields': 'full_name,email,phone',
+        'add_form': {
+          'form': RegisterForm(),
+          'action': '/api/create-partner/'
+        },
+        'placeholder': 'Nhập tên khách hàng',
+      }),
+      'shipping_address': SearchInputWidget(attrs={
+        'search_fields': 'city,district,award,address',
+        'related_data': 'customer',
+        'add_form': {
+          'form': AddressModelForm(),
+          'action': '/api/create-address/'
+        },
+        'placeholder': 'Địa chỉ của khách hàng',
+      }),
     }
 
 
@@ -222,6 +239,12 @@ OrderDetailInlineFormSet = inlineformset_factory(
   fields='__all__',
   extra=0,
   can_delete=True,
-  can_order=False
+  can_order=False,
+  widgets = {
+    'product': SearchInputWidget(attrs={
+      'search_url': '/search-product/',
+      'placeholder': 'Nhập tên sản phẩm',
+    }),
+  }
 )
 

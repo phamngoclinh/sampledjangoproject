@@ -1,0 +1,56 @@
+{% with pattern_name=widget.name|add:widget.suffix %}
+<div id="id_{{ pattern_name }}_search_input_widget_agent" class="search_input_widget_agent"
+  data-related_data="{{ widget.related_data|default:'' }}" data-url="{{ widget.url }}"
+  data-search_fields="{{ widget.search_fields }}" data-search_key="{{ widget.search_key }}"
+  data-add_form_action="{{ widget.add_form.action }}">
+
+  {% if widget.selected_result %}
+  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="source_value_search_input"
+    value="{{ widget.selected_result.id|default:'' }}" />
+  {% else %}
+  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="source_value_search_input" />
+  {% endif %}
+
+  <input type="text" name="{{ pattern_name }}" id="id_{{ pattern_name }}_search_text" class="search_text"
+    placeholder="{{ widget.attrs.placeholder }}" />
+
+  {% if widget.add_form %}
+  <span id="id_{{ pattern_name }}_add_form_button" class="add_form_button">+</span>
+  {% endif %}
+
+  {% if widget.selected_result %}
+  <div id="id_{{ pattern_name }}_selected_result" class="selected_result">
+    <span id="id_{{ pattern_name }}_selected_result_text" class="selected_result_text">
+      {{ widget.selected_result }}
+    </span>
+    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">x</span>
+  </div>
+  {% else %}
+  <div id="id_{{ pattern_name }}_selected_result" class="selected_result" style="display: none">
+    <span id="id_{{ pattern_name }}_selected_result_text" class="selected_result_text"></span>
+    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">x</span>
+  </div>
+  {% endif %}
+
+  <ul id="id_{{ pattern_name }}_search_result" class="search_result" style="display: none"></ul>
+
+  <script>
+    $('body').append(`
+      <div id="id_{{ pattern_name }}_add_form" class="id_{{ pattern_name }}_search_input_widget_agent add_form_template" style="display: none">
+        <form
+          class="search_input_add_form"
+          method="post"
+          action="{{ widget.add_form.action }}"
+        >
+          <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF_TOKEN}">
+          <div class="add_form_fields">
+            {{ widget.add_form.form.as_p }}
+          </div>
+          <input type="submit" value="Add" />
+          <button type="reset" class="close_search_input_add_form">x Close</button>
+        </form>
+      </div>
+    `)
+  </script>
+</div>
+{% endwith %}

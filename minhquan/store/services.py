@@ -124,6 +124,32 @@ def get_coupon_by_code(code):
 def get_partner_by_email(email):
   return get_or_none(Partner, email=email)
 
+def search_partner(search_text):
+  return Partner.objects.filter(
+    Q(email__icontains=search_text) |
+    Q(full_name__icontains=search_text) |
+    Q(first_name__icontains=search_text) |
+    Q(last_name__icontains=search_text) |
+    Q(phone__icontains=search_text)
+  )
+
+def search_address(search_text):
+  return Address.objects.filter(
+    Q(city__icontains=search_text) |
+    Q(district__icontains=search_text) |
+    Q(award__icontains=search_text) |
+    Q(address__icontains=search_text)
+  )
+
+def search_address_by_partner(search_text, partner):
+  addresses = get_address_by_customer(partner)
+  return addresses.filter(
+    Q(city__icontains=search_text) |
+    Q(district__icontains=search_text) |
+    Q(award__icontains=search_text) |
+    Q(address__icontains=search_text)
+  )
+
 def get_base_context(request):
   context = {}
   if request.partner:

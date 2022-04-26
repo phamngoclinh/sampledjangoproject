@@ -1,9 +1,9 @@
 const HTTP_CLIENT = {
-  sendRequest: function ({ data, url, ...others }) {
+  sendRequest: function ({ data, url, absoluteUrl, absoluteData, ...others }) {
     $.ajax({
       method: 'GET',
-      url: '/api' + url,
-      data: JSON.stringify({
+      url: absoluteUrl ? absoluteUrl : '/api' + url,
+      data: absoluteData ? absoluteData : JSON.stringify({
         ...data,
         'csrfmiddlewaretoken': CSRF_TOKEN
       }),
@@ -19,13 +19,16 @@ const HTTP_CLIENT = {
 }
 
 const SERVICES = {
+  postRequest: function ({ url, data, ...others }) {
+    HTTP_CLIENT.sendRequest({ method: 'POST', url, data, ...others })
+  },
   addToCartRequest: function ({ data, ...others }) {
     HTTP_CLIENT.sendRequest({ method: 'POST', url: '/add-to-cart/', data, ...others })
   },
   getCoupon: function ({ data, ...others }) {
     HTTP_CLIENT.sendRequest({ method: 'POST', url: '/get-coupon/', data, ...others })
   },
-  searchProduct: function ({ data, ...others }) {
-    HTTP_CLIENT.sendRequest({ method: 'POST', url: '/search-product/', data, ...others })
+  getProduct: function ({ data, ...others }) {
+    HTTP_CLIENT.sendRequest({ method: 'POST', url: '/get-product/', data, ...others })
   },
 }

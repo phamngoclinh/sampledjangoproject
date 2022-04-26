@@ -11,17 +11,19 @@
   {{ inlines.management_form }}
   <div id="formset" class="orderdetail-formset">
     {% for inline in inlines %}
-    <div class="order-detail-form">
-      {{ inline }}
-    </div>
+    <table class="order-detail-form">
+      {{ inline.as_table }}
+    </table>
     {% endfor %}
   </div>
   <div id="empty-form" style="display:none">
-    <div class="order-detail-form">
+    <table class="order-detail-form">
       {{ inlines.empty_form.as_table }}
-    </div>
+    </table>
   </div>
   <button type="button" id="add-more">Thêm sản phẩm</button>
   <button type="submit">Tạo đơn hàng</button>
 </form>
+
+{{ form.media }}
 {% endblock content %}

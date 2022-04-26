@@ -9,7 +9,9 @@ from django.views.decorators.http import require_http_methods
 
 from .models import Order, Coupon, Partner, Product
 
-from .services import get_draft_order, get_or_none, search_product, get_product_by_id
+from . import services
+
+from . import forms
 
 
 @csrf_exempt
@@ -46,12 +48,12 @@ def add_to_cart(request):
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
 
-    product = get_or_none(Product, pk=body['product_id'])
+    product = services.get_or_none(Product, pk=body['product_id'])
     if not product:
       return JsonResponse({ 'success': False, 'messages': 'Sản phẩm không tồn tại' })
 
     customer, is_new_customer = Partner.objects.get_or_create(email=user_email)
-    order = get_draft_order(customer=customer)
+    order = services.get_draft_order(customer=customer)
     if not order:
       order = Order.objects.create(customer=customer)
 
@@ -95,13 +97,13 @@ def add_to_cart(request):
 
 @csrf_exempt
 @require_http_methods(['POST'])
-def search_product(request):
+def get_product(request):
   try:
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
 
     product_id = body['product_id']
-    product = get_product_by_id(product_id)
+    product = services.get_product_by_id(product_id)
     return JsonResponse({
       'success': True,
       'product': {
@@ -111,15 +113,113 @@ def search_product(request):
         'price': product.price,
         'sub_price': product.sub_price,
         'price_discount': product.price_discount,
-      } 
+      }
     })
-  except Coupon.DoesNotExist:
-    return JsonResponse({ 'success': False, 'messages': 'Sản phầm không tồn tại' })  
+  except Product.DoesNotExist:
+    return JsonResponse({ 'success': False, 'messages': 'Sản phầm không tồn tại' })
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_product(request):
+  try:
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+
+    search_text = body['search_text']
+    products = services.search_product(search_text)
+    return JsonResponse({
+      'success': True,
+      'data': list({
+        'id': product.id,
+        'name': product.name,
+        'slug': product.slug,
+        'price': product.price,
+        'sub_price': product.sub_price,
+        'price_discount': product.price_discount,
+      } for product in products)
+    })
+  except Product.DoesNotExist:
+    return JsonResponse({ 'success': False, 'messages': 'Không tìm thấy sản phẩm' })
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_partner(request):
+  body_unicode = request.body.decode('utf-8')
+  body = json.loads(body_unicode)
+
+  search_text = body['search_text']
+  partner = services.search_partner(search_text)
+  return JsonResponse({
+    'success': True,
+    'data': list(partner.values())
+  })
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def search_address(request):
+  body_unicode = request.body.decode('utf-8')
+  body = json.loads(body_unicode)
+
+  search_text = body['search_text']
+  if 'customer' in body:
+    address = services.search_address_by_partner(search_text, body['customer'])
+  else:
+    address = services.search_address(search_text)
+  return JsonResponse({
+    'success': True,
+    'data': list(address.values())
+  })
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def create_partner(request):
+  form = forms.RegisterForm(request.POST)
+  if form.is_valid():
+    succeed, partner, exception = services.register(form.cleaned_data['email'], form.cleaned_data['phone'])
+    if succeed:
+      return JsonResponse({
+        'success': True,
+        'data': model_to_dict(partner),
+        'form': form.as_table()
+      })
+    else:
+      return JsonResponse({
+        'success': False,
+        'form': form.as_table(),
+        'messages': exception.args
+      })
+  return JsonResponse({
+    'success': False,
+    'form': form.as_table(),
+    'messages': 'Creating a partner was failed'
+  })
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def create_address(request):
+  form = forms.AddressModelForm(request.POST)
+  if form.is_valid():
+    address = form.save()
+    return JsonResponse({
+      'success': True,
+      'data': model_to_dict(address),
+      'form': form.as_table()
+    })
+  return JsonResponse({
+    'success': False,
+    'form': form.as_table(),
+    'messages': 'Creating a address was failed'
+  })
 
 
 
 urlpatterns = [
   path('get-coupon/', get_coupon, name='get_coupon'),
   path('add-to-cart/', add_to_cart, name='add_to_cart'),
+  path('get-product/', get_product, name='get_product'),
   path('search-product/', search_product, name='search_product'),
+  path('search-customer/', search_partner, name='search_partner'),
+  path('search-shipping_address/', search_address, name='search_address'),
+  path('create-partner/', create_partner, name='create_partner'),
+  path('create-address/', create_address, name='create_address'),
 ]
