@@ -1,5 +1,4 @@
-from datetime import datetime
-
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, reverse
@@ -7,9 +6,8 @@ from django.template.response import TemplateResponse
 
 from .decorators import partners_only
 
-from .forms import AddressFormSet, LoginOtpForm, ProfileForm, LoginForm, LoginUserForm, RegisterForm, ShippingForm, CouponForm
 
-from . import services
+from sale import services, forms
 
 def index(request):
   context = {
@@ -70,33 +68,34 @@ def checkout(request, order_id):
   if not order or (order.customer != request.partner):
     return redirect('checkout_result', order_id=order_id)
   
+  shipping_addresses = services.get_address_by_customer(request.partner)
   context = {
     # 'coupon_programs': services.get_available_coupon_programs(),
-    'shipping_addresses': services.get_address_by_customer(request.partner),
-    'title': 'Thanh toán'
+    'shipping_addresses': shipping_addresses,
+    'title': 'Thanh toán',
   }
 
   shipping = {
-    'city': order.shipping_address and order.shipping_address.city or '',
-    'district': order.shipping_address and order.shipping_address.district or '',
-    'award': order.shipping_address and order.shipping_address.award or '',
-    'address': order.shipping_address and order.shipping_address.address or '',
-    'receive_name': order.receive_name or order.customer.full_name,
+    'city': order.shipping_address and order.shipping_address.city or (shipping_addresses and shipping_addresses.first().city),
+    'district': order.shipping_address and order.shipping_address.district or (shipping_addresses and shipping_addresses.first().district),
+    'award': order.shipping_address and order.shipping_address.award or (shipping_addresses and shipping_addresses.first().award),
+    'address': order.shipping_address and order.shipping_address.address or (shipping_addresses and shipping_addresses.first().address),
+    'receive_name': order.receive_name or order.customer.full_name or order.customer.first_name or order.customer.last_name,
     'receive_phone': order.receive_phone or order.customer.phone,
     'receive_email': order.receive_email or order.customer.email,
     'note': order.note or '',
   }
-  shipping_form = ShippingForm(shipping)
+  shipping_form = forms.ShippingForm(shipping)
 
   coupon = services.get_coupon_by_order(order)
   if coupon:
-    coupon_form = CouponForm({ 'code': coupon.code, 'coupon_program_id': coupon.program.id })
+    coupon_form = forms.CouponForm({ 'code': coupon.code, 'coupon_program_id': coupon.program.id })
   else:
-    coupon_form = CouponForm()
+    coupon_form = forms.CouponForm()
 
   if request.method == 'POST':
-    shipping_form = ShippingForm(request.POST)
-    coupon_form = CouponForm(request.POST)
+    shipping_form = forms.ShippingForm(request.POST)
+    coupon_form = forms.CouponForm(request.POST)
     if shipping_form.is_valid() and coupon_form.is_valid():
       succeed, exception = services.checkout(order, shipping_form, coupon_form)
       if succeed:
@@ -128,22 +127,32 @@ def login(request):
 
   context = { 'title': 'Đăng nhập' }
 
-  form = LoginForm()
+  form = forms.LoginForm()
 
   if request.user.is_authenticated and request.user.email:
-    user_form = LoginUserForm({ 'email': request.user.email })
+    user_form = forms.LoginUserForm({ 'email': request.user.email })
     context['user_form'] = user_form
 
   if request.method == 'POST':
-    form = LoginForm(request.POST)
+    form = forms.LoginForm(request.POST)
 
     if form.is_valid():
-      # Begin storing form_login and otp to session
-      if services.generate_otp(request):
-        services.save_temporary_login_form(request, form)
-        return redirect(reverse('login_otp') + f'?next={next_url}')
+      if settings.F2A_ENABLE:
+        # Begin storing form_login and otp to session
+        if services.generate_otp(request):
+          services.save_temporary_login_form(request, form)
+          return redirect(reverse('login_otp') + f'?next={next_url}')
+        else:
+          form.add_error(None, 'Hệ thống không thể tạo OTP vào lúc này')
       else:
-        form.add_error(None, 'Hệ thống không thể tạo OTP vào lúc này')
+        # Synchrozire local shopping_cart with database
+        succeed, partner, exception = services.sync_shopping_cart(form.cleaned_data['email'], form.cleaned_data['shopping_cart'])
+
+        if succeed:
+          request.session['partner_id'] = partner.id
+          return redirect(next_url)
+        else:
+          form.add_error(None, exception.args)
   
   context['form'] = form
 
@@ -156,7 +165,7 @@ def login_user(request):
   if request.session.get('partner_id'):
     return redirect(next_url)
 
-  login_form = LoginUserForm(request.POST)
+  login_form = forms.LoginUserForm(request.POST)
   if login_form.is_valid():
     succeed, partner, exception = services.login_user(request, login_form.cleaned_data['email'])
     if succeed:
@@ -178,10 +187,10 @@ def login_otp(request):
   
   context = { 'title': 'Đăng nhập - OTP' }
 
-  login_otp_form = LoginOtpForm()
+  login_otp_form = forms.LoginOtpForm()
 
   if request.method == 'POST':
-    login_otp_form = LoginOtpForm(request.POST)
+    login_otp_form = forms.LoginOtpForm(request.POST)
     if login_otp_form.is_valid():
       otp_code_input = login_otp_form.cleaned_data['otp_code']
       if services.validate_otp(request, otp_code_input):
@@ -217,10 +226,10 @@ def logout(request):
   return redirect('index')
 
 def register(request):
-  form = RegisterForm()
+  form = forms.RegisterForm()
 
   if request.method == 'POST':
-    form = RegisterForm(request.POST)
+    form = forms.RegisterForm(request.POST)
     if form.is_valid():
       succeed, partner, exception = services.register(form.cleaned_data['email'], form.cleaned_data['phone'])
       if succeed:
@@ -232,14 +241,14 @@ def register(request):
 
 @partners_only
 def profile(request):
-  form = ProfileForm(instance=request.partner)
+  form = forms.ProfileForm(instance=request.partner)
   queryset = services.get_address_by_customer(request.partner)
-  address_formset = AddressFormSet(queryset=queryset)
+  address_formset = forms.AddressFormSet(queryset=queryset)
 
   if request.method == 'POST':
     which_form = request.GET.get('form')
     if which_form == 'profile_form':
-      form = ProfileForm(request.POST, instance=request.partner)
+      form = forms.ProfileForm(request.POST, instance=request.partner)
       if form.is_valid():
         try:
           form.save()
@@ -248,7 +257,7 @@ def profile(request):
           form.add_error(None, e.args)
 
     if which_form == 'address_form':
-      address_formset = AddressFormSet(request.POST, queryset=queryset)
+      address_formset = forms.AddressFormSet(request.POST, queryset=queryset)
       if address_formset.is_valid():
         instances = address_formset.save()
         # or

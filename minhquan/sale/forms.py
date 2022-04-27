@@ -1,15 +1,5 @@
 from datetime import datetime
 import json
-from django.contrib.admin.widgets import RelatedFieldWidgetWrapper
-from django.contrib.admin import (
-    widgets,
-    site as admin_site
-    )
-
-from django.urls import reverse
-from django.utils.safestring import mark_safe
-from django.forms import widgets
-from django.conf import settings
 
 from django import forms
 from django.contrib.auth.models import User
@@ -187,19 +177,21 @@ class OrderModelForm(forms.ModelForm):
     }
     widgets = {
       'customer': SearchInputWidget(attrs={
+        'search_url': '/sale/api/search-customer/',
         'search_fields': 'full_name,email,phone',
         'add_form': {
           'form': RegisterForm(),
-          'action': '/api/create-partner/'
+          'action': '/sale/api/create-partner/'
         },
         'placeholder': 'Nhập tên khách hàng',
       }),
       'shipping_address': SearchInputWidget(attrs={
+        'search_url': '/sale/api/search-shipping_address/',
         'search_fields': 'city,district,award,address',
         'related_data': 'customer',
         'add_form': {
           'form': AddressModelForm(),
-          'action': '/api/create-address/'
+          'action': '/sale/api/create-address/'
         },
         'placeholder': 'Địa chỉ của khách hàng',
       }),
@@ -242,7 +234,7 @@ OrderDetailInlineFormSet = inlineformset_factory(
   can_order=False,
   widgets = {
     'product': SearchInputWidget(attrs={
-      'search_url': '/search-product/',
+      'search_url': '/sale/api/search-product/',
       'placeholder': 'Nhập tên sản phẩm',
     }),
   }

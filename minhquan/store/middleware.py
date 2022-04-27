@@ -1,5 +1,5 @@
-from .services import get_base_context
-from .models import Partner
+from sale.services import get_base_context
+from sale.models import Partner
 
 class PartnerAuthenticationMiddleware:
     def __init__(self, get_response):

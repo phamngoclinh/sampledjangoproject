@@ -1,10 +1,10 @@
-{% extends "store/management/base-management.html" %}
+{% extends "sale/base-management.html" %}
 
 {% block content %}
 <h1>Cập nhật đơn hàng</h1>
-<span>Trạng thái: {{ order.orderdeliver.get_status_display|default:"Không tồn tại" }}</span>
+<span>Trạng thái: {{ order.get_status_display|default:"Không tồn tại" }}</span>
 <br/><br/>
-{% if order.orderdeliver.status == 'draft' or order.orderdeliver.status == 'confirmed' or order.orderdeliver.status == 'processing' %}
+{% if order.status == 'pending' or order.status == 'awaiting_payment' %}
 <form id="father-form" method="POST" enctype="multipart/form-data">
   {% csrf_token %}
   <table>
@@ -55,7 +55,7 @@
 Ghi chú của nhân viên: {{ order.orderdeliver.note|default:"Không" }}
 <br/><br/>
 <hr/>
-{% include 'store/management/order-process-bar.html' %}
+{% include 'sale/order-process-bar.html' %}
 
 <style>
   ul {

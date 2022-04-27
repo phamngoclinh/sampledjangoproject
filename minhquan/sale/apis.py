@@ -57,7 +57,7 @@ def add_to_cart(request):
     if not order:
       order = Order.objects.create(customer=customer)
 
-    orderdetail, is_new_orderdetail = order.orderdetail_set.get_or_create(
+    orderdetail, is_new_orderdetail = order.orderdetails.get_or_create(
       product_id=product.id,
       defaults={
         'price_unit': product.price,
@@ -84,7 +84,7 @@ def add_to_cart(request):
     return JsonResponse({
       'success': True,
       'order': model_to_dict(order),
-      'order_count': order.orderdetail_set.count(),
+      'order_count': order.orderdetails.count(),
       'orderdetail': model_to_dict(orderdetail),
       'product': {
         'id': orderdetail.product.id,

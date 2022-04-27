@@ -62,7 +62,7 @@ $(function () {
           })
         }
         SERVICES.postRequest({
-          url: $searchInputAgent.data('url'),
+          absoluteUrl: $searchInputAgent.data('url'),
           headers: { 'X-CSRFToken': "{% csrf_token %}" },
           data: requestBody,
           success: function (result) {

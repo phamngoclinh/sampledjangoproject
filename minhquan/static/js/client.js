@@ -23,12 +23,12 @@ const SERVICES = {
     HTTP_CLIENT.sendRequest({ method: 'POST', url, data, ...others })
   },
   addToCartRequest: function ({ data, ...others }) {
-    HTTP_CLIENT.sendRequest({ method: 'POST', url: '/add-to-cart/', data, ...others })
+    HTTP_CLIENT.sendRequest({ method: 'POST', absoluteUrl: '/sale/api/add-to-cart/', data, ...others })
   },
   getCoupon: function ({ data, ...others }) {
-    HTTP_CLIENT.sendRequest({ method: 'POST', url: '/get-coupon/', data, ...others })
+    HTTP_CLIENT.sendRequest({ method: 'POST', absoluteUrl: '/sale/api/get-coupon/', data, ...others })
   },
   getProduct: function ({ data, ...others }) {
-    HTTP_CLIENT.sendRequest({ method: 'POST', url: '/get-product/', data, ...others })
+    HTTP_CLIENT.sendRequest({ method: 'POST', absoluteUrl: '/sale/api/get-product/', data, ...others })
   },
 }

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 
 from django.db.models import Q
 from django.core import mail
-from django.template.loader import render_to_string, get_template
+from django.template.loader import get_template
 
 from .models import Address, Coupon, CouponProgram, Order, OrderDeliver, OrderDetail, Partner, Product, ProductCategory
 
@@ -69,26 +69,30 @@ def get_order_by_id(order_id, **kwargs):
   return get_or_none(Order, **kwargs, pk=order_id)
 
 def get_draft_order(**kwargs):
-  return get_or_none(Order, **kwargs, orderdeliver__status='draft')
+  return get_or_none(Order, **kwargs, status='pending')
 
 def get_draft_orders(**kwargs):
-  return Order.objects.filter(**kwargs, orderdeliver__status='draft')
+  return Order.objects.filter(**kwargs, status='pending')
 
 def get_incomming_orders(**kwargs):
   return Order.objects.filter(
     Q(**kwargs) &
-    (Q(orderdeliver__status='draft') | Q(orderdeliver__status='confirmed'))
+    (Q(status='pending') | Q(status='awaiting_payment'))
   )
+
+def get_user_joining_orders(user, **kwargs):
+  orderdeliver_ids = OrderDeliver.objects.filter(started_user=user).values_list('order_id', flat=True).distinct()
+  return Order.objects.filter(Q(created_user=user) | Q(pk__in=orderdeliver_ids))
 
 def get_incomming_orders_exclude_user(user, **kwargs):
   return Order.objects.filter(
-    ~Q(created_user=user) &
+    (~Q(created_user=user) | Q(created_user__isnull=True)) &
     Q(**kwargs) &
-    (Q(orderdeliver__status='draft') | Q(orderdeliver__status='confirmed'))
+    (Q(status='pending') | Q(status='awaiting_payment'))
   )
 
 def get_none_draft_orders(**kwargs):
-  return Order.objects.filter(**kwargs).exclude(orderdeliver__status='draft')
+  return Order.objects.filter(**kwargs).exclude(status='pending')
 
 def get_partner_order_by_id(order_id, partner):
   order = get_or_none(Order, pk=order_id)
@@ -105,15 +109,18 @@ def get_user_orders(user):
 def get_order_delivers_by_order(order, **kwargs):
   return OrderDeliver.objects.filter(**kwargs, order=order)
 
+def get_or_create_orderdeliver_by_order(order, **kwargs):
+  return OrderDeliver.objects.get_or_create(**kwargs, order=order)
+
 def get_available_coupon_programs():
   return CouponProgram.objects.filter(start_date__lte=datetime.today(), expired_date__gte=datetime.today())
 
 def get_address_by_customer(customer):
-  partner_orders = Order.objects.filter(customer=customer)
-  address_ids = []
-  for partner_order in partner_orders:
-    address_ids.append(partner_order.shipping_address_id)
-  return Address.objects.filter(pk__in=address_ids)
+  # partner_orders = Order.objects.filter(customer=customer)
+  # address_ids = []
+  # for partner_order in partner_orders:
+  #   address_ids.append(partner_order.shipping_address_id)
+  return Address.objects.filter(partner=customer)
 
 def get_coupon_by_order(order):
   return get_or_none(Coupon, order=order)
@@ -178,6 +185,7 @@ def checkout(order, shipping_form, coupon_form):
       address.save()
     else:
       address = Address.objects.create(
+        partner=order.customer,
         city=shipping_form.cleaned_data['city'],
         district=shipping_form.cleaned_data['district'],
         award=shipping_form.cleaned_data['award'],
@@ -188,7 +196,7 @@ def checkout(order, shipping_form, coupon_form):
     order.receive_email = shipping_form.cleaned_data['receive_email']
     order.note = shipping_form.cleaned_data['note']
     order.shipping_address = address
-    order.complete_deliver()
+    order.awaiting_payment()
     order.save()
     # Update coupon program
 

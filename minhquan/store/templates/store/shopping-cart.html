@@ -10,47 +10,49 @@
         <div class="p-gender">
           Giỏ hàng của bạn
         </div>
+
         <div class="block">
+          {% if shopping_cart %}
           <div class="lst-product onlyone">
             <div class="cart-list lstproductbuy lstproductoff">
-              {% if shopping_cart.orderdetail_set %}
-                {% for orderdetail in shopping_cart.orderdetail_set.all %}
-                  <div
-                    class="cart-item item"
-                    data-orderdetail-id="{{ orderdetail.id }}"
-                    data-orderdetail-quantity="{{ orderdetail.quantity }}"
-                    data-product-id="{{ orderdetail.product.id }}"
-                    data-product-price="{{ orderdetail.product.price }}"
-                    data-product-discount-price="{{ orderdetail.product.sub_price }}"
-                  >
-                    <img alt="{{ orderdetail.product.name }}" src="{{ orderdetail.product.image.url }}" width="60" height="60">
-                    <div class="colinfo">
-                      <a href="{% url 'product_detail' orderdetail.product.slug %}" class="name">{{ orderdetail.product.name }}</a>
-                      <div class="quantity">
-                        <div class="quantitynum">
-                          <i class="noselect">-</i>
-                          <input autocomplete="off" type="number" min="1" max="50" class="qty" value="{{ orderdetail.quantity }}">
-                          <i class="noselect">+</i>
-                        </div>
-                        <a class="delete">Xóa</a>
-                      </div>
-                      <div class="npromotion"></div>
+              {% if shopping_cart.orderdetails %}
+              {% for orderdetail in shopping_cart.orderdetails.all %}
+              <div class="cart-item item" data-orderdetail-id="{{ orderdetail.id }}"
+                data-orderdetail-quantity="{{ orderdetail.quantity }}" data-product-id="{{ orderdetail.product.id }}"
+                data-product-price="{{ orderdetail.product.price }}"
+                data-product-discount-price="{{ orderdetail.product.sub_price }}">
+                <img alt="{{ orderdetail.product.name }}" src="{{ orderdetail.product.image.url }}" width="60"
+                  height="60">
+                <div class="colinfo">
+                  <a href="{% url 'product_detail' orderdetail.product.slug %}" class="name">
+                    {{ orderdetail.product.name }}
+                  </a>
+                  <div class="quantity">
+                    <div class="quantitynum">
+                      <i class="noselect">-</i>
+                      <input autocomplete="off" type="number" min="1" max="50" class="qty"
+                        value="{{ orderdetail.quantity }}">
+                      <i class="noselect">+</i>
                     </div>
-                    <div class="colmoney">
-                      {% with sub_price_unit=orderdetail.sub_price_unit %}
-                        {% if sub_price_unit %}
-                          {% widthratio sub_price_unit 1 orderdetail.quantity as quantity_sub_price_unit %}
-                          <strong class="currency">{{ quantity_sub_price_unit|floatformat:"g" }}đ</strong>
-                          {% widthratio orderdetail.price_unit 1 orderdetail.quantity as quantity_price %}
-                          <span class="price-discount currency">{{ quantity_price|floatformat:"g" }}₫</span>
-                        {% else %}
-                          {% widthratio orderdetail.price_unit 1 orderdetail.quantity as quantity_price %}
-                          <strong class="currency">{{ quantity_price|floatformat:"g" }}đ</strong>
-                        {% endif %}
-                      {% endwith %}
-                    </div>
+                    <a class="delete">Xóa</a>
                   </div>
-                {% endfor %}
+                  <div class="npromotion"></div>
+                </div>
+                <div class="colmoney">
+                  {% with sub_price_unit=orderdetail.sub_price_unit %}
+                  {% if sub_price_unit %}
+                  {% widthratio sub_price_unit 1 orderdetail.quantity as quantity_sub_price_unit %}
+                  <strong class="currency">{{ quantity_sub_price_unit|floatformat:"g" }}đ</strong>
+                  {% widthratio orderdetail.price_unit 1 orderdetail.quantity as quantity_price %}
+                  <span class="price-discount currency">{{ quantity_price|floatformat:"g" }}₫</span>
+                  {% else %}
+                  {% widthratio orderdetail.price_unit 1 orderdetail.quantity as quantity_price %}
+                  <strong class="currency">{{ quantity_price|floatformat:"g" }}đ</strong>
+                  {% endif %}
+                  {% endwith %}
+                </div>
+              </div>
+              {% endfor %}
               {% endif %}
               <div class="summary">
                 <div class="row1">
@@ -59,21 +61,31 @@
                       <span>
                         Thành tiền:
                       </span>
-                      <label><b class="cart-amount-price">{{ shopping_cart.amount_price|default:0|floatformat:"g" }}₫</b></label>
+                      <label>
+                        <b class="cart-amount-price">
+                          {{ shopping_cart.amount_price|default:0|floatformat:"g" }}₫
+                        </b>
+                      </label>
                     </div>
                     <div class="cost">
                       <span>
                         Chiết khấu:
                       </span>
                       <label>
-                        <b class="cart-amount-discount-total">{{ shopping_cart.amount_discount_total|default:0|floatformat:"g" }}₫</b>
+                        <b class="cart-amount-discount-total">
+                          {{ shopping_cart.amount_discount_total|default:0|floatformat:"g" }}₫
+                        </b>
                       </label>
                     </div>
                     <div class="cost">
                       <span>
                         Tổng tiền:
                       </span>
-                      <label><b class="cart-amount-sub-total">{{ shopping_cart.amount_sub_total|default:0|floatformat:"g" }}₫</b></label>
+                      <label>
+                        <b class="cart-amount-sub-total">
+                          {{ shopping_cart.amount_sub_total|default:0|floatformat:"g" }}₫
+                        </b>
+                      </label>
                     </div>
                     <!-- <div class="cost">
                       <span>Phí giao hàng</span>
@@ -109,15 +121,20 @@
             </div>
             <div class="btn-order">
               {% if request.partner %}
-                <a href="{% url 'checkout' shopping_cart.id %}" class="btn-og btn-step">ĐẶT HÀNG</a>
+              <a href="{% url 'checkout' shopping_cart.id %}" class="btn-og btn-step">ĐẶT HÀNG</a>
               {% else %}
-                <a href="{% url 'login' %}?next={{request.get_full_path|urlencode}}" class="btn-og btn-step">ĐĂNG NHẬP ĐỂ ĐẶT HÀNG</a>
+              <a href="{% url 'login' %}?next={{request.get_full_path|urlencode}}" class="btn-og btn-step">ĐĂNG NHẬP ĐỂ
+                ĐẶT HÀNG</a>
               {% endif %}
               <div class="clearall"><button>XÓA GIỎ HÀNG</button></div>
             </div>
           </div>
           <div class="clr"></div>
+          {% else %}
+          <p>Chưa có sản phẩm nào</p>
+          {% endif %}
         </div>
+
       </div>
     </div>
   </div>
