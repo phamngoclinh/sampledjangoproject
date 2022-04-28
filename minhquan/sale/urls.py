@@ -6,10 +6,13 @@ from . import views
 urlpatterns = [
   path('', views.index, name='sale_index'),
   path('danh-sach-don-hang/', views.OrderListView.as_view(), name='order_list'),
-  path('chien-luoc-san-pham/', views.program_list, name='program_list'),
+  path('chien-luoc-san-pham/', views.CouponProgramListView.as_view(), name='couponprogram_list'),
 
   path('tao-don-hang/', views.OrderCreateView.as_view(), name='create_order'),
   path('sua-don-hang/<int:pk>', views.OrderUpdateView.as_view(), name='edit_order'),
+
+  path('tao-chuong-trinh/', views.CouponProgramCreateView.as_view(), name='create_couponprogram'),
+  path('sua-chuong-trinh/<int:pk>', views.CouponProgramUpdateView.as_view(), name='edit_couponprogram'),
 
   path('thanh-toan/<int:pk>', views.awaiting_payment, name='awaiting_payment'),
   path('thanh-toan-thanh-cong/<int:pk>', views.awaiting_fulfillment, name='awaiting_fulfillment'),

@@ -1,0 +1,87 @@
+{% load widget_tweaks %}
+<div id="accordion">
+  <!-- Rule customer type -->
+  <div id="by_customer_type" class="accordion-collapse collapse show customer_domain_rule mb-4">
+    <h4>Thiếp lập khách hàng</h4>
+    <div class="rule_item">
+      <input type="hidden" name="rule_customer_type_operator" value="is" />
+      <select name="rule_customer_type_value" class="multiple-select form-select" multiple>
+        <option selected>Chọn loại khách hàng</option>
+        <option value="1">Khách hàng thành viên</option>
+        <option value="2">Nhà cung cấp</option>
+        <option value="3">Nhân viên hệ thống</option>
+        <option value="4">Khác<option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Rule customer name -->
+  <div id="by_customer_name" class="collapse customer_domain_rule mb-4">
+    <h4>Thiếp lập tên khách hàng</h4>
+    <div class="rule_item">
+      <select name="rule_customer_name_operator" class="form-select mb-2">
+        <option selected>Chọn biểu thức</option>
+        <option value="contains">Chứa ký tự</option>
+        <option value="start_withs">Bắt đầu bằng</option>
+        <option value="end_withs">Kết thúc bằng</option>
+      </select>
+      <input type="text" name="rule_customer_name_value" class="form-control" placeholder="Nhập tên khách hàng" />
+    </div>
+    <hr />
+    <!-- <button class="btn btn-primary">Thêm thiếp lập</button> -->
+  </div>
+
+  <!-- Rule dob -->
+  <div id="by_customer_dob" class="collapse customer_domain_rule mb-4">
+    <h4>Thiếp lập ngày sinh</h4>
+    <div class="rule_item">
+      <select name="rule_dob_operator" class="form-select mb-2">
+        <option selected>Chọn biểu thức</option>
+        <option value="gt">Lớn hơn</option>
+        <option value="lt">Nhỏ hơn</option>
+        <option value="between">Khoảng</option>
+      </select>
+      <input type="date" name="rule_dob_value" class="form-control" />
+    </div>
+    <hr />
+    <!-- <button class="btn btn-primary">Thêm thiếp lập</button> -->
+  </div>
+
+  <!-- Rule email -->
+  <div id="by_customer_email" class="collapse customer_domain_rule mb-4">
+    <h4>Thiếp lập email</h4>
+    <div class="rule_item">
+      <select name="rule_email_operator" class="form-select mb-2">
+        <option selected>Chọn biểu thức</option>
+        <option value="contains">Chứa ký tự</option>
+        <option value="start_withs">Bắt đầu bằng</option>
+        <option value="end_withs">Kết thúc bằng</option>
+      </select>
+      <input type="text" name="rule_email_value" class="form-control" placeholder="Nhập email" />
+    </div>
+    <hr />
+    <!-- <button class="btn btn-primary">Thêm thiếp lập</button> -->
+  </div>
+
+  <!-- Rule order amount total -->
+  <div id="by_customer_phone" class="collapse customer_domain_rule mb-4">
+    <h4>Thiếp lập số điện thoại</h4>
+    <div class="rule_item">
+      <select name="rule_phone_operator" class="form-select mb-2">
+        <option selected>Chọn biểu thức</option>
+        <option value="contains">Chứa ký tự</option>
+        <option value="start_withs">Bắt đầu bằng</option>
+        <option value="end_withs">Kết thúc bằng</option>
+      </select>
+      <input type="text" name="rule_phone_value" class="form-control" placeholder="Nhập số điện thoại" />
+    </div>
+    <hr />
+    <!-- <button class="btn btn-primary">Thêm thiếp lập</button> -->
+  </div>
+</div>
+
+<style>
+  .multiple-select {
+    height: 200px;
+  }
+</style>

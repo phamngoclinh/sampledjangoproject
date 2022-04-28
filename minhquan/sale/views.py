@@ -4,9 +4,9 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 
-from .models import Order
+from .models import CouponProgram, Order
 
-from .forms import OrderDetailInlineFormSet, OrderModelForm
+from .forms import CouponProgramModelForm, OrderDetailInlineFormSet, OrderModelForm
 
 from . import services
 
@@ -30,6 +30,7 @@ class OrderListView(ListView):
     context['title'] = 'Quản lý - Danh sách đơn hàng'
     context['incomming_orders'] = services.get_incomming_orders_exclude_user(self.request.user)
     return context
+
 
 class OrderCreateView(CreateView):
   model = Order
@@ -93,6 +94,60 @@ class OrderUpdateView(UpdateView):
       ctx['inlines'] = OrderDetailInlineFormSet(instance=self.object)
       ctx['order'] = self.object
     return ctx
+
+
+class CouponProgramListView(ListView):
+  model = CouponProgram
+  paginate_by = 100
+  template_name = 'sale/program-list.html'
+
+  def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    context['title'] = 'Quản lý - Danh sách khuyến mãi'
+    return context
+
+
+class CouponProgramCreateView(CreateView):
+  model = CouponProgram
+  form_class = CouponProgramModelForm
+  template_name = 'sale/create-couponprogram.html'
+  success_url = reverse_lazy('program_list')
+
+  def form_valid(self, form):
+    if form.is_valid():
+      return super().form_valid(form)
+    else:
+      return self.form_invalid(form)
+  
+  # We populate the context with the forms. Here I'm sending
+  # the inline forms in `inlines`
+  def get_context_data(self, **kwargs):
+    ctx = super().get_context_data(**kwargs)
+    ctx['title'] = 'Quản lý - Tạo chương trình'
+    return ctx
+
+
+class CouponProgramUpdateView(UpdateView):
+  model = CouponProgram
+  form_class = CouponProgramModelForm
+  template_name = 'sale/edit-couponprogram.html'
+
+  def get_success_url(self):
+    return reverse_lazy('edit_couponprogram', kwargs={'pk': self.object.id})
+
+  def form_valid(self, form):
+    if form.is_valid():
+      return super().form_valid(form)
+    else:
+      return self.form_invalid(form)
+  
+  # We populate the context with the forms. Here I'm sending
+  # the inline forms in `inlines`
+  def get_context_data(self, **kwargs):
+    ctx = super().get_context_data(**kwargs)
+    ctx['title'] = 'Quản lý - Cập nhật chương trình'
+    return ctx
+
 
 @login_required
 def awaiting_payment(request, pk):
@@ -171,27 +226,3 @@ def program_list(request):
   return render(request, 'sale/program-list.html', {
     'title': 'Quản lý - Danh sách khuyến mãi'
   })
-
-
-# urlpatterns = [
-#   path('', index, name='management'),
-#   path('danh-sach-don-hang/', OrderListView.as_view(), name='order_list'),
-#   path('chien-luoc-san-pham/', program_list, name='program_list'),
-
-#   path('tao-don-hang/', OrderCreateView.as_view(), name='create_order'),
-#   path('sua-don-hang/<int:pk>', OrderUpdateView.as_view(), name='edit_order'),
-  
-#   path('khoi-tao-trang-thai/<int:pk>', init_order_status, name='init_order_status'),
-#   path('xac-nhan-don-hang/<int:pk>', confirm_order, name='confirm_order'),
-#   path('xu-ly-don-hang/<int:pk>', start_process_order, name='start_process_order'),
-#   path('ket-thuc-xu-ly-don-hang/<int:pk>', finish_process_order, name='finish_process_order'),  
-#   path('huy-don-hang/<int:pk>', cancel_order, name='cancel_order'),
-
-#   path('thanh-toan/<int:pk>', awaiting_payment, name='awaiting_payment'),
-#   path('thanh-toan-thanh-cong/<int:pk>', awaiting_fulfillment, name='awaiting_fulfillment'),
-#   path('shipper-nhan-hang/<int:pk>', awaiting_shipment, name='awaiting_shipment'),
-#   path('khach-nhan-hang/<int:pk>', awaiting_pickup, name='awaiting_pickup'),
-#   path('giao-hang-mot-phan/<int:pk>', partially_shipped, name='partially_shipped'),
-#   path('giao-hang-thanh-cong/<int:pk>', shipped, name='shipped'),
-#   path('hoan-tat-don-hang/<int:pk>', completed, name='completed'),
-# ]

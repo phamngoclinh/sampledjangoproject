@@ -1,0 +1,50 @@
+{% load widget_tweaks %}
+<div class="couponprogram-form">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>{{ couponprogram_form.name.label }}</th>
+        <th>{{ couponprogram_form.start_date.label }}</th>
+        <th>{{ couponprogram_form.expired_date.label }}</th>
+        <th>{{ couponprogram_form.discount_type.label }}</th>
+        <th>{{ couponprogram_form.discount.label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ couponprogram_form.name|add_class:'form-control' }}</td>
+        <td>{{ couponprogram_form.start_date|add_class:'form-control' }}</td>
+        <td>{{ couponprogram_form.expired_date|add_class:'form-control' }}</td>
+        <td>{{ couponprogram_form.discount_type|add_class:'form-control' }}</td>
+        <td>{{ couponprogram_form.discount|add_class:'form-control' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th style="width: 20%;">{{ couponprogram_form.rule_product.label }}</th>
+        <th style="width: 20%;">Cài đặt sản phẩm</th>
+        <th>{{ couponprogram_form.rule_customer.label }}</th>
+        <th>Cài đặt khách hàng</th>
+        <th>{{ couponprogram_form.products.label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          {{ couponprogram_form.rule_product|add_class:'form-control' }}
+          {% include 'sale/product-rule-menu.html' %}
+        </td>
+        <td>{% include 'sale/product-rule-item.html' %}</td>
+        <td>
+          {{ couponprogram_form.rule_customer|add_class:'form-control' }}
+          {% include 'sale/customer-rule-menu.html' %}
+        </td>
+        <td>{% include 'sale/customer-rule-item.html' %}</td>
+        <td>{{ couponprogram_form.products|add_class:'form-control' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

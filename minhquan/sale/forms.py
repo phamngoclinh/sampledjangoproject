@@ -9,7 +9,7 @@ from django.forms import inlineformset_factory, modelformset_factory
 
 from minhquan.widgets import SearchInputWidget
 
-from .models import Address, Coupon, Order, OrderDetail, Partner
+from .models import Address, Coupon, CouponProgram, Order, OrderDetail, Partner
 
 
 class ProfileForm(forms.ModelForm):
@@ -116,6 +116,27 @@ class CouponForm(forms.Form):
     except Coupon.DoesNotExist:
       raise ValidationError('Coupon Code không tồn tại hoặc đã được sử dụng.')
     return code
+
+
+class CouponProgramModelForm(forms.ModelForm):
+  class Meta:
+    model = CouponProgram
+    fields = '__all__'
+    labels = {
+      'products': 'Sản phẩm áp dụng',
+      'name': 'Tên CT',
+      'rule_product': 'Ràng buộc sản phẩm',
+      'rule_customer': 'Ràng buộc khách hàng',
+      'start_date': 'Ngày bắt đầu',
+      'expired_date': 'Ngày kết thúc',
+      'discount_type': 'Loại chiết khấu',
+      'discount': 'Giá trị chiết khấu',
+    }
+    widgets = {
+      'start_date': forms.widgets.DateInput(attrs={'type': 'date'}),
+      'expired_date': forms.widgets.DateInput(attrs={'type': 'date'}),
+    }
+
 
 class AddressModelForm(forms.ModelForm):
   class Meta:
