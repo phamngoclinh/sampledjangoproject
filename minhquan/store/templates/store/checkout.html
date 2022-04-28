@@ -15,7 +15,7 @@
             {% if shopping_cart %}
             <div class="cart">
               <div class="heading">
-                Trạng thái: {{ shopping_cart.orderdeliver.get_status_display }} - Ngày tạo: {{ shopping_cart.created_date|date:"D d M Y" }}
+                Trạng thái: {{ shopping_cart.get_status_display }} - Ngày tạo: {{ shopping_cart.created_date|date:"D d M Y" }}
               </div>
               <table>
                 <thead>
@@ -30,7 +30,7 @@
                     <td>{{ shopping_cart.id }}</td>
                     <td>
                       <ul>
-                        {% for orderdetail in shopping_cart.orderdetail_set.all %}
+                        {% for orderdetail in shopping_cart.orderdetails.all %}
                         <li>
                           <a href="{% url 'product_detail' orderdetail.product.slug %}">{{ orderdetail.product.name }}</a>
                           <span>(x{{ orderdetail.quantity }})</span>

@@ -1,0 +1,31 @@
+{% load widget_tweaks %}
+<div class="order-detail-form d-flex">
+  {{ inline_orderdetail_form.non_field_errors }}
+  {{ inline_orderdetail_form.id }}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>{{ inline_orderdetail_form.DELETE.label }}</th>
+        <th>{{ inline_orderdetail_form.product.label }}</th>
+        <th>{{ inline_orderdetail_form.quantity.label }}</th>
+        <th>{{ inline_orderdetail_form.price_unit.label }}</th>
+        <th>{{ inline_orderdetail_form.sub_price_unit.label }}</th>
+        <th>{{ inline_orderdetail_form.price_discount.label }}</th>
+        <th>{{ inline_orderdetail_form.amount_price.label }}</th>
+        <th>{{ inline_orderdetail_form.sub_total.label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ inline_orderdetail_form.DELETE }}</td>
+        <th>{{ inline_orderdetail_form.product|add_class:'form-control' }}</th>
+        <th>{{ inline_orderdetail_form.quantity|add_class:'form-control' }}</th>
+        <th>{{ inline_orderdetail_form.price_unit|add_class:'form-control' }}</th>
+        <th>{{ inline_orderdetail_form.sub_price_unit|add_class:'form-control' }}</th>
+        <th>{{ inline_orderdetail_form.price_discount|add_class:'form-control' }}</th>
+        <th>{{ inline_orderdetail_form.amount_price|add_class:'form-control' }}</th>
+        <th>{{ inline_orderdetail_form.sub_total|add_class:'form-control' }}</th>
+      </tr>
+    </tbody>
+  </table>
+</div>

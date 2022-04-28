@@ -8,7 +8,7 @@
   {% for order in orders %}
   <div class="cart">
     <div class="heading">
-      Trạng thái: {{ order.orderdeliver.get_status_display }} - Ngày tạo: {{ order.created_date|date:"D d M Y" }}
+      Trạng thái: {{ order.get_status_display }} - Ngày tạo: {{ order.created_date|date:"D d M Y" }}
       - <a href="{% url 'order' order.id %}">Xem chi tiết</a>
     </div>
     <table>
@@ -24,7 +24,7 @@
           <td>{{ order.id }}</td>
           <td>
             <ul>
-              {% for orderdetail in order.orderdetail_set.all %}
+              {% for orderdetail in order.orderdetails.all %}
                 <li>
                   <a href="{% url 'product_detail' orderdetail.product.slug %}">{{ orderdetail.product.name }}</a>
                   <span>(x{{ orderdetail.quantity }})</span>

@@ -15,14 +15,5 @@ def compute_orderdetail(sender, instance, raw, using, update_fields, **kwargs):
 
 @receiver(post_save, sender=Order)
 def create_order_deliver(sender, instance, created, raw, using, update_fields, **kwargs):
-  current_object = instance
   if created:
-    current_object.orderdeliver = OrderDeliver.objects.create(order=current_object, started_date=datetime.today())
-    OrderDeliver.objects.bulk_create([
-      OrderDeliver(order=current_object, status='confirmed'),
-      OrderDeliver(order=current_object, status='processing'),
-      OrderDeliver(order=current_object, status='shipping'),
-      OrderDeliver(order=current_object, status='done'),
-      OrderDeliver(order=current_object, status='canceled'),
-    ])
-    current_object.save()
+    OrderDeliver.objects.create(order=instance, status=instance.status)

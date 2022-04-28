@@ -1,0 +1,59 @@
+{% load widget_tweaks %}
+<div class="order-form">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>{{ order_form.amount_price.label }}</th>
+        <th>{{ order_form.amount_sub_total.label }}</th>
+        <th>{{ order_form.amount_discount.label }}</th>
+        <th>{{ order_form.amount_total.label }}</th>
+        <th>{{ order_form.amount_discount_total.label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ order_form.amount_price.value }}</td>
+        <td>{{ order_form.amount_sub_total.value }}</td>
+        <td>{{ order_form.amount_discount.value }}</td>
+        <td>{{ order_form.amount_total.value }}</td>
+        <td>{{ order_form.amount_discount_total.value }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <table class="table table-striped">
+    {% comment %}
+    <thead>
+      <tr>
+        <th>{{ order_form.customer.label }}</th>
+        <th>{{ order_form.shipping_address.label }}</th>
+      </tr>
+    </thead>
+    {% endcomment %}
+    <tbody>
+      <tr>
+        <td>{{ order_form.customer }}</td>
+        <td>{{ order_form.shipping_address }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>{{ order_form.receive_name.label }}</th>
+        <th>{{ order_form.receive_phone.label }}</th>
+        <th>{{ order_form.receive_email.label }}</th>
+        <th>{{ order_form.note.label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ order_form.receive_name|add_class:'form-control' }}</td>
+        <td>{{ order_form.receive_phone|add_class:'form-control' }}</td>
+        <td>{{ order_form.receive_email|add_class:'form-control' }}</td>
+        <td>{{ order_form.note|add_class:'form-control'|default:"Không" }}</td>
+      </tr>
+    </tbody>
+  </table>

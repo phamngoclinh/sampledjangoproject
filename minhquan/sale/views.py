@@ -1,10 +1,6 @@
-from datetime import datetime
-
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from django.template.response import TemplateResponse
-from django.urls import path, reverse_lazy
+from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 
@@ -16,18 +12,18 @@ from . import services
 
 
 def index(request):
-  return render(request, 'store/management/index.html', {
+  return render(request, 'sale/index.html', {
     'title': 'Sale Management'
   })
 
 class OrderListView(ListView):
   model = Order
   paginate_by = 100
-  template_name = 'store/management/order-list.html'
+  template_name = 'sale/order-list.html'
 
   def get_queryset(self, **kwargs):
-    qs = super().get_queryset(**kwargs)
-    return qs.filter(created_user=self.request.user)
+    # qs = super().get_queryset(**kwargs)
+    return services.get_user_joining_orders(self.request.user)
 
   def get_context_data(self, **kwargs):
     context = super().get_context_data(**kwargs)
@@ -37,7 +33,7 @@ class OrderListView(ListView):
 
 class OrderCreateView(CreateView):
   model = Order
-  template_name = 'store/management/create-order.html'
+  template_name = 'sale/create-order.html'
   fields = ['customer', 'receive_name', 'receive_phone', 'receive_email', 'shipping_address', 'note']
   success_url = reverse_lazy('order_list')
 
@@ -69,7 +65,7 @@ class OrderCreateView(CreateView):
 
 class OrderUpdateView(UpdateView):
   model = Order
-  template_name = 'store/management/edit-order.html'
+  template_name = 'sale/edit-order.html'
   fields = ['customer', 'receive_name', 'receive_phone', 'receive_email', 'shipping_address', 'note']
   success_url = reverse_lazy('order_list')
 
@@ -99,55 +95,103 @@ class OrderUpdateView(UpdateView):
     return ctx
 
 @login_required
-def init_order_status(request, pk):
+def awaiting_payment(request, pk):
   order = services.get_order_by_id(pk)
-  orderdeliver = services.get_order_delivers_by_order(order, status='draft').first()
-  order.orderdeliver = orderdeliver
-  order.save()
+  order.awaiting_payment(request.user)
   return redirect('edit_order', pk=pk)
 
 @login_required
-def confirm_order(request, pk):
+def awaiting_fulfillment(request, pk):
   order = services.get_order_by_id(pk)
-  order.complete_deliver(request.user)
+  order.awaiting_fulfillment(request.user)
   return redirect('edit_order', pk=pk)
 
 @login_required
-def start_process_order(request, pk):
+def awaiting_shipment(request, pk):
   order = services.get_order_by_id(pk)
-  order.start_deliver(request.user)
+  order.awaiting_shipment(request.user)
   return redirect('edit_order', pk=pk)
 
 @login_required
-def finish_process_order(request, pk):
+def awaiting_pickup(request, pk):
   order = services.get_order_by_id(pk)
-  order.complete_deliver(request.user)
+  order.awaiting_pickup(request.user)
   return redirect('edit_order', pk=pk)
 
 @login_required
-def cancel_order(request, pk):
+def partially_shipped(request, pk):
   order = services.get_order_by_id(pk)
-  note = request.POST.get('note')
-  order.cancel_deliver(request.user, note)
+  order.partially_shipped(request.user)
   return redirect('edit_order', pk=pk)
 
+@login_required
+def shipped(request, pk):
+  order = services.get_order_by_id(pk)
+  order.shipped(request.user)
+  return redirect('edit_order', pk=pk)
 
+@login_required
+def completed(request, pk):
+  order = services.get_order_by_id(pk)
+  order.completed(request.user)
+  return redirect('edit_order', pk=pk)
+
+@login_required
+def cancelled(request, pk):
+  order = services.get_order_by_id(pk)
+  order.cancelled(request.user)
+  return redirect('edit_order', pk=pk)
+
+@login_required
+def declined(request, pk):
+  order = services.get_order_by_id(pk)
+  order.declined(request.user)
+  return redirect('edit_order', pk=pk)
+
+@login_required
+def partially_refunded(request, pk):
+  order = services.get_order_by_id(pk)
+  order.partially_refunded(request.user)
+  return redirect('edit_order', pk=pk)
+
+@login_required
+def refunded(request, pk):
+  order = services.get_order_by_id(pk)
+  order.refunded(request.user)
+  return redirect('edit_order', pk=pk)
+
+@login_required
+def disputed(request, pk):
+  order = services.get_order_by_id(pk)
+  order.disputed(request.user)
+  return redirect('edit_order', pk=pk)
+
+@login_required
 def program_list(request):
-  return render(request, 'store/management/program-list.html', {
+  return render(request, 'sale/program-list.html', {
     'title': 'Quản lý - Danh sách khuyến mãi'
   })
 
 
-urlpatterns = [
-  path('', index, name='management'),
-  path('danh-sach-don-hang/', OrderListView.as_view(), name='order_list'),
-  path('chien-luoc-san-pham/', program_list, name='program_list'),
+# urlpatterns = [
+#   path('', index, name='management'),
+#   path('danh-sach-don-hang/', OrderListView.as_view(), name='order_list'),
+#   path('chien-luoc-san-pham/', program_list, name='program_list'),
 
-  path('tao-don-hang/', OrderCreateView.as_view(), name='create_order'),
-  path('sua-don-hang/<int:pk>', OrderUpdateView.as_view(), name='edit_order'),
-  path('khoi-tao-trang-thai/<int:pk>', init_order_status, name='init_order_status'),
-  path('xac-nhan-don-hang/<int:pk>', confirm_order, name='confirm_order'),
-  path('xu-ly-don-hang/<int:pk>', start_process_order, name='start_process_order'),
-  path('ket-thuc-xu-ly-don-hang/<int:pk>', finish_process_order, name='finish_process_order'),  
-  path('huy-don-hang/<int:pk>', cancel_order, name='cancel_order'),
-]
+#   path('tao-don-hang/', OrderCreateView.as_view(), name='create_order'),
+#   path('sua-don-hang/<int:pk>', OrderUpdateView.as_view(), name='edit_order'),
+  
+#   path('khoi-tao-trang-thai/<int:pk>', init_order_status, name='init_order_status'),
+#   path('xac-nhan-don-hang/<int:pk>', confirm_order, name='confirm_order'),
+#   path('xu-ly-don-hang/<int:pk>', start_process_order, name='start_process_order'),
+#   path('ket-thuc-xu-ly-don-hang/<int:pk>', finish_process_order, name='finish_process_order'),  
+#   path('huy-don-hang/<int:pk>', cancel_order, name='cancel_order'),
+
+#   path('thanh-toan/<int:pk>', awaiting_payment, name='awaiting_payment'),
+#   path('thanh-toan-thanh-cong/<int:pk>', awaiting_fulfillment, name='awaiting_fulfillment'),
+#   path('shipper-nhan-hang/<int:pk>', awaiting_shipment, name='awaiting_shipment'),
+#   path('khach-nhan-hang/<int:pk>', awaiting_pickup, name='awaiting_pickup'),
+#   path('giao-hang-mot-phan/<int:pk>', partially_shipped, name='partially_shipped'),
+#   path('giao-hang-thanh-cong/<int:pk>', shipped, name='shipped'),
+#   path('hoan-tat-don-hang/<int:pk>', completed, name='completed'),
+# ]

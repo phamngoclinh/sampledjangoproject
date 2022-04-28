@@ -1,11 +1,12 @@
 $(function () {
-  const searchInputAgentSelector = '[id$=_search_input_widget_agent]'
+  const searchInputAgentSelector = '[class$=search_input_widget_agent]'
   const widgetSelector = '[class$=source_value_search_input]'
-  const inputSearchSelector = '[id$=_search_text]'
-  const searchResultSelector = '[id$=_search_result]'
-  const selectedResultSelector = '[id$=_selected_result]'
-  const removeSelectedResultSelector = '[id$=_remove_selected_result_button]'
-  const addFormButtonSelector = '[id$=_add_form_button]'
+  const inputSearchSelector = '[class$=search_text]'
+  const searchResultSelector = '[class$=search_result]'
+  const selectedResultSelector = '[class$=selected_result]'
+  const removeSelectedResultSelector = '[class$=remove_selected_result_button]'
+
+  const cacheData = {}
 
   const triggerWidgetUpdate = function (agent, value, data) {
     let $searchInputAgent = agent
@@ -51,7 +52,7 @@ $(function () {
       let searchFields = $searchInputAgent.data('search_fields').split(',')
 
       $searchResult.empty()
-      cacheData = null
+      cacheData[$searchInputAgent[0].id] = null
       let searchText = $(this).val()
       if (searchText) {
         let requestBody = { [searchKey]: searchText }
@@ -62,12 +63,12 @@ $(function () {
           })
         }
         SERVICES.postRequest({
-          url: $searchInputAgent.data('url'),
+          absoluteUrl: $searchInputAgent.data('url'),
           headers: { 'X-CSRFToken': "{% csrf_token %}" },
           data: requestBody,
           success: function (result) {
             if (result.success) {
-              cacheData = result.data
+              cacheData[$searchInputAgent[0].id] = result.data
               result.data.forEach(function (item, index) {
                 let searchResult = searchFields.map(function (field) {
                   if (!item[field] || item[field] === 'null')
@@ -77,7 +78,7 @@ $(function () {
 
                 let $searchItem = `
                   <li
-                    class="search_item"
+                    class="list-group-item list-group-item-action search_item"
                     data-cache-data-index="${index}"
                     data-id="${item.id}"
                     data-search-result="${searchResult}"
@@ -91,7 +92,9 @@ $(function () {
 
               $searchInputAgent.find('.search_item').on('click', function () {
                 let cacheDataIndex = $(this).data('cache-data-index')
-                selectResultItem($searchInputAgent, cacheData[cacheDataIndex])
+                selectResultItem($searchInputAgent, cacheData[$searchInputAgent[0].id][cacheDataIndex])
+                let $inputSearch = $searchInputAgent.find(inputSearchSelector)
+                $inputSearch.parent().addClass('d-none')
               })
             }
           }
@@ -105,12 +108,15 @@ $(function () {
     triggerWidgetUpdate($searchInputAgent, '', undefined)
     $selectedResult.find('span:first-child').empty()
     $selectedResult.hide()
+    let $inputSearch = $searchInputAgent.find(inputSearchSelector)
+    $inputSearch.parent().removeClass('d-none')
   })
 
-  $(document).on('click', addFormButtonSelector, function () {
-    let $searchInputAgent = $(this).parents(searchInputAgentSelector)
-    let $addForm = $(`.${$searchInputAgent[0].id}`)
-    $addForm.show()
+  $(document).on('click', '.search_input_add_form_submit', function (e) {
+    e.preventDefault()
+    let $addFormTemplateModal = $(this).parents('.add_form_template')
+    let $addForm = $addFormTemplateModal.find('form')
+    $addForm.submit()
   })
 
   $(document).on('submit', '.search_input_add_form', function (e) {
@@ -125,7 +131,7 @@ $(function () {
       success: function (result, textStatus) {
         if (result.success) {
           selectResultItem($searchInputAgent, result.data)
-          $addFormTemplate.hide()
+          $addFormTemplate.find('.search_input_add_form_close').click()
         } else {
           $addForm.find('.add_form_fields').html(result.form)
         }

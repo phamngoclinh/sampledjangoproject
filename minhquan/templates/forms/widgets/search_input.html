@@ -1,56 +1,112 @@
+{% load widget_tweaks %}
 {% with pattern_name=widget.name|add:widget.suffix %}
-<div id="id_{{ pattern_name }}_search_input_widget_agent" class="search_input_widget_agent"
+<span id="id_{{ pattern_name }}_search_input_widget_agent" class="search_input_widget_agent"
   data-related_data="{{ widget.related_data|default:'' }}" data-url="{{ widget.url }}"
   data-search_fields="{{ widget.search_fields }}" data-search_key="{{ widget.search_key }}"
   data-add_form_action="{{ widget.add_form.action }}">
 
   {% if widget.selected_result %}
-  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="source_value_search_input"
+  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="form-control source_value_search_input"
     value="{{ widget.selected_result.id|default:'' }}" />
   {% else %}
-  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="source_value_search_input" />
+  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="form-control source_value_search_input" />
   {% endif %}
 
-  <input type="text" name="{{ pattern_name }}" id="id_{{ pattern_name }}_search_text" class="search_text"
+  
+  <span class="input-group {% if widget.selected_result %}d-none{% endif %}">
+    <input type="text" name="{{ pattern_name }}" id="id_{{ pattern_name }}_search_text" class="form-control search_text"
     placeholder="{{ widget.attrs.placeholder }}" />
-
-  {% if widget.add_form %}
-  <span id="id_{{ pattern_name }}_add_form_button" class="add_form_button">+</span>
-  {% endif %}
+    {% if widget.add_form %}
+      <span
+        id="id_{{ pattern_name }}_add_form_button"
+        class="input-group-text add_form_button"
+        data-bs-toggle="modal"
+        data-bs-target="#id_{{ pattern_name }}_add_form"
+      >
+        +
+      </span>
+    {% endif %}
+  </span>
 
   {% if widget.selected_result %}
-  <div id="id_{{ pattern_name }}_selected_result" class="selected_result">
+  <span id="id_{{ pattern_name }}_selected_result" class="selected_result">
     <span id="id_{{ pattern_name }}_selected_result_text" class="selected_result_text">
       {{ widget.selected_result }}
     </span>
-    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">x</span>
-  </div>
+    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">(xóa)</span>
+  </span>
   {% else %}
-  <div id="id_{{ pattern_name }}_selected_result" class="selected_result" style="display: none">
+  <span id="id_{{ pattern_name }}_selected_result" class="selected_result" style="display: none">
     <span id="id_{{ pattern_name }}_selected_result_text" class="selected_result_text"></span>
-    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">x</span>
-  </div>
+    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">(xóa)</span>
+  </span>
   {% endif %}
 
-  <ul id="id_{{ pattern_name }}_search_result" class="search_result" style="display: none"></ul>
+  <span id="id_{{ pattern_name }}_search_result" class="list-group mt-2 search_result" style="display: none"></span>
 
   <script>
     $('body').append(`
-      <div id="id_{{ pattern_name }}_add_form" class="id_{{ pattern_name }}_search_input_widget_agent add_form_template" style="display: none">
-        <form
-          class="search_input_add_form"
-          method="post"
-          action="{{ widget.add_form.action }}"
-        >
-          <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF_TOKEN}">
-          <div class="add_form_fields">
-            {{ widget.add_form.form.as_p }}
+      <div
+        id="id_{{ pattern_name }}_add_form"
+        tabindex="-1"
+        aria-hidden="true"
+        class="id_{{ pattern_name }}_search_input_widget_agent add_form_template modal fade"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Thêm {{ widget.name }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form
+                class="search_input_add_form"
+                method="post"
+                action="{{ widget.add_form.action }}"
+              >
+                <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF_TOKEN}">
+                <div class="add_form_fields">
+                  {% for hidden_field in widget.add_form.form.hidden_fields %}
+                    {{ hidden_field|escapejs }}
+                  {% endfor %}
+                  {% for field in  widget.add_form.form.visible_fields %}
+                    <div class="form-group mb-2">
+                      {{ field.label_tag|escapejs }}
+                      {{ field|add_class:'form-control'|escapejs }}
+                      {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text|escapejs }}</small>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
+                {% comment %}
+                <input type="submit" value="Add" />
+                <button type="reset" class="close_search_input_add_form">x Close</button>
+                {% endcomment %}
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary search_input_add_form_close" data-bs-dismiss="modal">Đóng</button>
+              <button type="button" class="btn btn-primary search_input_add_form_submit">Thêm</button>
+            </div>
           </div>
-          <input type="submit" value="Add" />
-          <button type="reset" class="close_search_input_add_form">x Close</button>
-        </form>
+        </div>
       </div>
     `)
   </script>
-</div>
+</span>
+
+<style>
+  .search_input_widget_agent {
+    position: relative;
+    display: block;
+  }
+  .search_result {
+    position: absolute;
+    top: 35px;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+</style>
 {% endwith %}

@@ -4,6 +4,7 @@ Django==4.0.3
 Pillow==9.1.0
 sqlparse==0.4.2
 django-environ==0.8.1
+django-widget-tweaks==1.4.12
 
 # For old Django version
 # asgiref==3.5.0

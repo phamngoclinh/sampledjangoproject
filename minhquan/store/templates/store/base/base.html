@@ -1,31 +1,46 @@
-{% extends 'base/base.html' %}
 {% load static %}
 
-{% block head %}
-{{ block.super }}
-<link rel="stylesheet" type="text/css" href="{% static 'store/css/normalize.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'store/css/style.css' %}">
-<script>
-  const USER_LOGGED_IN = "{{ request.partner }}"
-  const IS_LOGGED_IN = USER_LOGGED_IN !== 'None'
-</script>
-{% endblock head %}
+<!DOCTYPE html>
+<html lang="en">
 
-{% block body %}
-{% block header %}{% include "store/shared/header.html" %}{% endblock %}
+<head>
+  {% block head %}
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{title}}{% endblock %} - Minh Quân</title>
 
-{% block wrapper %}
-{% block sidebar %}{% include "store/shared/sidebar.html" %}{% endblock %}
-<!-- Main content -->
-{% block content %}{% endblock %}
-{% endblock %}
+    <link rel="stylesheet" type="text/css" href="{% static 'store/css/normalize.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'store/css/style.css' %}">
+  {% endblock %}
+  <script>
+    const CSRF_TOKEN = "{{ csrf_token }}"
+    const USER_LOGGED_IN = "{{ request.partner }}"
+    const IS_LOGGED_IN = USER_LOGGED_IN !== 'None'
+  </script>
+  <script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+  <script src="{% static 'js/client.js' %}"></script>
+</head>
 
-{% block footer %}{% include "store/shared/footer.html" %}{% endblock %}
+<body>
+  {% block body %}
+  {% block header %}{% include "store/shared/header.html" %}{% endblock %}
+  
+  {% block wrapper %}
+  {% block sidebar %}{% include "store/shared/sidebar.html" %}{% endblock %}
+  <!-- Main content -->
+  {% block content %}{% endblock %}
+  {% endblock %}
+  
+  {% block footer %}{% include "store/shared/footer.html" %}{% endblock %}
+  
+  {% if request.partner == None %}
+  <script src="{% static 'store/js/cart.js' %}"></script>
+  {% else %}
+  <script src="{% static 'store/js/cart-authenticated.js' %}"></script>
+  {% endif %}
+  <script src="{% static 'store/js/main.js' %}"></script>
+  {% endblock body %}
+</body>
 
-{% if request.partner == None %}
-<script src="{% static 'store/js/cart.js' %}"></script>
-{% else %}
-<script src="{% static 'store/js/cart-authenticated.js' %}"></script>
-{% endif %}
-<script src="{% static 'store/js/main.js' %}"></script>
-{% endblock body %}
+</html>

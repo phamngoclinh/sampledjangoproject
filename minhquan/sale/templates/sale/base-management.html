@@ -1,16 +1,43 @@
 {% extends 'base/base.html' %}
 
 {% block body %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light rounded" aria-label="Eleventh navbar example">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'sale_index' %}">Sale Management</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarsExample09" aria-controls="navbarsExample09" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-<header>
-  <ul style="list-style-type: none; padding-left: 0;">
-    <li style="display: inline-block; margin-right: 10px;"><a href="{% url 'order_list' %}">DANH SÁCH ĐƠN HÀNG</a></li>
-    <li style="display: inline-block; margin-right: 10px;"><a href="{% url 'program_list' %}">KHUYẾN MÃI</a></li>
-  </ul>
-</header>
-<hr/>
+    <div class="collapse navbar-collapse" id="navbarsExample09">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link active" aria-current="page" href="{% url 'order_list' %}">Đơn hàng</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'program_list' %}">Khuyến mãi</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled">Khách hàng</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="dropdown09" data-bs-toggle="dropdown" aria-expanded="false">Thống kê</a>
+          <ul class="dropdown-menu" aria-labelledby="dropdown09">
+            <li><a class="dropdown-item" href="#">Doanh thu</a></li>
+            <li><a class="dropdown-item" href="#">Mi heo</a></li>
+            <li><a class="dropdown-item" href="#">Mi lun</a></li>
+          </ul>
+        </li>
+      </ul>
+      <form>
+        <input class="form-control" type="text" placeholder="Tìm kiếm" aria-label="Tìm kiếm">
+      </form>
+    </div>
+  </div>
+</nav>
 
-{% block content %}{% endblock content %}
+<div class="container-fluid">
+  {% block content %}{% endblock content %}
+</div>
 
 <script>
   $(document).ready(function () {

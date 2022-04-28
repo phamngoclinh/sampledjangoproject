@@ -1,0 +1,47 @@
+{% extends "sale/base-management.html" %}
+{% block content %}
+{% include 'sale/order-process-bar.html' %}
+
+<h1>Cập nhật đơn hàng</h1>
+<span>Trạng thái: {{ order.get_status_display|default:"Không tồn tại" }}</span>
+<br/><br/>
+{% if order.status == 'pending' or order.status == 'awaiting_payment' %}
+<form id="father-form" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% include 'sale/order-form.html' with order_form=form %}
+
+  <hr/>
+
+  <div id="formset" class="orderdetail-formset">
+    {{ inlines.management_form }}
+    {% for inline in inlines %}
+      {% include 'sale/inline-orderdetail-form.html' with inline_orderdetail_form=inline %}
+    {% endfor %}
+  </div>
+  <div id="empty-form" style="display:none">
+    {% include 'sale/inline-orderdetail-form.html' with inline_orderdetail_form=inlines.empty_form %}
+  </div>
+  <button type="button" id="add-more" class="btn btn-secondary">Thêm sản phẩm</button>
+  <button type="submit" class="btn btn-warning">Cập nhật đơn hàng</button>
+</form>
+{% else %}
+<div>
+  <!-- Read only -->
+  {% csrf_token %}
+  {% include 'sale/order-form.html' with order_form=form mode='readonly' %}
+
+  <hr />
+  <div id="formset" class="orderdetail-formset">
+    {{ inlines.management_form }}
+    {% for inline in inlines %}
+      {% include 'sale/inline-orderdetail-form.html' with inline_orderdetail_form=inline %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+<br/><br/>
+Ghi chú của nhân viên: {{ order.orderdeliver.note|default:"Không" }}
+<br/><br/>
+
+{{ form.media }}
+{% endblock content %}

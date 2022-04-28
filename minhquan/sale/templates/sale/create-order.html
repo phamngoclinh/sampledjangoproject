@@ -1,0 +1,22 @@
+{% extends "sale/base-management.html" %}
+
+{% block content %}
+<h1>Đơn hàng mới</h1>
+<form id="father-form" method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+  {% include 'sale/order-form.html' with order_form=form %}
+
+  <hr />
+  
+  <div id="formset" class="orderdetail-formset">
+    {{ inlines.management_form }}
+  </div>
+  <div id="empty-form" style="display:none">
+    {% include 'sale/inline-orderdetail-form.html' with inline_orderdetail_form=inlines.empty_form %}
+  </div>
+  <button type="button" id="add-more" class="btn btn-secondary">Thêm sản phẩm</button>
+  <button type="submit" class="btn btn-warning">Tạo đơn hàng</button>
+</form>
+
+{{ form.media }}
+{% endblock content %}

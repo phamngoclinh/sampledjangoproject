@@ -17,7 +17,7 @@
   <a href="{% url 'shopping_cart' %}" class="temcart no">
     <div>
       <i class="bhx-cart" style="margin-bottom: 0px;"></i>
-      <span class="cart-sum-item">{{ shopping_cart.orderdetail_set.count|default:0 }}</span>
+      <span class="cart-sum-item">{{ shopping_cart.orderdetails.count|default:0 }}</span>
     </div>
     <div>
       <b class="card">THANH TOÁN</b>
