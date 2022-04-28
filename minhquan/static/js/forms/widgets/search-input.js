@@ -5,7 +5,8 @@ $(function () {
   const searchResultSelector = '[class$=search_result]'
   const selectedResultSelector = '[class$=selected_result]'
   const removeSelectedResultSelector = '[class$=remove_selected_result_button]'
-  const addFormButtonSelector = '[class$=add_form_button]'
+
+  const cacheData = {}
 
   const triggerWidgetUpdate = function (agent, value, data) {
     let $searchInputAgent = agent
@@ -51,7 +52,7 @@ $(function () {
       let searchFields = $searchInputAgent.data('search_fields').split(',')
 
       $searchResult.empty()
-      cacheData = null
+      cacheData[$searchInputAgent[0].id] = null
       let searchText = $(this).val()
       if (searchText) {
         let requestBody = { [searchKey]: searchText }
@@ -67,7 +68,7 @@ $(function () {
           data: requestBody,
           success: function (result) {
             if (result.success) {
-              cacheData = result.data
+              cacheData[$searchInputAgent[0].id] = result.data
               result.data.forEach(function (item, index) {
                 let searchResult = searchFields.map(function (field) {
                   if (!item[field] || item[field] === 'null')
@@ -91,7 +92,9 @@ $(function () {
 
               $searchInputAgent.find('.search_item').on('click', function () {
                 let cacheDataIndex = $(this).data('cache-data-index')
-                selectResultItem($searchInputAgent, cacheData[cacheDataIndex])
+                selectResultItem($searchInputAgent, cacheData[$searchInputAgent[0].id][cacheDataIndex])
+                let $inputSearch = $searchInputAgent.find(inputSearchSelector)
+                $inputSearch.parent().addClass('d-none')
               })
             }
           }
@@ -105,6 +108,8 @@ $(function () {
     triggerWidgetUpdate($searchInputAgent, '', undefined)
     $selectedResult.find('span:first-child').empty()
     $selectedResult.hide()
+    let $inputSearch = $searchInputAgent.find(inputSearchSelector)
+    $inputSearch.parent().removeClass('d-none')
   })
 
   $(document).on('click', '.search_input_add_form_submit', function (e) {

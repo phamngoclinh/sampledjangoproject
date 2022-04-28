@@ -12,7 +12,8 @@
   <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="form-control source_value_search_input" />
   {% endif %}
 
-  <span class="input-group">
+  
+  <span class="input-group {% if widget.selected_result %}d-none{% endif %}">
     <input type="text" name="{{ pattern_name }}" id="id_{{ pattern_name }}_search_text" class="form-control search_text"
     placeholder="{{ widget.attrs.placeholder }}" />
     {% if widget.add_form %}
@@ -94,4 +95,18 @@
     `)
   </script>
 </span>
+
+<style>
+  .search_input_widget_agent {
+    position: relative;
+    display: block;
+  }
+  .search_result {
+    position: absolute;
+    top: 35px;
+    left: 0;
+    right: 0;
+    width: 100%;
+  }
+</style>
 {% endwith %}
