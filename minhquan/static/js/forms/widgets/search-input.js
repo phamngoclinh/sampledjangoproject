@@ -107,10 +107,11 @@ $(function () {
     $selectedResult.hide()
   })
 
-  $(document).on('click', addFormButtonSelector, function () {
-    let $searchInputAgent = $(this).parents(searchInputAgentSelector)
-    let $addForm = $(`.${$searchInputAgent[0].id}`)
-    $addForm.show()
+  $(document).on('click', '.search_input_add_form_submit', function (e) {
+    e.preventDefault()
+    let $addFormTemplateModal = $(this).parents('.add_form_template')
+    let $addForm = $addFormTemplateModal.find('form')
+    $addForm.submit()
   })
 
   $(document).on('submit', '.search_input_add_form', function (e) {
@@ -125,7 +126,7 @@ $(function () {
       success: function (result, textStatus) {
         if (result.success) {
           selectResultItem($searchInputAgent, result.data)
-          $addFormTemplate.hide()
+          $addFormTemplate.find('.search_input_add_form_close').click()
         } else {
           $addForm.find('.add_form_fields').html(result.form)
         }

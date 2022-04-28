@@ -1,3 +1,4 @@
+{% load widget_tweaks %}
 {% with pattern_name=widget.name|add:widget.suffix %}
 <span id="id_{{ pattern_name }}_search_input_widget_agent" class="search_input_widget_agent"
   data-related_data="{{ widget.related_data|default:'' }}" data-url="{{ widget.url }}"
@@ -15,7 +16,14 @@
     <input type="text" name="{{ pattern_name }}" id="id_{{ pattern_name }}_search_text" class="form-control search_text"
     placeholder="{{ widget.attrs.placeholder }}" />
     {% if widget.add_form %}
-      <span id="id_{{ pattern_name }}_add_form_button" class="input-group-text add_form_button">+</span>
+      <span
+        id="id_{{ pattern_name }}_add_form_button"
+        class="input-group-text add_form_button"
+        data-bs-toggle="modal"
+        data-bs-target="#id_{{ pattern_name }}_add_form"
+      >
+        +
+      </span>
     {% endif %}
   </span>
 
@@ -37,19 +45,51 @@
 
   <script>
     $('body').append(`
-      <div id="id_{{ pattern_name }}_add_form" class="id_{{ pattern_name }}_search_input_widget_agent add_form_template" style="display: none">
-        <form
-          class="search_input_add_form"
-          method="post"
-          action="{{ widget.add_form.action }}"
-        >
-          <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF_TOKEN}">
-          <div class="add_form_fields">
-            {{ widget.add_form.form.as_p|escapejs }}
+      <div
+        id="id_{{ pattern_name }}_add_form"
+        tabindex="-1"
+        aria-hidden="true"
+        class="id_{{ pattern_name }}_search_input_widget_agent add_form_template modal fade"
+      >
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Thêm {{ widget.name }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form
+                class="search_input_add_form"
+                method="post"
+                action="{{ widget.add_form.action }}"
+              >
+                <input type="hidden" name="csrfmiddlewaretoken" value="${CSRF_TOKEN}">
+                <div class="add_form_fields">
+                  {% for hidden_field in widget.add_form.form.hidden_fields %}
+                    {{ hidden_field|escapejs }}
+                  {% endfor %}
+                  {% for field in  widget.add_form.form.visible_fields %}
+                    <div class="form-group mb-2">
+                      {{ field.label_tag|escapejs }}
+                      {{ field|add_class:'form-control'|escapejs }}
+                      {% if field.help_text %}
+                        <small class="form-text text-muted">{{ field.help_text|escapejs }}</small>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                </div>
+                {% comment %}
+                <input type="submit" value="Add" />
+                <button type="reset" class="close_search_input_add_form">x Close</button>
+                {% endcomment %}
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary search_input_add_form_close" data-bs-dismiss="modal">Đóng</button>
+              <button type="button" class="btn btn-primary search_input_add_form_submit">Thêm</button>
+            </div>
           </div>
-          <input type="submit" value="Add" />
-          <button type="reset" class="close_search_input_add_form">x Close</button>
-        </form>
+        </div>
       </div>
     `)
   </script>
