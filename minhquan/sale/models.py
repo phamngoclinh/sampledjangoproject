@@ -229,11 +229,11 @@ class Order(BaseModel):
   def awaiting_fulfillment(self, user, note=None):
     self.update_status('awaiting_fulfillment', started_user=user, note=note)
 
-  def waiting_shipment(self, user, note=None):
-    self.update_status('waiting_shipment', started_user=user, note=note)
+  def awaiting_shipment(self, user, note=None):
+    self.update_status('awaiting_shipment', started_user=user, note=note)
   
-  def waiting_pickup(self, user, note=None):
-    self.update_status('waiting_pickup', started_user=user, note=note)
+  def awaiting_pickup(self, user, note=None):
+    self.update_status('awaiting_pickup', started_user=user, note=note)
 
   def partially_shipped(self, user, note=None):
     self.update_status('partially_shipped', started_user=user, note=note)

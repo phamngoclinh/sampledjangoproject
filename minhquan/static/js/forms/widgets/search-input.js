@@ -1,11 +1,11 @@
 $(function () {
-  const searchInputAgentSelector = '[id$=_search_input_widget_agent]'
+  const searchInputAgentSelector = '[class$=search_input_widget_agent]'
   const widgetSelector = '[class$=source_value_search_input]'
-  const inputSearchSelector = '[id$=_search_text]'
-  const searchResultSelector = '[id$=_search_result]'
-  const selectedResultSelector = '[id$=_selected_result]'
-  const removeSelectedResultSelector = '[id$=_remove_selected_result_button]'
-  const addFormButtonSelector = '[id$=_add_form_button]'
+  const inputSearchSelector = '[class$=search_text]'
+  const searchResultSelector = '[class$=search_result]'
+  const selectedResultSelector = '[class$=selected_result]'
+  const removeSelectedResultSelector = '[class$=remove_selected_result_button]'
+  const addFormButtonSelector = '[class$=add_form_button]'
 
   const triggerWidgetUpdate = function (agent, value, data) {
     let $searchInputAgent = agent

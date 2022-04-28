@@ -123,10 +123,18 @@ class AddressModelForm(forms.ModelForm):
     fields = '__all__'
     exclude = ['created_date', 'updated_date', 'active',]
     labels = {
+      'partner': 'KH thành viên',
       'city': 'Tỉnh/thành phố',
       'district': 'Quận/huyện',
       'award': 'Phường/thị xã',
       'address': 'Số nhà, đường',
+    }
+    widgets = {
+      'partner': SearchInputWidget(attrs={
+        'search_url': '/sale/api/search-customer/',
+        'search_fields': 'full_name,email,phone',
+        'placeholder': 'Tìm KH thành viên',
+      }),
     }
 
 AddressFormSet = modelformset_factory(

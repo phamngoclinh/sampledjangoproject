@@ -14,12 +14,11 @@
     {% csrf_token %}
     <button type="submit">Chờ shipper nhận hàng</button>
   </form>
-  {% elif order.status == 'awaiting_shipment' %}
   <form method="post" action="{% url 'awaiting_pickup' order.id %}">
     {% csrf_token %}
-    <button type="submit">Chờ khách hàng đến nhận hàng</button>
+    <button type="submit">Chờ khách nhận hàng</button>
   </form>
-  {% elif order.status == 'awaiting_pickup' %}
+  {% elif order.status == 'awaiting_shipment' or order.status == 'awaiting_pickup' %}
   <form method="post" action="{% url 'partially_shipped' order.id %}">
     {% csrf_token %}
     <input text="text" name="note" placeholder="Ghi chú" />

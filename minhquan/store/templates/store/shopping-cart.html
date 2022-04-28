@@ -12,7 +12,6 @@
         </div>
 
         <div class="block">
-          {% if shopping_cart %}
           <div class="lst-product onlyone">
             <div class="cart-list lstproductbuy lstproductoff">
               {% if shopping_cart.orderdetails %}
@@ -120,8 +119,10 @@
               </div>
             </div>
             <div class="btn-order">
-              {% if request.partner %}
+              {% if request.partner and shopping_cart %}
               <a href="{% url 'checkout' shopping_cart.id %}" class="btn-og btn-step">ĐẶT HÀNG</a>
+              {% elif request.partner and not shopping_cart %}
+              <span>Giỏ hàng chưa có sản phẩm nào</span>
               {% else %}
               <a href="{% url 'login' %}?next={{request.get_full_path|urlencode}}" class="btn-og btn-step">ĐĂNG NHẬP ĐỂ
                 ĐẶT HÀNG</a>
@@ -130,9 +131,6 @@
             </div>
           </div>
           <div class="clr"></div>
-          {% else %}
-          <p>Chưa có sản phẩm nào</p>
-          {% endif %}
         </div>
 
       </div>
