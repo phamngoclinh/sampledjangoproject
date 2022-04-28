@@ -1,7 +1,8 @@
 {% load widget_tweaks %}
-<div id="accordion">
+<div class="accordion" id="accordion_rule_product">
   <!-- Rule product category -->
-  <div id="by_product_category" class="accordion-collapse collapse show product_domain_rule mb-4">
+  <div id="by_product_category" class="accordion-collapse collapse show product_domain_rule"
+  data-bs-parent="#accordion_rule_product">
     <h4>Thiếp lập dòng sản phẩm</h4>
     <div class="rule_item">
       <input type="hidden" name="rule_product_category_operator" value="is" />
@@ -24,7 +25,8 @@
   </div>
 
   <!-- Rule product name -->
-  <div id="by_product_name" class="collapse product_domain_rule mb-4">
+  <div id="by_product_name" class="accordion-collapse collapse product_domain_rule"
+  data-bs-parent="#accordion_rule_product">
     <h4>Thiếp lập tên sản phẩm</h4>
     <div class="rule_item">
       <select name="rule_product_name_operator" class="form-select mb-2">
@@ -35,12 +37,11 @@
       </select>
       <input type="text" name="rule_product_name_value" class="form-control" placeholder="Nhập tên sản phẩm" />
     </div>
-    <hr />
-    <!-- <button class="btn btn-primary">Thêm thiếp lập</button> -->
   </div>
 
   <!-- Rule product price -->
-  <div id="by_product_price" class="collapse product_domain_rule mb-4">
+  <div id="by_product_price" class="accordion-collapse collapse product_domain_rule"
+  data-bs-parent="#accordion_rule_product">
     <h4>Thiếp lập giá sản phẩm</h4>
     <div class="rule_item">
       <select name="rule_product_price_operator" class="form-select mb-2">
@@ -51,32 +52,30 @@
       </select>
       <input type="number" name="rule_product_price_value" class="form-control" />
     </div>
-    <hr />
-    <!-- <button class="btn btn-primary">Thêm thiếp lập</button> -->
   </div>
 
   <!-- Rule order amount total -->
-  <div id="by_order_amount_total" class="collapse product_domain_rule mb-4">
+  <div id="by_order_amount_total" class="accordion-collapse collapse product_domain_rule"
+  data-bs-parent="#accordion_rule_product">
     <h4>Thiếp lập tổng giá hóa đơn</h4>
     <div class="rule_item">
-      <select name="rule_product_order_amount_total_operator" class="form-select mb-2">
+      <select name="rule_order_amount_total_operator" class="form-select mb-2">
         <option selected>Chọn biểu thức</option>
         <option value="gt">Lớn hơn</option>
         <option value="lt">Nhỏ hơn</option>
         <option value="between">Khoảng</option>
       </select>
-      <input type="number" name="rule_product_order_amount_total_value" class="form-control" />
+      <input type="number" name="rule_order_amount_total_value" class="form-control" />
     </div>
-    <hr />
-    <!-- <button class="btn btn-primary">Thêm thiếp lập</button> -->
   </div>
 
   <!-- Rule order amount total -->
-  <div id="by_shipping_address" class="collapse product_domain_rule mb-4">
+  <div id="by_order_shipping_address" class="accordion-collapse collapse product_domain_rule"
+  data-bs-parent="#accordion_rule_product">
     <h4>Thiếp lập vị trí giao hàng</h4>
     <div class="rule_item">
-      <input type="hidden" name="rule_product_order_shipping_address_operator" value="in">
-      <select name="rule_product_order_shipping_address_value" class="multiple-select form-select mb-2" multiple>
+      <input type="hidden" name="rule_order_shipping_address_operator" value="in">
+      <select name="rule_order_shipping_address_value" class="multiple-select form-select mb-2" multiple>
         <option selected>Chọn khu vực</option>
         <option value="hcm">Hồ Chí Minh</option>
         <option value="hcm-bt">Hồ Chí Mình, quận Bình Thạnh</option>
@@ -92,8 +91,6 @@
         <option value="hcm-tb">Hồ Chí Mình, quận Tân Bình</option>
       </select>
     </div>
-    <hr />
-    <!-- <button class="btn btn-primary">Thêm thiếp lập</button> -->
   </div>
 </div>
 
