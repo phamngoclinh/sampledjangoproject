@@ -5,34 +5,35 @@
   data-add_form_action="{{ widget.add_form.action }}">
 
   {% if widget.selected_result %}
-  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="source_value_search_input"
+  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="form-control source_value_search_input"
     value="{{ widget.selected_result.id|default:'' }}" />
   {% else %}
-  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="source_value_search_input" />
+  <input type="hidden" name="{{ widget.name }}" id="id_{{ widget.name }}" class="form-control source_value_search_input" />
   {% endif %}
 
-  <input type="text" name="{{ pattern_name }}" id="id_{{ pattern_name }}_search_text" class="search_text"
+  <span class="input-group">
+    <input type="text" name="{{ pattern_name }}" id="id_{{ pattern_name }}_search_text" class="form-control search_text"
     placeholder="{{ widget.attrs.placeholder }}" />
-
-  {% if widget.add_form %}
-  <span id="id_{{ pattern_name }}_add_form_button" class="add_form_button">+</span>
-  {% endif %}
+    {% if widget.add_form %}
+      <span id="id_{{ pattern_name }}_add_form_button" class="input-group-text add_form_button">+</span>
+    {% endif %}
+  </span>
 
   {% if widget.selected_result %}
   <span id="id_{{ pattern_name }}_selected_result" class="selected_result">
     <span id="id_{{ pattern_name }}_selected_result_text" class="selected_result_text">
       {{ widget.selected_result }}
     </span>
-    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">x</span>
+    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">(xóa)</span>
   </span>
   {% else %}
   <span id="id_{{ pattern_name }}_selected_result" class="selected_result" style="display: none">
     <span id="id_{{ pattern_name }}_selected_result_text" class="selected_result_text"></span>
-    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">x</span>
+    <span id="id_{{ pattern_name }}_remove_selected_result_button" class="remove_selected_result_button">(xóa)</span>
   </span>
   {% endif %}
 
-  <span id="id_{{ pattern_name }}_search_result" class="search_result" style="display: none"></span>
+  <span id="id_{{ pattern_name }}_search_result" class="list-group mt-2 search_result" style="display: none"></span>
 
   <script>
     $('body').append(`

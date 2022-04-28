@@ -1,85 +1,114 @@
+<br/>
 <div class="order-process-bar">
   {% if order.status == 'pending' %}
   <form method="post" action="{% url 'awaiting_payment' order.id %}">
     {% csrf_token %}
-    <button type="submit">Thanh toán</button>
+    <button type="submit" class="btn btn-success">Thanh toán</button>
   </form>
   {% elif order.status == 'awaiting_payment' %}
   <form method="post" action="{% url 'awaiting_fulfillment' order.id %}">
     {% csrf_token %}
-    <button type="submit">Thanh toán thành công</button>
+    <button type="submit" class="btn btn-success">Thanh toán thành công</button>
   </form>
   {% elif order.status == 'awaiting_fulfillment' %}
   <form method="post" action="{% url 'awaiting_shipment' order.id %}">
     {% csrf_token %}
-    <button type="submit">Chờ shipper nhận hàng</button>
+    <button type="submit" class="btn btn-success">Chờ shipper nhận hàng</button>
   </form>
   <form method="post" action="{% url 'awaiting_pickup' order.id %}">
     {% csrf_token %}
-    <button type="submit">Chờ khách nhận hàng</button>
+    <button type="submit" class="btn btn-success">Chờ khách nhận hàng</button>
   </form>
   {% elif order.status == 'awaiting_shipment' or order.status == 'awaiting_pickup' %}
   <form method="post" action="{% url 'partially_shipped' order.id %}">
     {% csrf_token %}
-    <input text="text" name="note" placeholder="Ghi chú" />
-    <button type="submit">Đã giao hàng một phần</button>
+    <input text="text" name="note" placeholder="Ghi chú" class="form-control" />
+    <button type="submit" class="btn btn-success">Đã giao hàng một phần</button>
   </form>
   <form method="post" action="{% url 'shipped' order.id %}">
     {% csrf_token %}
-    <button type="submit">Đã giao hàng</button>
+    <button type="submit" class="btn btn-success">Đã giao hàng</button>
   </form>
   {% elif order.status == 'partially_shipped' %}
   <form method="post" action="{% url 'shipped' order.id %}">
     {% csrf_token %}
-    <button type="submit">Đã giao hàng</button>
+    <button type="submit" class="btn btn-success">Đã giao hàng</button>
   </form>
   {% elif order.status == 'shipped' %}
   <form method="post" action="{% url 'completed' order.id %}">
     {% csrf_token %}
-    <button type="submit">Hoàn tất đơn hàng</button>
+    <button type="submit" class="btn btn-success">Hoàn tất đơn hàng</button>
   </form>
   {% elif order.status == 'completed' %}
   <div>Đơn hàng đã hoàn thành</div>
   {% elif order.status == 'canceled' %}
   <div>Đơn hàng đã bị hủy</div>
   {% endif %}
+
+  <div class="btn-group mx-2" role="group" aria-label="warning group">
+    <button class="btn btn-warning">Hoàn lại 1 phần</button>
+    <button class="btn btn-warning">Hoàn lại toàn bộ</button>
+  </div>
+
+  <div class="btn-group mx-2" role="group" aria-label="danger group">
+    <button class="btn btn-danger">Từ chối</button>
+    <button class="btn btn-danger">Hủy</button>
+  </div>
+
+  <div class="btn-group mx-2" role="group" aria-label="danger group">
+    <button class="btn btn-danger">Đang tranh chấp</button>
+  </div>
 </div>
 <hr/>
-<div class="order-toolbars">
+<div class="order-toolbars" style="display: none">
   {% if order.status != 'canceled' %}
   <form method="post" action="{% url 'cancelled' order.id %}">
     {% csrf_token %}
-    <input text="text" name="note" placeholder="Ghi chú" />
-    <button type="submit">Hủy đơn hàng</button>
+    <div class="input-group">
+      <input text="text" name="note" placeholder="Ghi chú" class="form-control" />
+      <button type="submit" class="btn btn-danger input-group-text">Hủy đơn hàng</button>
+    </div>
   </form>
+  <br/>
   {% endif %}
   {% if order.status != 'declined' %}
   <form method="post" action="{% url 'declined' order.id %}">
     {% csrf_token %}
-    <input text="text" name="note" placeholder="Ghi chú" />
-    <button type="submit">Từ chối đơn hàng</button>
+    <div class="input-group">
+      <input text="text" name="note" placeholder="Ghi chú" class="form-control" />
+      <button type="submit" class="btn btn-danger input-group-text">Từ chối đơn hàng</button>
+    </div>
   </form>
+  <br/>
   {% endif %}
   {% if order.status != 'partially_refunded' %}
   <form method="post" action="{% url 'partially_refunded' order.id %}">
     {% csrf_token %}
-    <input text="text" name="note" placeholder="Ghi chú" />
-    <button type="submit">Hoàn lại một phần</button>
+    <div class="input-group">
+      <input text="text" name="note" placeholder="Ghi chú" class="form-control" />
+      <button type="submit" class="btn btn-danger input-group-text">Hoàn lại một phần</button>
+    </div>
   </form>
+  <br/>
   {% endif %}
   {% if order.status != 'refunded' %}
   <form method="post" action="{% url 'refunded' order.id %}">
     {% csrf_token %}
-    <input text="text" name="note" placeholder="Ghi chú" />
-    <button type="submit">Hoàn lại thành công</button>
+    <div class="input-group">
+      <input text="text" name="note" placeholder="Ghi chú" class="form-control" />
+      <button type="submit" class="btn btn-danger input-group-text">Hoàn lại thành công</button>
+    </div>
   </form>
+  <br/>
   {% endif %}
   {% if order.status != 'disputed' %}
   <form method="post" action="{% url 'disputed' order.id %}">
     {% csrf_token %}
-    <input text="text" name="note" placeholder="Ghi chú" />
-    <button type="submit">Hoàn lại thành công</button>
-  </form>
+    <div class="input-group">
+      <input text="text" name="note" placeholder="Ghi chú" class="form-control" />
+      <button type="submit" class="btn btn-danger input-group-text">Tranh chấp</button>
+    </div>
+  </form><br/>
   {% endif %}
 </div>
 

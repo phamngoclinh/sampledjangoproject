@@ -77,7 +77,7 @@ $(function () {
 
                 let $searchItem = `
                   <li
-                    class="search_item"
+                    class="list-group-item list-group-item-action search_item"
                     data-cache-data-index="${index}"
                     data-id="${item.id}"
                     data-search-result="${searchResult}"

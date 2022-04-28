@@ -1,0 +1,13 @@
+/* Sidebar */
+.nav-pills .nav-link.active, .nav-pills .show>.nav-link {
+  color: #fff;
+  background-color: #0d6efd;
+}
+.nav-flush .nav-link {
+  border-radius: 0;
+}
+.bi {
+  vertical-align: -.125em;
+  pointer-events: none;
+  fill: currentColor;
+}

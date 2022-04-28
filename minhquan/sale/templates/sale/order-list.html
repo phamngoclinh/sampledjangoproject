@@ -1,13 +1,13 @@
 {% extends "sale/base-management.html" %}
 
 {% block content %}
-<h1>Đơn hàng của bạn</h1>
+<h2>Đơn hàng của bạn</h2>
 <a href="{% url 'create_order' %}">Tạo đơn hàng</a>
 <br/><br/>
-<table>
+<table class="table table-striped table-hover">
   <thead>
     <tr>
-      <td>STT</td>
+      <td>#</td>
       <td>Mã ĐH</td>
       <td>Khách hàng</td>
       <td>Tổng tiền</td>
@@ -33,17 +33,17 @@
     </tr>
     {% empty %}
     <tr>
-      <td colspan="5">Bạn chưa có đơn hàng</td>
+      <td colspan="8">Bạn chưa có đơn hàng</td>
     </tr>
     {% endfor %}
   </tbody>
 </table>
-
-<h1>Đơn hàng đang chờ xử lý</h1>
-<table>
+<hr/>
+<h2>Đơn hàng đang chờ xử lý</h2>
+<table class="table table-striped table-hover">
   <thead>
     <tr>
-      <td>STT</td>
+      <td>#</td>
       <td>Mã ĐH</td>
       <td>Khách hàng</td>
       <td>Tổng tiền</td>
@@ -69,7 +69,7 @@
     </tr>
     {% empty %}
     <tr>
-      <td colspan="5">Không có đơn hàng</td>
+      <td colspan="8">Không có đơn hàng</td>
     </tr>
     {% endfor %}
   </tbody>

@@ -4,26 +4,18 @@
 <h1>Đơn hàng mới</h1>
 <form id="father-form" method="POST" enctype="multipart/form-data">
   {% csrf_token %}
-  <table>
-    {{ form }}
-  </table>
+  {% include 'sale/order-form.html' with order_form=form %}
 
   <hr />
-  {{ inlines.management_form }}
+  
   <div id="formset" class="orderdetail-formset">
-    {% for inline in inlines %}
-    <table class="order-detail-form">
-      {{ inline.as_table }}
-    </table>
-    {% endfor %}
+    {{ inlines.management_form }}
   </div>
   <div id="empty-form" style="display:none">
-    <table class="order-detail-form">
-      {{ inlines.empty_form.as_table }}
-    </table>
+    {% include 'sale/inline-orderdetail-form.html' with inline_orderdetail_form=inlines.empty_form %}
   </div>
-  <button type="button" id="add-more">Thêm sản phẩm</button>
-  <button type="submit">Tạo đơn hàng</button>
+  <button type="button" id="add-more" class="btn btn-secondary">Thêm sản phẩm</button>
+  <button type="submit" class="btn btn-warning">Tạo đơn hàng</button>
 </form>
 
 {{ form.media }}
