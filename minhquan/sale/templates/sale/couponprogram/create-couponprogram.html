@@ -4,7 +4,7 @@
 <h1>Tạo chương trình</h1>
 <form method="POST" enctype="multipart/form-data">
   {% csrf_token %}
-  {% include 'sale/couponprogram-form.html' with couponprogram_form=form %}
+  {% include 'sale/couponprogram/couponprogram-form.html' with couponprogram_form=form %}
 
   <hr />
   
