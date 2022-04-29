@@ -83,8 +83,9 @@ class CouponProgram(BaseModel):
   
   products = models.ManyToManyField('Product', related_name='couponprograms')
   name = models.CharField(max_length=200)
-  rule_product = models.CharField(max_length=200)
-  rule_customer = models.CharField(max_length=200)
+  rule_product = models.JSONField(null=True, blank=True)
+  rule_order = models.JSONField(null=True, blank=True)
+  rule_customer = models.JSONField(null=True, blank=True)
   start_date = models.DateTimeField(default=datetime.now)
   expired_date = models.DateTimeField(default=datetime.now)
   discount_type = models.CharField(default='percent', max_length=50, choices=DISCOUNT_TYPE)

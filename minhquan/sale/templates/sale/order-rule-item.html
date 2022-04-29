@@ -1,0 +1,47 @@
+{% load widget_tweaks %}
+<div class="accordion" id="accordion_rule_order">
+  <!-- Rule order amount total -->
+  <div id="by_order_amount_total" class="accordion-collapse collapse show order_domain_rule"
+    data-bs-parent="#accordion_rule_order">
+    <h4>Thiếp lập tổng giá hóa đơn</h4>
+    <div class="rule_item">
+      <select name="rule_order_amount_total_operator" class="form-select mb-2">
+        <option selected>Chọn biểu thức</option>
+        <option value="gt">Lớn hơn</option>
+        <option value="lt">Nhỏ hơn</option>
+        <option value="between">Khoảng</option>
+      </select>
+      <input type="number" name="rule_order_amount_total_value" class="form-control" />
+    </div>
+  </div>
+
+  <!-- Rule order amount total -->
+  <div id="by_order_shipping_address" class="accordion-collapse collapse order_domain_rule"
+    data-bs-parent="#accordion_rule_order">
+    <h4>Thiếp lập vị trí giao hàng</h4>
+    <div class="rule_item">
+      <input type="hidden" name="rule_order_shipping_address_operator" value="in">
+      <select name="rule_order_shipping_address_value" class="multiple-select form-select mb-2" multiple>
+        <option selected>Chọn khu vực</option>
+        <option value="hcm">Hồ Chí Minh</option>
+        <option value="hcm-bt">Hồ Chí Mình, quận Bình Thạnh</option>
+        <option value="hcm-tb">Hồ Chí Mình, quận Tân Bình</option>
+        <option value="hcm">Hồ Chí Minh</option>
+        <option value="hcm-bt">Hồ Chí Mình, quận Bình Thạnh</option>
+        <option value="hcm-tb">Hồ Chí Mình, quận Tân Bình</option>
+        <option value="hcm">Hồ Chí Minh</option>
+        <option value="hcm-bt">Hồ Chí Mình, quận Bình Thạnh</option>
+        <option value="hcm-tb">Hồ Chí Mình, quận Tân Bình</option>
+        <option value="hcm">Hồ Chí Minh</option>
+        <option value="hcm-bt">Hồ Chí Mình, quận Bình Thạnh</option>
+        <option value="hcm-tb">Hồ Chí Mình, quận Tân Bình</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<style>
+  .multiple-select {
+    height: 200px;
+  }
+</style>

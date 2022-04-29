@@ -4,7 +4,7 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 
-from .models import CouponProgram, Order
+from .models import CouponProgram, Order, Partner, Product
 
 from .forms import CouponProgramModelForm, OrderDetailInlineFormSet, OrderModelForm
 
@@ -134,9 +134,12 @@ class CouponProgramUpdateView(UpdateView):
 
   def get_success_url(self):
     return reverse_lazy('edit_couponprogram', kwargs={'pk': self.object.id})
-
+  
   def form_valid(self, form):
     if form.is_valid():
+      # compute_products = Product.objects.filter(pk=1)
+      json_q = services.convert_json_into_json_q(form.cleaned_data['rule_product'])
+      form.cleaned_data['products'] = services.filter_checked_rule(json_q, Product)
       return super().form_valid(form)
     else:
       return self.form_invalid(form)
@@ -146,6 +149,26 @@ class CouponProgramUpdateView(UpdateView):
   def get_context_data(self, **kwargs):
     ctx = super().get_context_data(**kwargs)
     ctx['title'] = 'Quản lý - Cập nhật chương trình'
+    ctx['product_categories_abc'] = services.get_all_product_category()
+
+    if self.object.rule_product:
+      products_filterable = services.convert_json_into_json_q(self.object.rule_product)
+      products = services.execute_json_q(products_filterable, Product)
+      ctx['product_rule_products'] = products
+    
+    if self.object.rule_customer:
+      customers_filterable = services.convert_json_into_json_q(self.object.rule_customer)
+      customers = services.execute_json_q(customers_filterable, Partner)
+      ctx['customer_rule_customers'] = customers
+
+    ctx['product_rules'] = self.object.rule_product
+    ctx['customer_rules'] = self.object.rule_customer
+
+    if self.request.POST:
+      ctx['form'] = CouponProgramModelForm(self.request.POST, instance=self.object)
+    else:
+      ctx['form'] = CouponProgramModelForm(instance=self.object)
+    
     return ctx
 
 

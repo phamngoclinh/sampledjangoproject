@@ -1,0 +1,24 @@
+<div id="order_domain_rules">
+  <ul class="list-group">
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <span class="d-flex">
+        <input class="form-check-input me-1" type="checkbox" name="enable_rule_order_amount_total" />
+        <span data-bs-toggle="collapse" data-bs-target="#by_order_amount_total" aria-expanded="true"
+          aria-controls="by_order_amount_total">
+          Theo tổng hóa đơn
+        </span>
+      </span>
+      <span class="badge bg-primary rounded-pill">{{ order_rule_orders.amount_total.count }}</span>
+    </li>
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <span class="d-flex">
+        <input class="form-check-input me-1" type="checkbox" name="enable_rule_order_shipping_address" />
+        <span data-bs-toggle="collapse" data-bs-target="#by_order_shipping_address" aria-expanded="true"
+          aria-controls="by_order_shipping_address">
+          Theo vị trí giao hàng
+        </span>
+      </span>
+      <span class="badge bg-primary rounded-pill">{{ order_rule_orders.shipping_address.count }}</span>
+    </li>
+  </ul>
+</div>

@@ -126,6 +126,7 @@ class CouponProgramModelForm(forms.ModelForm):
       'products': 'Sản phẩm áp dụng',
       'name': 'Tên CT',
       'rule_product': 'Ràng buộc sản phẩm',
+      'rule_order': 'Ràng buộc đơn hàng',
       'rule_customer': 'Ràng buộc khách hàng',
       'start_date': 'Ngày bắt đầu',
       'expired_date': 'Ngày kết thúc',

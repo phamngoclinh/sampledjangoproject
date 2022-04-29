@@ -28,6 +28,9 @@ def get_product_categories_tree():
       roots.append(item)
   return roots
 
+def get_all_product_category():
+  return ProductCategory.objects.all()
+
 def get_products_in_category(slug):
   category = get_or_none(ProductCategory, slug=slug)
   if not category:
@@ -156,6 +159,105 @@ def search_address_by_partner(search_text, partner):
     Q(award__icontains=search_text) |
     Q(address__icontains=search_text)
   )
+
+def convert_json_rule_into_json_queryset(json_rule):
+  query_rules = {}
+  for model_name in json_rule:
+    query_dict = json_rule[model_name]
+    query_rules[model_name] = {}
+    for field_name in query_dict:
+      lookups = query_dict[field_name]
+      query_rules[model_name].update({field_name:[]})
+      for lookup_name in lookups:
+        lookup_value = lookups[lookup_name]
+        q_object = Q(**{f'{field_name}__{lookup_name}':lookup_value})
+        query_rules[model_name][field_name].append(q_object)
+  return query_rules
+
+def filter_json_rule(json_queryset):
+  data = {}
+  for model_name in json_queryset:
+    data.update({model_name: {}})
+    model_field_query_rule = json_queryset[model_name]
+    for model_field in model_field_query_rule:
+      queries = model_field_query_rule[model_field]
+      data[model_name].update({model_field: []})
+
+      my_query = queries.pop()
+      for item in queries:
+        my_query |= item
+
+      if model_name == 'product':
+        data[model_name][model_field] = Product.objects.filter(my_query)
+      elif model_name == 'order':
+        data[model_name][model_field] = Order.objects.filter(my_query)
+  return data
+
+def convert_json_into_json_q(json_rule):
+  """
+  Input: {
+    'model_field_1': { 'lookup_name': lookup_value, 'checked': 'on' },
+    'model_field_2': { 'lookup_name': lookup_value },
+    ...
+  }
+  Output: {
+    'checked': ['model_field_1', 'model_field_2',...],
+    'model_field_1': [Q(), Q(), ...,],
+    'model_field_2': [Q(), Q(), ...,],
+    ...
+  }
+  """
+  query_rules = {
+    'checked': []
+  }
+  for field_name in json_rule:
+    lookups = json_rule[field_name]
+    query_rules.update({field_name:[]})
+    for lookup_name in lookups:
+      if lookup_name == 'checked':
+        query_rules.get('checked').append(field_name)
+        continue
+      lookup_value = lookups[lookup_name]
+      q_object = Q(**{f'{field_name}__{lookup_name}':lookup_value})
+      query_rules[field_name].append(q_object)
+  return query_rules
+
+def execute_json_q(json_q, model):
+  """
+  Output: { 'model_field_1': [Queryset<>], 'model_field_2': [Queryset<>], ... }
+  """
+  data = {}
+  for model_field in json_q:
+    if model_field == 'checked':
+      continue
+    queries = json_q[model_field]
+    data.update({model_field: []})
+
+    my_query = queries.pop()
+    for item in queries:
+      my_query |= item
+
+    data[model_field] = model.objects.filter(my_query)
+  return data
+
+def filter_checked_rule(json_q, model):
+  """
+  Output: [Queryset<Model>()]
+  """
+  data = []
+  checked_fields = json_q['checked']
+  q_list = []
+  for model_field in json_q:
+    if model_field in checked_fields:
+      q_list = [*q_list, *json_q[model_field]]
+
+  if q_list:
+    my_query = q_list.pop()
+    for item in q_list:
+      my_query |= item
+    data = model.objects.filter(my_query)
+
+  return data
 
 def get_base_context(request):
   context = {}

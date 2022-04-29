@@ -1,12 +1,12 @@
 {% load widget_tweaks %}
 <div class="accordion" id="accordion_rule_customer">
   <!-- Rule customer type -->
-  <div id="by_customer_type" class="accordion-collapse collapse show customer_domain_rule"
+  <!-- <div id="by_customer_type" class="accordion-collapse collapse show customer_domain_rule"
     data-bs-parent="#accordion_rule_customer">
     <h4>Thiếp lập khách hàng</h4>
     <div class="rule_item">
-      <input type="hidden" name="rule_customer_type_operator" value="is" />
-      <select name="rule_customer_type_value" class="multiple-select form-select" multiple>
+      <select name="rule_customer_type_value" data-model="partner" data-field="type" data-operator="in"
+        class="multiple-select form-select rule-widget" multiple>
         <option selected>Chọn loại khách hàng</option>
         <option value="1">Khách hàng thành viên</option>
         <option value="2">Nhà cung cấp</option>
@@ -15,20 +15,23 @@
         <option>
       </select>
     </div>
-  </div>
+  </div> -->
 
   <!-- Rule customer name -->
-  <div id="by_customer_name" class="accordion-collapse collapse customer_domain_rule"
+  <div id="by_customer_name" class="accordion-collapse collapse show customer_domain_rule"
     data-bs-parent="#accordion_rule_customer">
     <h4>Thiếp lập tên khách hàng</h4>
     <div class="rule_item">
-      <select name="rule_customer_name_operator" class="form-select mb-2">
+      <select name="rule_customer_name_operator" data-model="customer" data-field="full_name"
+        data-value-source="rule_customer_name_value" class="form-select mb-2 rule-widget">
         <option selected>Chọn biểu thức</option>
         <option value="contains">Chứa ký tự</option>
-        <option value="start_withs">Bắt đầu bằng</option>
-        <option value="end_withs">Kết thúc bằng</option>
+        <option value="startswith">Bắt đầu bằng</option>
+        <option value="endswith">Kết thúc bằng</option>
       </select>
-      <input type="text" name="rule_customer_name_value" class="form-control" placeholder="Nhập tên khách hàng" />
+      <input type="text" name="rule_customer_name_value" data-model="customer" data-field="full_name"
+        data-operator-source="rule_customer_name_operator" class="form-control rule-widget"
+        placeholder="Nhập tên khách hàng" />
     </div>
   </div>
 
@@ -37,13 +40,16 @@
     data-bs-parent="#accordion_rule_customer">
     <h4>Thiếp lập ngày sinh</h4>
     <div class="rule_item">
-      <select name="rule_dob_operator" class="form-select mb-2">
+      <select name="rule_customer_dob_operator" data-model="customer" data-field="dob"
+        data-value-source="rule_customer_dob_value" class="form-select mb-2 rule-widget">
         <option selected>Chọn biểu thức</option>
         <option value="gt">Lớn hơn</option>
+        <option value="gte">Lớn hơn hoặc bằng</option>
         <option value="lt">Nhỏ hơn</option>
-        <option value="between">Khoảng</option>
+        <option value="lte">Nhỏ hơn hoặc bằng</option>
       </select>
-      <input type="date" name="rule_dob_value" class="form-control" />
+      <input type="date" name="rule_customer_dob_value" data-model="customer" data-field="dob"
+        data-operator-source="rule_customer_dob_operator" class="form-control rule-widget" />
     </div>
   </div>
 
@@ -52,13 +58,15 @@
     data-bs-parent="#accordion_rule_customer">
     <h4>Thiếp lập email</h4>
     <div class="rule_item">
-      <select name="rule_email_operator" class="form-select mb-2">
+      <select name="rule_customer_email_operator" data-model="customer" data-field="email"
+      data-value-source="rule_customer_email_value" class="form-select mb-2 rule-widget">
         <option selected>Chọn biểu thức</option>
         <option value="contains">Chứa ký tự</option>
-        <option value="start_withs">Bắt đầu bằng</option>
-        <option value="end_withs">Kết thúc bằng</option>
+        <option value="startswith">Bắt đầu bằng</option>
+        <option value="endswith">Kết thúc bằng</option>
       </select>
-      <input type="text" name="rule_email_value" class="form-control" placeholder="Nhập email" />
+      <input type="text" name="rule_customer_email_value" data-model="customer" data-field="email"
+      data-operator-source="rule_customer_email_operator" class="form-control rule-widget" placeholder="Nhập email" />
     </div>
   </div>
 
@@ -67,13 +75,15 @@
     data-bs-parent="#accordion_rule_customer">
     <h4>Thiếp lập số điện thoại</h4>
     <div class="rule_item">
-      <select name="rule_phone_operator" class="form-select mb-2">
+      <select name="rule_customer_phone_operator" data-model="customer" data-field="phone"
+      data-value-source="rule_customer_phone_value" class="form-select mb-2 rule-widget">
         <option selected>Chọn biểu thức</option>
         <option value="contains">Chứa ký tự</option>
-        <option value="start_withs">Bắt đầu bằng</option>
-        <option value="end_withs">Kết thúc bằng</option>
+        <option value="startswith">Bắt đầu bằng</option>
+        <option value="endswith">Kết thúc bằng</option>
       </select>
-      <input type="text" name="rule_phone_value" class="form-control" placeholder="Nhập số điện thoại" />
+      <input type="text" name="rule_customer_phone_value" data-model="customer" data-field="phone"
+      data-operator-source="rule_customer_phone_operator" class="form-control rule-widget" placeholder="Nhập số điện thoại" />
     </div>
   </div>
 </div>
