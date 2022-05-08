@@ -1,0 +1,26 @@
+<select name="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
+        data-model="{{ model }}"
+        data-field="{{ field }}"
+        data-value-source="rule_{{ model }}_{{ field }}_value"
+        class="form-select mb-1 rule-widget">
+    <option>
+        Chọn biểu thức
+    </option>
+    <option value="contains" {% if lookup == 'contains' %}selected{% endif %}>
+        Chứa ký tự
+    </option>
+    <option value="startswith" {% if lookup == 'startswith' %}selected{% endif %}>
+        Bắt đầu bằng
+    </option>
+    <option value="endswith" {% if lookup == 'endswith' %}selected{% endif %}>
+        Kết thúc bằng
+    </option>
+</select>
+<input type="text"
+       name="rule_{{ model }}_{{ field }}_value"
+       data-model="{{ model }}"
+       data-field="{{ field }}"
+       data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
+       placeholder="{{ placeholder }}"
+       class="form-control rule-widget"
+       value="{{ value }}"/>

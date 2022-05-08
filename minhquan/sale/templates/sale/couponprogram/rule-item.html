@@ -1,64 +1,61 @@
+{% load sale_custom_tags %}
 <div class="list-group-item list-group-item-secondary d-flex justify-content-between align-items-center list-group-item-action"
-  aria-current="true">
-  <span class="d-flex flex-grow-1">
-    <input class="form-check-input me-1 rule-widget apply-checkbox" type="checkbox"
-      name="enable_rule_{{ model }}_{{ field }}" data-model="{{ model }}" data-field="{{ field }}"
-      data-operator="checked" />
-    <span class="flex-grow-1" data-bs-toggle="collapse" data-bs-target="#by_{{ model }}_{{ field }}" aria-expanded="true"
-      aria-controls="by_{{ model }}_{{ field }}">
-      {{ rule_title }}
+     aria-current="true">
+    <span class="d-flex flex-grow-1">
+        <input class="form-check-input me-1 rule-widget apply-checkbox"
+               type="checkbox"
+               name="enable_rule_{{ model }}_{{ field }}"
+               data-model="{{ model }}"
+               data-field="{{ field }}"
+               data-operator="checked"
+               {% if 'checked' in data %}checked="checked"{% endif %}/>
+        <span class="flex-grow-1"
+              data-bs-toggle="collapse"
+              data-bs-target="#by_{{ model }}_{{ field }}"
+              aria-expanded="true"
+              aria-controls="by_{{ model }}_{{ field }}">
+            {{ rule_title }}
+        </span>
     </span>
-  </span>
-  <span class="badge bg-primary rounded-pill">{{ result.count|default:0 }}</span>
+    <span class="badge bg-primary rounded-pill">{{ result.count|default:0 }}</span>
 </div>
-
-<div id="by_{{ model }}_{{ field }}" class="accordion-collapse collapse {{ show }} {{ model }}_domain_rule"
-  data-bs-parent="#accordion_rule_{{ model }}">
-  <div class="rule_item py-2">
-    {% if rule_widget == 'list' %}
-    <select name="rule_{{ model }}_{{ field }}_value" data-model="{{ model }}" data-field="{{ field }}"
-      data-operator="{{ operator }}" class="multiple-select form-select rule-widget" multiple>
-      {% for list_item in list_data %}
-      <option value="{{ list_item.id }}">{{ list_item.name }}</option>
-      {% endfor %}
-    </select>
-
-    {% elif rule_widget == 'text' %}
-    <select name="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}" data-model="{{ model }}" data-field="{{ field }}"
-      data-value-source="rule_{{ model }}_{{ field }}_value" class="form-select mb-1 rule-widget">
-      <option>Chọn biểu thức</option>
-      <option value="contains">Chứa ký tự</option>
-      <option value="startswith">Bắt đầu bằng</option>
-      <option value="endswith">Kết thúc bằng</option>
-    </select>
-    <input type="text" name="rule_{{ model }}_{{ field }}_value" data-model="{{ model }}" data-field="{{ field }}"
-      data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}" placeholder="{{ placeholder }}" class="form-control rule-widget" />
-
-    {% elif rule_widget == 'number' %}
-    <select name="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}" data-model="{{ model }}" data-field="{{ field }}"
-      data-value-source="rule_{{ model }}_{{ field }}_value" class="form-select mb-1 rule-widget">
-      <option selected>Chọn biểu thức</option>
-      <option value="gt">Lớn hơn</option>
-      <option value="gte">Lớn hơn hoặc bằng</option>
-      <option value="lt">Nhỏ hơn</option>
-      <option value="lte">Nhỏ hơn hoặc bằng</option>
-      <option value="range">Khoảng</option>
-    </select>
-    <input type="number" name="rule_{{ model }}_{{ field }}_value" data-model="{{ model }}" data-field="{{ field }}"
-      data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}" placeholder="{{ placeholder }}" class="form-control rule-widget" />
-
-    {% elif rule_widget == 'date' %}
-    <select name="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}" data-model="{{ model }}" data-field="{{ field }}"
-      data-value-source="rule_{{ model }}_{{ field }}_value" class="form-select mb-1 rule-widget">
-      <option selected>Chọn biểu thức</option>
-      <option value="gt">Lớn hơn</option>
-      <option value="gte">Lớn hơn hoặc bằng</option>
-      <option value="lt">Nhỏ hơn</option>
-      <option value="lte">Nhỏ hơn hoặc bằng</option>
-      <option value="range">Khoảng</option>
-    </select>
-    <input type="date" name="rule_{{ model }}_{{ field }}_value" data-model="{{ model }}" data-field="{{ field }}"
-      data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}" placeholder="{{ placeholder }}" class="form-control rule-widget" />
-    {% endif %}
-  </div>
+<div id="by_{{ model }}_{{ field }}"
+     class="accordion-collapse collapse {{ show }} {{ model }}_domain_rule"
+     data-bs-parent="#accordion_rule_{{ model }}">
+    {% include "sale/couponprogram/rule-condition.html" with model=model field=field %}
+    <div class="rule_item py-2">
+        {% if rule_widget == 'list' %}
+            {% for lookup,value in data.items %}
+                {% if lookup != 'checked' %}
+                    {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=value lookup=lookup list_data=list_data %}
+                {% endif %}
+            {% empty %}
+                {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=value list_data=list_data %}
+            {% endfor %}
+        {% elif rule_widget == 'text' %}
+            {% for lookup,value in data.items %}
+                {% if lookup != 'checked' %}
+                    {% include 'sale/couponprogram/rule-text.html' with model=model field=field operator=operator placeholder=placeholder value=value lookup=lookup %}
+                {% endif %}
+            {% empty %}
+                {% include 'sale/couponprogram/rule-text.html' with model=model field=field operator=operator placeholder=placeholder value=value %}
+            {% endfor %}
+        {% elif rule_widget == 'number' %}
+            {% for lookup,value in data.items %}
+                {% if lookup != 'checked' %}
+                    {% include 'sale/couponprogram/rule-number.html' with model=model field=field operator=operator placeholder=placeholder value=value lookup=lookup %}
+                {% endif %}
+            {% empty %}
+                {% include 'sale/couponprogram/rule-number.html' with model=model field=field operator=operator placeholder=placeholder value=value %}
+            {% endfor %}
+        {% elif rule_widget == 'date' %}
+            {% for lookup,value in data.items %}
+                {% if lookup != 'checked' %}
+                    {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=value lookup=lookup %}
+                {% endif %}
+            {% empty %}
+                {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=value %}
+            {% endfor %}
+        {% endif %}
+    </div>
 </div>

@@ -1,0 +1,14 @@
+<select name="rule_{{ model }}_{{ field }}_condition"
+        data-model="{{ model }}"
+        data-field="{{ field }}"
+        class="form-select mb-1 rule-widget">
+    <option>
+        Chọn điều kiện
+    </option>
+    <option value="and" {% if lookup == 'and' %}selected{% endif %}>
+        và (AND)
+    </option>
+    <option value="or" {% if lookup == 'or' %}selected{% endif %}>
+        hoặc (OR)
+    </option>
+</select>

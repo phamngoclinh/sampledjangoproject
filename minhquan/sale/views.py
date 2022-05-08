@@ -124,6 +124,7 @@ class CouponProgramCreateView(CreateView):
   def get_context_data(self, **kwargs):
     ctx = super().get_context_data(**kwargs)
     ctx['title'] = 'Tạo chương trình'
+    ctx['sale_product_categories'] = services.get_all_product_category()
 
     if self.request.POST:
       ctx['form'] = CouponProgramModelForm(self.request.POST, instance=self.object)
@@ -143,11 +144,13 @@ class CouponProgramUpdateView(UpdateView):
   
   def form_valid(self, form):
     if form.is_valid():
+      new_couponprogram = form.save(commit=False)
       json_q = services.convert_json_into_json_q(form.cleaned_data['rule_product'])
-      form.cleaned_data['products'] = services.filter_checked_rule(json_q, Product)
+      new_couponprogram.products.set(services.filter_checked_rule(json_q, Product))
+      new_couponprogram.save()
+      form.save_m2m()
       return super().form_valid(form)
-    else:
-      return self.form_invalid(form)
+    return self.form_invalid(form)
   
   # We populate the context with the forms. Here I'm sending
   # the inline forms in `inlines`
@@ -159,21 +162,17 @@ class CouponProgramUpdateView(UpdateView):
     if self.object.rule_product:
       products_filterable = services.convert_json_into_json_q(self.object.rule_product)
       products = services.execute_json_q(products_filterable, Product)
-      ctx['product_rule_products'] = products
+      ctx['rule_product_mapping_result'] = products
     
     if self.object.rule_customer:
       customers_filterable = services.convert_json_into_json_q(self.object.rule_customer)
       customers = services.execute_json_q(customers_filterable, Partner)
-      ctx['customer_rule_customers'] = customers
+      ctx['rule_customer_mapping_result'] = customers
     
     if self.object.rule_order:
       orders_filterable = services.convert_json_into_json_q(self.object.rule_order)
       orders = services.execute_json_q(orders_filterable, Order)
-      ctx['order_rule_orders'] = orders
-
-    ctx['product_rules'] = self.object.rule_product
-    ctx['customer_rules'] = self.object.rule_customer
-    ctx['order_rules'] = self.object.rule_order
+      ctx['rule_order_mapping_result'] = orders
 
     if self.request.POST:
       ctx['form'] = CouponProgramModelForm(self.request.POST, instance=self.object)

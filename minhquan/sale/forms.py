@@ -122,6 +122,7 @@ class CouponProgramModelForm(forms.ModelForm):
   class Meta:
     model = CouponProgram
     fields = '__all__'
+    exclude = ['products']
     labels = {
       'products': 'Sản phẩm áp dụng',
       'name': 'Tên CT',

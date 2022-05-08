@@ -1,0 +1,14 @@
+<select name="rule_{{ model }}_{{ field }}_value"
+        data-model="{{ model }}"
+        data-field="{{ field }}"
+        data-operator="{{ operator }}"
+        class="multiple-select form-select rule-widget"
+        multiple>
+    {% for list_item in list_data %}
+        {% with list_item.id|slugify as item_id %}
+            <option value="{{ list_item.id }}" {% if item_id in value %}selected{% endif %}>
+                {{ list_item.name }}
+            </option>
+        {% endwith %}
+    {% endfor %}
+</select>

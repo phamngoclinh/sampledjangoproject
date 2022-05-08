@@ -1,9 +1,10 @@
 {% load widget_tweaks %}
 <div class="accordion" id="accordion_rule_customer">
-  <div class="list-group">
-    {% include 'sale/couponprogram/rule-item.html' with model='customer' field='full_name' rule_title='Cài đặt tên' placeholder='Nhập giá trị' rule_widget='text' show='show' result=customer_rule_customers.full_name|default:None %}
-    {% include 'sale/couponprogram/rule-item.html' with model='customer' field='dob' rule_title='Cài đặt ngày sinh' placeholder='Chọn ngày sinh' rule_widget='date' result=customer_rule_customers.dob|default:None %}
-    {% include 'sale/couponprogram/rule-item.html' with model='customer' field='email' rule_title='Cài đặt email' placeholder='Nhập giá trị' rule_widget='text' result=customer_rule_customers.email|default:None %}
-    {% include 'sale/couponprogram/rule-item.html' with model='customer' field='phone' rule_title='Cài đặt số điện thoại' placeholder='Nhập giá trị' rule_widget='text' result=customer_rule_customers.phone|default:None %}
-  </div>
+    {% include "sale/couponprogram/rule-condition.html" with model="customer" %}
+    <div class="list-group">
+        {% include "sale/couponprogram/rule-item.html" with data=data.full_name model="customer" field="full_name" rule_title="Cài đặt tên" placeholder="Nhập giá trị" rule_widget="text" show="show" result=rule_customer_mapping_result.full_name|default:None %}
+        {% include "sale/couponprogram/rule-item.html" with data=data.dob model="customer" field="dob" rule_title="Cài đặt ngày sinh" placeholder="Chọn ngày sinh" rule_widget="date" result=rule_customer_mapping_result.dob|default:None %}
+        {% include "sale/couponprogram/rule-item.html" with data=data.email model="customer" field="email" rule_title="Cài đặt email" placeholder="Nhập giá trị" rule_widget="text" result=rule_customer_mapping_result.email|default:None %}
+        {% include "sale/couponprogram/rule-item.html" with data=data.phone model="customer" field="phone" rule_title="Cài đặt số điện thoại" placeholder="Nhập giá trị" rule_widget="text" result=rule_customer_mapping_result.phone|default:None %}
+    </div>
 </div>

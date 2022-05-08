@@ -1,0 +1,32 @@
+<select name="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
+        data-model="{{ model }}"
+        data-field="{{ field }}"
+        data-value-source="rule_{{ model }}_{{ field }}_value"
+        class="form-select mb-1 rule-widget">
+    <option>
+        Chọn biểu thức
+    </option>
+    <option value="gt" {% if lookup == 'gt' %}selected{% endif %}>
+        Lớn hơn
+    </option>
+    <option value="gte" {% if lookup == 'gte' %}selected{% endif %}>
+        Lớn hơn hoặc bằng
+    </option>
+    <option value="lt" {% if lookup == 'lt' %}selected{% endif %}>
+        Nhỏ hơn
+    </option>
+    <option value="lte" {% if lookup == 'lte' %}selected{% endif %}>
+        Nhỏ hơn hoặc bằng
+    </option>
+    <option value="range" {% if lookup == 'range' %}selected{% endif %}>
+        Khoảng
+    </option>
+</select>
+<input type="number"
+       name="rule_{{ model }}_{{ field }}_value"
+       data-model="{{ model }}"
+       data-field="{{ field }}"
+       data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
+       placeholder="{{ placeholder }}"
+       class="form-control rule-widget"
+       value="{{ value }}"/>

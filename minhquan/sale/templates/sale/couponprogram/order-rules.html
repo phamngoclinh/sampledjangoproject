@@ -1,7 +1,7 @@
 {% load widget_tweaks %}
 <div class="accordion" id="accordion_rule_order">
   <div class="list-group">
-    {% include 'sale/couponprogram/rule-item.html' with model='order' field='amount_total' rule_title='Cài đặt tổng tiền' placeholder='Nhập giá trị' rule_widget='number' show='show' result=order_rule_orders.amount_total|default:None %}
-    {% include 'sale/couponprogram/rule-item.html' with model='order' field='shipping_address' rule_title='Cài đặt khu vực giao hàng' placeholder='Chọn khu vực' rule_widget='select' result=order_rule_orders.shipping_address|default:None %}
+    {% include "sale/couponprogram/rule-item.html" with data=data.amount_total model="order" field="amount_total" rule_title="Cài đặt tổng tiền" placeholder="Nhập giá trị" rule_widget="number" show="show" result=rule_order_mapping_result.amount_total|default:None %}
+    {% include "sale/couponprogram/rule-item.html" with data=data.shipping_address model="order" field="shipping_address" rule_title="Cài đặt khu vực giao hàng" placeholder="Chọn khu vực" rule_widget="select" result=rule_order_mapping_result.shipping_address|default:None %}
   </div>
 </div>

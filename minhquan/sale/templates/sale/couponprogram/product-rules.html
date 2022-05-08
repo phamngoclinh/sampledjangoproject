@@ -1,8 +1,8 @@
 {% load widget_tweaks %}
 <div class="accordion" id="accordion_rule_product">
-  <div class="list-group">
-    {% include 'sale/couponprogram/rule-item.html' with model='product' field='category' operator='in' rule_title='Cài đặt dòng sản phẩm' placeholder='Chọn dòng sản phẩm' rule_widget='list' show='show' list_data=sale_product_categories result=product_rule_products.category|default:None %}
-    {% include 'sale/couponprogram/rule-item.html' with model='product' field='name' rule_title='Cài đặt tên' placeholder='Nhập giá trị' rule_widget='text' result=product_rule_products.name|default:None %}
-    {% include 'sale/couponprogram/rule-item.html' with model='product' field='price' rule_title='Cài đặt giá' placeholder='Nhập giá trị' rule_widget='number' result=product_rule_products.price|default:None %}
-  </div>
+    <div class="list-group">
+        {% include "sale/couponprogram/rule-item.html" with data=data.category model="product" field="category" operator="in" rule_title="Cài đặt dòng sản phẩm" placeholder="Chọn dòng sản phẩm" rule_widget="list" show="show" list_data=sale_product_categories result=rule_product_mapping_result.category|default:None %}
+        {% include "sale/couponprogram/rule-item.html" with data=data.name model="product" field="name" rule_title="Cài đặt tên" placeholder="Nhập giá trị" rule_widget="text" result=rule_product_mapping_result.name|default:None %}
+        {% include "sale/couponprogram/rule-item.html" with data=data.price model="product" field="price" rule_title="Cài đặt giá" placeholder="Nhập giá trị" rule_widget="number" result=rule_product_mapping_result.price|default:None %}
+    </div>
 </div>
