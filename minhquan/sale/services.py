@@ -2,6 +2,7 @@ import random
 import re
 import os
 from datetime import datetime, timedelta
+from copy import deepcopy
 
 from django.db.models import Q
 from django.core import mail
@@ -160,104 +161,111 @@ def search_address_by_partner(search_text, partner):
     Q(address__icontains=search_text)
   )
 
-def convert_json_rule_into_json_queryset(json_rule):
-  query_rules = {}
-  for model_name in json_rule:
-    query_dict = json_rule[model_name]
-    query_rules[model_name] = {}
-    for field_name in query_dict:
-      lookups = query_dict[field_name]
-      query_rules[model_name].update({field_name:[]})
-      for lookup_name in lookups:
-        lookup_value = lookups[lookup_name]
-        q_object = Q(**{f'{field_name}__{lookup_name}':lookup_value})
-        query_rules[model_name][field_name].append(q_object)
-  return query_rules
+def safeget(dct, *keys):
+  for key in keys:
+    try:
+      dct = dct[key]
+    except KeyError:
+      return None
+  return dct
 
-def filter_json_rule(json_queryset):
-  data = {}
-  for model_name in json_queryset:
-    data.update({model_name: {}})
-    model_field_query_rule = json_queryset[model_name]
-    for model_field in model_field_query_rule:
-      queries = model_field_query_rule[model_field]
-      data[model_name].update({model_field: []})
-
-      my_query = queries.pop()
-      for item in queries:
-        my_query |= item
-
-      if model_name == 'product':
-        data[model_name][model_field] = Product.objects.filter(my_query)
-      elif model_name == 'order':
-        data[model_name][model_field] = Order.objects.filter(my_query)
-  return data
-
-def convert_json_into_json_q(json_rule):
+def make_rule_json_as_queryable(json_rule):
   """
   Input: {
-    'model_field_1': { 'lookup_name': lookup_value, 'checked': 'on' },
-    'model_field_2': { 'lookup_name': lookup_value },
-    ...
+    'extra': { 'condition': 'or', },
+    'fields': {
+      'model_field_1': {
+        'lookups': [{ 'lookup_name': lookup_value }, { 'lookup_name': lookup_value }, ...]
+        'extra': { 'condition': 'or',  'enabled': 'True', ... }
+      },
+      'model_field_2': {
+        'lookups':  [{ 'lookup_name': lookup_value }, { 'lookup_name': lookup_value }, ...]
+        'extra': { 'condition': 'or',  'enabled': 'True', ... }
+      },
+      ...
+    },
   }
   Output: {
-    'checked': ['model_field_1', 'model_field_2',...],
-    'model_field_1': [Q(), Q(), ...,],
-    'model_field_2': [Q(), Q(), ...,],
-    ...
+    'extra': { 'condition': 'or', },
+    'fields': {
+      'model_field_1': {
+        'lookups':  [{ 'lookup_name': lookup_value }, { 'lookup_name': lookup_value }, ...]
+        'extra': { 'condition': 'or',  'enabled': 'True', ... },
+        'queryable': [Q(), Q(), ...,],
+      },
+      'model_field_2': {
+        'lookups':  [{ 'lookup_name': lookup_value }, { 'lookup_name': lookup_value }, ...]
+        'extra': { 'condition': 'or',  'enabled': 'True', ... },
+        'queryable': [Q(), Q(), ...,],
+      },
+      ...
+    },
+    'queryable': [Q(), Q(), ...,],
   }
   """
-  query_rules = {
-    'checked': []
+
+  clone_json_rule = deepcopy(json_rule)
+
+  top_queryable = Q()
+  top_condition = safeget(clone_json_rule, 'extra', 'condition')
+  
+  for field_name in clone_json_rule['fields']:
+    lookups = safeget(clone_json_rule, 'fields', field_name, 'lookups')
+    is_enabled = safeget(clone_json_rule, 'fields', field_name, 'extra', 'enabled')
+    field_condition = safeget(clone_json_rule, 'fields', field_name, 'extra', 'condition')
+    
+    # Begin building queryable
+    field_queryable = Q()
+    for lookup in lookups:
+      (lookup_name, lookup_value) = [(k, v) for k, v in lookup.items()][0]
+      q_object = Q(**{f'{field_name}__{lookup_name}': lookup_value})
+      field_queryable.add(q_object, Q.AND if field_condition == 'and' else Q.OR)
+    # End building queryable
+
+    clone_json_rule['fields'][field_name]['queryable'] = field_queryable
+
+    if is_enabled:
+      top_queryable.add(field_queryable, Q.AND if top_condition == 'and' else Q.OR)
+  
+  clone_json_rule['queryable'] = top_queryable
+
+  return clone_json_rule
+
+def execute_json_rule(json_rule, model):
+  """
+  Output: {
+    'extra': { 'condition': 'or', },
+    'fields': {
+      'model_field_1': {
+        'lookups':  [{ 'lookup_name': lookup_value }, { 'lookup_name': lookup_value }, ...]
+        'extra': { 'condition': 'or',  'enabled': 'True', ... },
+        'queryable': [Q(), Q(), ...,],
+        'result': [],
+      },
+      'model_field_2': {
+        'lookups':  [{ 'lookup_name': lookup_value }, { 'lookup_name': lookup_value }, ...]
+        'extra': { 'condition': 'or',  'enabled': 'True', ... },
+        'queryable': [Q(), Q(), ...,],
+        'result': [],
+      },
+      ...
+    },
+    'queryable': [Q(), Q(), ...,],
+    'result': [],
   }
-  for field_name in json_rule:
-    lookups = json_rule[field_name]
-    query_rules.update({field_name:[]})
-    for lookup_name in lookups:
-      if lookup_name == 'checked':
-        query_rules.get('checked').append(field_name)
-        continue
-      lookup_value = lookups[lookup_name]
-      q_object = Q(**{f'{field_name}__{lookup_name}':lookup_value})
-      query_rules[field_name].append(q_object)
-  return query_rules
-
-def execute_json_q(json_q, model):
   """
-  Output: { 'model_field_1': [Queryset<>], 'model_field_2': [Queryset<>], ... }
-  """
-  data = {}
-  for model_field in json_q:
-    if model_field == 'checked':
-      continue
-    queries = json_q[model_field]
-    data.update({model_field: []})
+  for field_name in json_rule['fields']:
+    field_queryable = safeget(json_rule, 'fields', field_name, 'queryable')
+    json_rule['fields'][field_name]['result'] = model.objects.filter(field_queryable)
+  top_queryable = json_rule['queryable']
+  json_rule['result'] = model.objects.filter(top_queryable)
+  return json_rule
 
-    my_query = queries.pop()
-    for item in queries:
-      my_query |= item
-
-    data[model_field] = model.objects.filter(my_query)
-  return data
-
-def filter_checked_rule(json_q, model):
+def filter_model_by_q(json_rule, model):
   """
   Output: [Queryset<Model>()]
   """
-  data = []
-  checked_fields = json_q['checked']
-  q_list = []
-  for model_field in json_q:
-    if model_field in checked_fields:
-      q_list = [*q_list, *json_q[model_field]]
-
-  if q_list:
-    my_query = q_list.pop()
-    for item in q_list:
-      my_query |= item
-    data = model.objects.filter(my_query)
-
-  return data
+  return model.objects.filter(json_rule['queryable'])
 
 def get_base_context(request):
   context = {}

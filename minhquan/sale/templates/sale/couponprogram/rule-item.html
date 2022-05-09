@@ -1,5 +1,5 @@
 {% load sale_custom_tags %}
-<div class="list-group-item list-group-item-secondary d-flex justify-content-between align-items-center list-group-item-action"
+<div class="bg-gradient bg-opacity-50 list-group-item list-group-item-secondary d-flex justify-content-between align-items-center list-group-item-action"
      aria-current="true">
     <span class="d-flex flex-grow-1">
         <input class="form-check-input me-1 rule-widget apply-checkbox"
@@ -7,8 +7,8 @@
                name="enable_rule_{{ model }}_{{ field }}"
                data-model="{{ model }}"
                data-field="{{ field }}"
-               data-operator="checked"
-               {% if 'checked' in data %}checked="checked"{% endif %}/>
+               data-extra="enabled"
+               {% if data.extra.enabled %}checked="checked"{% endif %}/>
         <span class="flex-grow-1"
               data-bs-toggle="collapse"
               data-bs-target="#by_{{ model }}_{{ field }}"
@@ -22,40 +22,86 @@
 <div id="by_{{ model }}_{{ field }}"
      class="accordion-collapse collapse {{ show }} {{ model }}_domain_rule"
      data-bs-parent="#accordion_rule_{{ model }}">
-    {% include "sale/couponprogram/rule-condition.html" with model=model field=field %}
-    <div class="rule_item py-2">
-        {% if rule_widget == 'list' %}
-            {% for lookup,value in data.items %}
-                {% if lookup != 'checked' %}
-                    {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=value lookup=lookup list_data=list_data %}
+    
+    <div class="input-group p-2 bg-secondary bg-opacity-25">
+        <label class="input-group-text">Điều kiện:</label>
+        {% include "sale/couponprogram/rule-condition.html" with model=model field=field condition=condition %}
+        <button type="button" class="btn add_more_rule">+ Thêm cài đặt</button>
+    </div>
+    
+    {% for lookup in data.lookups %}
+        <div class="rule_item py-2 ps-2 pe-5 bg-secondary bg-opacity-25 position-relative" data-order="{{ forloop.counter0 }}">
+            {% for lookup_key,lookup_value in lookup.items %}
+                {% if rule_widget == 'list' %}
+                    {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key list_data=list_data %}
                 {% endif %}
+                {% if rule_widget == 'text' %}
+                    {% include 'sale/couponprogram/rule-text.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key %}
+                {% endif %}
+                {% if rule_widget == 'number' %}
+                    {% include 'sale/couponprogram/rule-number.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key %}
+                {% endif %}
+                {% if rule_widget == 'date' %}
+                    {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key %}
+                {% endif %}
+            {% endfor %}
+
+            <span class="badge bg-danger position-absolute top-50 remove_rule_item">Xóa</span>
+        </div>
+    {% empty %}
+        <div class="rule_item py-2 ps-2 pe-5 bg-secondary bg-opacity-25 position-relative" data-order="0">
+            {% if rule_widget == 'list' %}
+                {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
+            {% endif %}
+            {% if rule_widget == 'text' %}
+                {% include 'sale/couponprogram/rule-text.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
+            {% endif %}
+            {% if rule_widget == 'number' %}
+                {% include 'sale/couponprogram/rule-number.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
+            {% endif %}
+            {% if rule_widget == 'date' %}
+                {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
+            {% endif %}
+
+            <span class="badge bg-danger position-absolute top-50 remove_rule_item">Xóa</span>
+        </div>
+    {% endfor %}
+    
+    {% comment %} <div class="rule_item py-2">
+        {% if rule_widget == 'list' %}
+            {% for lookup in data.lookups %}
+                {% for lookup_key,lookup_value in lookup.items %}
+                    {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key list_data=list_data %}
+                {% endfor %}
             {% empty %}
-                {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=value list_data=list_data %}
+                {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
             {% endfor %}
         {% elif rule_widget == 'text' %}
-            {% for lookup,value in data.items %}
-                {% if lookup != 'checked' %}
-                    {% include 'sale/couponprogram/rule-text.html' with model=model field=field operator=operator placeholder=placeholder value=value lookup=lookup %}
-                {% endif %}
+            {% for lookup in data.lookups %}
+                {% for lookup_key,lookup_value in lookup.items %}
+                    {% include 'sale/couponprogram/rule-text.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key %}
+                {% endfor %}
             {% empty %}
-                {% include 'sale/couponprogram/rule-text.html' with model=model field=field operator=operator placeholder=placeholder value=value %}
+                {% include 'sale/couponprogram/rule-text.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
             {% endfor %}
         {% elif rule_widget == 'number' %}
-            {% for lookup,value in data.items %}
-                {% if lookup != 'checked' %}
-                    {% include 'sale/couponprogram/rule-number.html' with model=model field=field operator=operator placeholder=placeholder value=value lookup=lookup %}
-                {% endif %}
+            {% for lookup in data.lookups %}
+                {% for lookup_key,lookup_value in lookup.items %}
+                    {% include 'sale/couponprogram/rule-number.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key %}
+                {% endfor %}
             {% empty %}
-                {% include 'sale/couponprogram/rule-number.html' with model=model field=field operator=operator placeholder=placeholder value=value %}
+                {% include 'sale/couponprogram/rule-number.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
             {% endfor %}
         {% elif rule_widget == 'date' %}
-            {% for lookup,value in data.items %}
-                {% if lookup != 'checked' %}
-                    {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=value lookup=lookup %}
-                {% endif %}
+            {% for lookup in data.lookups %}
+                {% for lookup_key,lookup_value in lookup.items %}
+                    {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key %}
+                {% endfor %}
             {% empty %}
-                {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=value %}
+                {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
             {% endfor %}
         {% endif %}
-    </div>
+    </div> {% endcomment %}
+
+    {% comment %} <button type="button" class="btn btn-block btn-primary add_more_rule">Thêm cài đặt</button> {% endcomment %}
 </div>

@@ -1,7 +1,23 @@
+<select name="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
+        data-model="{{ model }}"
+        data-field="{{ field }}"
+        data-value-source="rule_{{ model }}_{{ field }}_value"
+        class="form-select mb-1 rule-widget">
+    <option>
+        Chọn biểu thức
+    </option>
+    <option value="in" {% if lookup == 'in' %}selected{% endif %}>
+        Bao gồm (IN)
+    </option>
+    <option value="not" {% if lookup == 'notin' %}selected{% endif %}>
+        Loại trừ (NOT IN)
+    </option>
+</select>
 <select name="rule_{{ model }}_{{ field }}_value"
         data-model="{{ model }}"
         data-field="{{ field }}"
         data-operator="{{ operator }}"
+        data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
         class="multiple-select form-select rule-widget"
         multiple>
     {% for list_item in list_data %}

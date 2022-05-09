@@ -1,14 +1,15 @@
 <select name="rule_{{ model }}_{{ field }}_condition"
         data-model="{{ model }}"
         data-field="{{ field }}"
-        class="form-select mb-1 rule-widget">
+        data-extra="condition"
+        class="form-select bg-primary bg-opacity-10 rule-widget rule-condition">
     <option>
         Chọn điều kiện
     </option>
-    <option value="and" {% if lookup == 'and' %}selected{% endif %}>
+    <option value="and" {% if condition == 'and' %}selected{% endif %}>
         và (AND)
     </option>
-    <option value="or" {% if lookup == 'or' %}selected{% endif %}>
+    <option value="or" {% if condition == 'or' %}selected{% endif %}>
         hoặc (OR)
     </option>
 </select>

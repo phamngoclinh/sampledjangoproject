@@ -145,8 +145,8 @@ class CouponProgramUpdateView(UpdateView):
   def form_valid(self, form):
     if form.is_valid():
       new_couponprogram = form.save(commit=False)
-      json_q = services.convert_json_into_json_q(form.cleaned_data['rule_product'])
-      new_couponprogram.products.set(services.filter_checked_rule(json_q, Product))
+      json_q = services.make_rule_json_as_queryable(form.cleaned_data['rule_product'])
+      new_couponprogram.products.set(services.filter_model_by_q(json_q, Product))
       new_couponprogram.save()
       form.save_m2m()
       return super().form_valid(form)
@@ -160,18 +160,18 @@ class CouponProgramUpdateView(UpdateView):
     ctx['sale_product_categories'] = services.get_all_product_category()
 
     if self.object.rule_product:
-      products_filterable = services.convert_json_into_json_q(self.object.rule_product)
-      products = services.execute_json_q(products_filterable, Product)
+      products_filterable = services.make_rule_json_as_queryable(self.object.rule_product)
+      products = services.execute_json_rule(products_filterable, Product)
       ctx['rule_product_mapping_result'] = products
     
     if self.object.rule_customer:
-      customers_filterable = services.convert_json_into_json_q(self.object.rule_customer)
-      customers = services.execute_json_q(customers_filterable, Partner)
+      customers_filterable = services.make_rule_json_as_queryable(self.object.rule_customer)
+      customers = services.execute_json_rule(customers_filterable, Partner)
       ctx['rule_customer_mapping_result'] = customers
     
     if self.object.rule_order:
-      orders_filterable = services.convert_json_into_json_q(self.object.rule_order)
-      orders = services.execute_json_q(orders_filterable, Order)
+      orders_filterable = services.make_rule_json_as_queryable(self.object.rule_order)
+      orders = services.execute_json_rule(orders_filterable, Order)
       ctx['rule_order_mapping_result'] = orders
 
     if self.request.POST:
