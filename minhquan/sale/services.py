@@ -218,7 +218,10 @@ def make_rule_json_as_queryable(json_rule):
     field_queryable = Q()
     for lookup in lookups:
       (lookup_name, lookup_value) = [(k, v) for k, v in lookup.items()][0]
-      q_object = Q(**{f'{field_name}__{lookup_name}': lookup_value})
+      if lookup_name == 'notin':
+        q_object = ~Q(**{f'{field_name}__in': lookup_value})
+      else:
+        q_object = Q(**{f'{field_name}__{lookup_name}': lookup_value})
       field_queryable.add(q_object, Q.AND if field_condition == 'and' else Q.OR)
     # End building queryable
 

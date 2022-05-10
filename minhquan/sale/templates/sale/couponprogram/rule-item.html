@@ -30,7 +30,7 @@
     </div>
     
     {% for lookup in data.lookups %}
-        <div class="rule_item py-2 ps-2 pe-5 bg-secondary bg-opacity-25 position-relative" data-order="{{ forloop.counter0 }}">
+        <div class="rule_item py-2 ps-2 pe-5 bg-secondary bg-opacity-25 position-relative" data-rule-widget="{{ rule_widget }}" data-order="{{ forloop.counter0 }}">
             {% for lookup_key,lookup_value in lookup.items %}
                 {% if rule_widget == 'list' %}
                     {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value lookup=lookup_key list_data=list_data %}
@@ -46,10 +46,10 @@
                 {% endif %}
             {% endfor %}
 
-            <span class="badge bg-danger position-absolute top-50 remove_rule_item">Xóa</span>
+            <span class="badge bg-danger position-absolute top-50 translate-middle remove_rule_item" data-model="{{ model }}" data-field="{{ field }}">Xóa</span>
         </div>
     {% empty %}
-        <div class="rule_item py-2 ps-2 pe-5 bg-secondary bg-opacity-25 position-relative" data-order="0">
+        <div class="rule_item py-2 ps-2 pe-5 bg-secondary bg-opacity-25 position-relative" data-rule-widget="{{ rule_widget }}" data-order="0">
             {% if rule_widget == 'list' %}
                 {% include 'sale/couponprogram/rule-list.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
             {% endif %}
@@ -63,7 +63,7 @@
                 {% include 'sale/couponprogram/rule-date.html' with model=model field=field operator=operator placeholder=placeholder value=lookup_value %}
             {% endif %}
 
-            <span class="badge bg-danger position-absolute top-50 remove_rule_item">Xóa</span>
+            <span class="badge bg-danger position-absolute top-50 translate-middle remove_rule_item" data-model="{{ model }}" data-field="{{ field }}">Xóa</span>
         </div>
     {% endfor %}
     

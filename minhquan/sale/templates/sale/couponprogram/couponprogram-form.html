@@ -46,19 +46,19 @@
         <tbody>
             <tr>
                 <td>
-                    {% comment %} {{ couponprogram_form.rule_product|add_class:'form-control'|attr:'readonly:true' }} {% endcomment %}
+                    {{ couponprogram_form.rule_product|add_class:'form-control'|attr:'readonly:true' }}
                     {% with couponprogram_form.rule_product.value|json_loads as rule_product_json %}
                       {% include 'sale/couponprogram/product-rules.html' with data=rule_product_json %}
                     {% endwith %}
                 </td>
                 <td>
-                    {% comment %} {{ couponprogram_form.rule_customer|add_class:'form-control'|attr:'readonly:true' }} {% endcomment %}
+                    {{ couponprogram_form.rule_customer|add_class:'form-control'|attr:'readonly:true' }}
                     {% with couponprogram_form.rule_customer.value|json_loads as rule_customer_json %}
                       {% include 'sale/couponprogram/customer-rules.html' with data=rule_customer_json %}
                     {% endwith %}
                 </td>
                 <td>
-                    {% comment %} {{ couponprogram_form.rule_order|add_class:'form-control'|attr:'readonly:true' }} {% endcomment %}
+                    {{ couponprogram_form.rule_order|add_class:'form-control'|attr:'readonly:true' }}
                     {% with couponprogram_form.rule_order.value|json_loads as rule_order_json %}
                       {% include 'sale/couponprogram/order-rules.html' with data=rule_order_json %}
                     {% endwith %}
@@ -75,8 +75,7 @@
     height: 200px;
   }
   .remove_rule_item {
-    right: 8px;
-    transform: translateY(-50%);
+    right: -12px;
   }
 </style>
 <script src="{% static 'sale/js/couponprogram-form.js' %}"></script>

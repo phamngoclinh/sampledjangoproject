@@ -37,13 +37,27 @@ $(function () {
       // lookups
       $ruleItem = $(this).parents('.rule_item')
       const lookupIndex =  $ruleItem.attr('data-order')
-      if (valueSource) {
+      if (valueSource) { // change operator
         operator = $(this).val()
         value = $ruleItem.find(`[name=${valueSource}]`).val()
-      } else if (operatorSource) {
+      } else if (operatorSource) { // change value
         operator = $ruleItem.find(`[name=${operatorSource}]`).val()
         value = $(this).val()
       }
+
+      if ($ruleItem.attr('data-rule-widget') === 'number') {
+        if (operator === 'range') {
+          const valueFrom = $ruleItem.find(`[data-range=from]`).val()
+          const valueTo = $ruleItem.find(`[data-range=to]`).val()
+          value = [valueFrom, valueTo]
+          $ruleItem.find('.range-number').removeClass('d-none')
+          $ruleItem.find('.single-number').addClass('d-none')
+        } else {
+          $ruleItem.find('.range-number').addClass('d-none')
+          $ruleItem.find('.single-number').removeClass('d-none')
+        }
+      }
+
       rules[model]['fields'][field]['lookups'][lookupIndex] = { [operator]: value }
     }
 
@@ -67,6 +81,12 @@ $(function () {
 
   $(document).on('click', '.remove_rule_item', function () {
     $ruleItem = $(this).parents('.rule_item')
+    const lookupIndex =  $ruleItem.attr('data-order')
+    const model = $(this).data('model')
+    const field = $(this).data('field')
+    rules[model]['fields'][field]['lookups'].splice(lookupIndex, 1)
+    const $ruleElement = $(`#id_rule_${model}`)
+    $ruleElement.val(JSON.stringify(rules[model]))
     $ruleItem.remove()
   })
 })
