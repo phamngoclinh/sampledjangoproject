@@ -89,4 +89,9 @@ $(function () {
     $ruleElement.val(JSON.stringify(rules[model]))
     $ruleItem.remove()
   })
+
+  $('#total-coupon').on('change', function () {
+    const totalFormsets = $(this).val()
+    addFormSet({ formsetSelector: '.formset', total: parseInt(totalFormsets) })
+  })
 })

@@ -6,7 +6,7 @@ from django.views.generic.list import ListView
 
 from .models import CouponProgram, Order, Partner, Product
 
-from .forms import CouponProgramModelForm, OrderDetailInlineFormSet, OrderModelForm
+from .forms import CouponInlineFormSet, CouponProgramModelForm, OrderDetailInlineFormSet, OrderModelForm
 
 from . import services
 
@@ -128,8 +128,10 @@ class CouponProgramCreateView(CreateView):
 
     if self.request.POST:
       ctx['form'] = CouponProgramModelForm(self.request.POST, instance=self.object)
+      ctx['inlines'] = CouponInlineFormSet(self.request.POST, instance=self.object)
     else:
       ctx['form'] = CouponProgramModelForm(instance=self.object)
+      ctx['inlines'] = CouponInlineFormSet(instance=self.object)
 
     return ctx
 
@@ -176,8 +178,10 @@ class CouponProgramUpdateView(UpdateView):
 
     if self.request.POST:
       ctx['form'] = CouponProgramModelForm(self.request.POST, instance=self.object)
+      ctx['inlines'] = CouponInlineFormSet(self.request.POST, instance=self.object)
     else:
       ctx['form'] = CouponProgramModelForm(instance=self.object)
+      ctx['inlines'] = CouponInlineFormSet(instance=self.object)
     
     return ctx
 

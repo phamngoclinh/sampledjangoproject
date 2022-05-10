@@ -1,0 +1,23 @@
+{% load widget_tweaks %}
+<div class="coupon-form d-flex">
+  {{ form.non_field_errors }}
+  {{ form.id }}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>{{ form.DELETE.label }}</th>
+        <th>{{ form.code.label }}</th>
+        <th>{{ form.start_date.label }}</th>
+        <th>{{ form.expired_date.label }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ form.DELETE }}</td>
+        <th>{{ form.code|add_class:'form-control' }}</th>
+        <th>{{ form.start_date|add_class:'form-control' }}</th>
+        <th>{{ form.expired_date|add_class:'form-control' }}</th>
+      </tr>
+    </tbody>
+  </table>
+</div>

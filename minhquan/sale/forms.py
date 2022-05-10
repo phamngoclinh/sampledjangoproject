@@ -139,6 +139,37 @@ class CouponProgramModelForm(forms.ModelForm):
       'expired_date': forms.widgets.DateInput(attrs={'type': 'date'}),
     }
 
+class CouponModelForm(forms.ModelForm):
+  def __init__(self, *args, **kwargs):
+    super().__init__(*args, **kwargs)
+
+    self.fields['code'].widget.attrs['readonly'] = True
+    # self.fields['start_date'].widget.attrs['readonly'] = True
+    # self.fields['expired_date'].widget.attrs['readonly'] = True
+
+  class Meta:
+    model = Coupon
+    fields = '__all__'
+    exclude = ['created_date', 'updated_date', 'active',]
+    labels = {
+      'code': 'Mã',
+      'start_date': 'Ngày hiệu lực',
+      'expired_date': 'Ngày hết hạn',
+    }
+    widgets = {
+      'start_date': forms.widgets.DateInput(attrs={'type': 'date'}),
+      'expired_date': forms.widgets.DateInput(attrs={'type': 'date'}),
+    }
+
+CouponInlineFormSet = inlineformset_factory(
+  CouponProgram,
+  Coupon,
+  form=CouponModelForm,
+  fields='__all__',
+  extra=3,
+  can_delete=True,
+  can_order=False,
+)
 
 class AddressModelForm(forms.ModelForm):
   class Meta:
