@@ -1,0 +1,29 @@
+<div class="range-input {% if lookup != 'range' %}d-none{% endif %}">
+    <div class="d-flex">
+        <div class="w-100 form-floating mb-3">
+            <input type="{{ widget_type }}"
+                name="rule_{{ model }}_{{ field }}_value_from"
+                data-model="{{ model }}"
+                data-field="{{ field }}"
+                data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
+                data-range="from"
+                placeholder="{{ placeholder }}"
+                class="form-control rule-widget"
+                value="{% if lookup == 'range' %}{{ value.0 }}{% endif %}"/>
+            <label>Từ</label>
+        </div>
+        
+        <div class="w-100 form-floating mb-3">
+            <input type="{{ widget_type }}"
+                name="rule_{{ model }}_{{ field }}_value_to"
+                data-model="{{ model }}"
+                data-field="{{ field }}"
+                data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
+                data-range="to"
+                placeholder="{{ placeholder }}"
+                class="form-control rule-widget"
+                value="{% if lookup == 'range' %}{{ value.1 }}{% endif %}"/>
+            <label>Đến</label>
+        </div>
+    </div>
+</div>

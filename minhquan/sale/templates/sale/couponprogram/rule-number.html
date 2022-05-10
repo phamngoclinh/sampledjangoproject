@@ -28,34 +28,7 @@
        data-field="{{ field }}"
        data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
        placeholder="{{ placeholder }}"
-       class="single-number form-control rule-widget {% if lookup == 'range' %}d-none{% endif %}"
+       class="single-input form-control rule-widget {% if lookup == 'range' %}d-none{% endif %}"
        value="{{ value }}"/>
-<div class="range-number {% if lookup != 'range' %}d-none{% endif %}">
-    <div class="d-flex">
-        <div class="form-floating mb-3">
-            <input type="number"
-                name="rule_{{ model }}_{{ field }}_value_from"
-                data-model="{{ model }}"
-                data-field="{{ field }}"
-                data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
-                data-range="from"
-                placeholder="{{ placeholder }}"
-                class="form-control rule-widget"
-                value="{% if lookup == 'range' %}{{ value.0 }}{% endif %}"/>
-            <label>Từ</label>
-        </div>
-        
-        <div class="form-floating mb-3">
-            <input type="number"
-                name="rule_{{ model }}_{{ field }}_value_to"
-                data-model="{{ model }}"
-                data-field="{{ field }}"
-                data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
-                data-range="to"
-                placeholder="{{ placeholder }}"
-                class="form-control rule-widget"
-                value="{% if lookup == 'range' %}{{ value.1 }}{% endif %}"/>
-            <label>Đến</label>
-        </div>
-    </div>
-</div>
+{% include "sale/couponprogram/rule-range.html" with model=model field=field operator=operator lookup=lookup value=value placeholder=placeholder widget_type="number" %}
+

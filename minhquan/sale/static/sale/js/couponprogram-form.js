@@ -45,16 +45,16 @@ $(function () {
         value = $(this).val()
       }
 
-      if ($ruleItem.attr('data-rule-widget') === 'number') {
+      if ($ruleItem.attr('data-rule-widget') === 'number' || $ruleItem.attr('data-rule-widget') === 'date') {
         if (operator === 'range') {
           const valueFrom = $ruleItem.find(`[data-range=from]`).val()
           const valueTo = $ruleItem.find(`[data-range=to]`).val()
           value = [valueFrom, valueTo]
-          $ruleItem.find('.range-number').removeClass('d-none')
-          $ruleItem.find('.single-number').addClass('d-none')
+          $ruleItem.find('.range-input').removeClass('d-none')
+          $ruleItem.find('.single-input').addClass('d-none')
         } else {
-          $ruleItem.find('.range-number').addClass('d-none')
-          $ruleItem.find('.single-number').removeClass('d-none')
+          $ruleItem.find('.range-input').addClass('d-none')
+          $ruleItem.find('.single-input').removeClass('d-none')
         }
       }
 

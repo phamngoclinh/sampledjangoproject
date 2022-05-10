@@ -28,5 +28,6 @@
        data-field="{{ field }}"
        data-operator-source="rule_{{ model }}_{{ field }}_{{ operator|default:'operator' }}"
        placeholder="{{ placeholder }}"
-       class="form-control rule-widget"
+       class="single-input form-control rule-widget"
        value="{{ value }}"/>
+{% include "sale/couponprogram/rule-range.html" with model=model field=field operator=operator lookup=lookup value=value placeholder=placeholder widget_type="date" %}
