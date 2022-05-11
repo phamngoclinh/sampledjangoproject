@@ -145,7 +145,11 @@ class CouponProgramUpdateView(UpdateView):
     return reverse_lazy('edit_couponprogram', kwargs={'pk': self.object.id})
   
   def form_valid(self, form):
+    ctx = self.get_context_data()
+    inlines = ctx['inlines']
     if form.is_valid():
+      if inlines.is_valid():
+        inlines.save()
       new_couponprogram = form.save(commit=False)
       json_q = services.make_rule_json_as_queryable(form.cleaned_data['rule_product'])
       new_couponprogram.products.set(services.filter_model_by_q(json_q, Product))

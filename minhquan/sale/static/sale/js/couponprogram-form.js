@@ -92,6 +92,17 @@ $(function () {
 
   $('#total-coupon').on('change', function () {
     const totalFormsets = $(this).val()
-    addFormSet({ formsetSelector: '.formset', total: parseInt(totalFormsets) })
+    const code = $('#id_name').val().replaceAll(/\s/g,'-')
+    const start_date = new Date($('#id_start_date').val()).toISOString().substring(0,10)
+    const expired_date = new Date($('#id_expired_date').val()).toISOString().substring(0,10)
+    addFormSet({
+      formsetSelector: '.formset',
+      total: parseInt(totalFormsets),
+      initials: {
+        code: function () { return code + Date.now() },
+        start_date: start_date,
+        expired_date: expired_date
+      }
+    })
   })
 })

@@ -5,7 +5,8 @@ const addFormSet = function ({
   formsetSelector = '.formset',
   formsetEmptySelector = '.formset-empty',
   formsetInlinesSelector = '.formset-inlines',
-  total = 1
+  total = 1,
+  initials = {}
 }) {
   $formset = formsetElement || $(formsetSelector)
   $formsetEmpty = formsetEmptyElement || $formset.find(formsetEmptySelector)
@@ -13,7 +14,6 @@ const addFormSet = function ({
 
   const $totalForms = $formset.find('[name$=TOTAL_FORMS]')
   const totalForms = parseInt($totalForms.val())
-  console.log('totalForms', $totalForms, totalForms)
 
   if (total >= totalForms) {
     const subTotal = total - totalForms
@@ -35,6 +35,19 @@ const addFormSet = function ({
       })
   
       $newForm.html($newForm.html().replace(match, replace))
+
+      keys = Object.keys(initials)
+      if (keys.length) {
+        keys.forEach(function (key) {
+          const $formInput = $newForm.find(`[id^=id][id$=${key}]`)
+          let value = initials[key]
+          if (typeof value === 'function') {
+            value = value()
+          }
+          $formInput.val(value)
+          console.log('key,value,input', key,value,$formInput)
+        })
+      }
   
       $totalForms.val(newTotalForms + 1)
       $formsetInlines.append($newForm)

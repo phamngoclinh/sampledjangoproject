@@ -157,6 +157,7 @@ class CouponModelForm(forms.ModelForm):
       'expired_date': 'Ngày hết hạn',
     }
     widgets = {
+      'order': forms.HiddenInput(),
       'start_date': forms.widgets.DateInput(attrs={'type': 'date'}),
       'expired_date': forms.widgets.DateInput(attrs={'type': 'date'}),
     }
@@ -166,7 +167,7 @@ CouponInlineFormSet = inlineformset_factory(
   Coupon,
   form=CouponModelForm,
   fields='__all__',
-  extra=3,
+  extra=0,
   can_delete=True,
   can_order=False,
 )

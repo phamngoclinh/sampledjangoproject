@@ -2,6 +2,7 @@
 <div class="coupon-form d-flex">
   {{ form.non_field_errors }}
   {{ form.id }}
+  {{ form.order }}
   <table class="table table-striped">
     <thead>
       <tr>
@@ -9,15 +10,27 @@
         <th>{{ form.code.label }}</th>
         <th>{{ form.start_date.label }}</th>
         <th>{{ form.expired_date.label }}</th>
+        <th>Trạng thái</th>
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>{{ form.DELETE }}</td>
-        <th>{{ form.code|add_class:'form-control' }}</th>
-        <th>{{ form.start_date|add_class:'form-control' }}</th>
-        <th>{{ form.expired_date|add_class:'form-control' }}</th>
-      </tr>
+      {% if not form.order.value %}
+        <tr>
+          <td>{{ form.DELETE }}</td>
+          <td>{{ form.code|add_class:'form-control' }}</td>
+          <td>{{ form.start_date|add_class:'form-control' }}</td>
+          <td>{{ form.expired_date|add_class:'form-control' }}</td>
+          <td>Chưa sử dụng</td>
+        </tr>
+      {% else %}
+        <tr>
+          <td></td>
+          <td>{{ form.code|add_class:'form-control'|attr:'readonly:true' }}</td>
+          <td>{{ form.start_date|add_class:'form-control'|attr:'readonly:true' }}</td>
+          <td>{{ form.expired_date|add_class:'form-control'|attr:'readonly:true' }}</td>
+          <td>Đã sử dụng</td>
+        </tr>
+      {% endif %}
     </tbody>
   </table>
 </div>
