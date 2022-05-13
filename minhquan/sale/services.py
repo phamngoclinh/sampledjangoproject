@@ -1,3 +1,4 @@
+import json
 import random
 import re
 import os
@@ -160,6 +161,36 @@ def search_address_by_partner(search_text, partner):
     Q(award__icontains=search_text) |
     Q(address__icontains=search_text)
   )
+
+def generate_coupon(couponprogram_id, generation_type, total_coupon, rule_customer):
+  couponprogram = get_or_none(CouponProgram, pk=couponprogram_id)
+  if not couponprogram:
+    return
+  coupon_list = []
+  if generation_type == 'num_of_coupon':
+    for x in range(total_coupon):
+      coupon = Coupon(
+        program=couponprogram,
+        code=str(random.randint(100000, 999999)),
+        start_date=couponprogram.start_date,
+        expired_date=couponprogram.expired_date,
+      )
+      coupon_list.append(coupon)
+  elif generation_type == 'num_of_selected_customer':
+    json_q = make_rule_json_as_queryable(json.loads(rule_customer))
+    customers = filter_model_by_q(json_q, Partner)
+    for customer in customers:
+      coupon = Coupon(
+        program=couponprogram,
+        customer=customer,
+        code=str(random.randint(100000, 999999)),
+        start_date=couponprogram.start_date,
+        expired_date=couponprogram.expired_date,
+      )
+      coupon_list.append(coupon)
+  if coupon_list:
+    Coupon.objects.bulk_create(coupon_list)
+  
 
 def safeget(dct, *keys):
   for key in keys:

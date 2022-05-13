@@ -12,6 +12,7 @@ urlpatterns = [
   path('chien-luoc-san-pham/', views.CouponProgramListView.as_view(), name='couponprogram_list'),
   path('tao-chuong-trinh/', views.CouponProgramCreateView.as_view(), name='create_couponprogram'),
   path('sua-chuong-trinh/<int:pk>', views.CouponProgramUpdateView.as_view(), name='edit_couponprogram'),
+  path('tao-ma-khuyen-mai/<int:pk>', views.generate_coupon, name='generate_coupon'),
 
   path('thanh-toan/<int:pk>', views.awaiting_payment, name='awaiting_payment'),
   path('thanh-toan-thanh-cong/<int:pk>', views.awaiting_fulfillment, name='awaiting_fulfillment'),

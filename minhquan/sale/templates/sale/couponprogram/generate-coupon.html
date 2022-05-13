@@ -3,7 +3,7 @@
 <!-- Modal -->
 <div class="modal fade" id="couponForm" tabindex="-1" aria-labelledby="couponFormLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable">
-        <form method="POST" action="" enctype="multipart/form-data">
+        <form method="POST" action="{% url 'generate_coupon' program.id %}" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="modal-content">
                 <div class="modal-header">
@@ -15,13 +15,13 @@
                         <tr>
                             <td>
                                 <div class="form-check">
-                                    <input class="form-check-input tab-label" type="radio" name="coupon_generation_type" id="coupon_generation_type" value="num_of_coupon" checked>
-                                    <label class="form-check-label" for="coupon_generation_type">
+                                    <input class="form-check-input tab-label" type="radio" name="generation_type" id="num_of_coupon" value="num_of_coupon" checked="checked">
+                                    <label class="form-check-label" for="num_of_coupon">
                                         Số lượng coupon
                                     </label>
                                 </div>
                                 <div class="form-check">
-                                    <input class="form-check-input tab-label" type="radio" name="coupon_generation_type" id="num_of_selected_customer" value="num_of_selected_customer">
+                                    <input class="form-check-input tab-label" type="radio" name="generation_type" id="num_of_selected_customer" value="num_of_selected_customer">
                                     <label class="form-check-label" for="num_of_selected_customer">
                                         Số lượng khách hàng được chọn
                                     </label>

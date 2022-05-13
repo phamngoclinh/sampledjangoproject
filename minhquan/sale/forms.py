@@ -181,6 +181,13 @@ CouponInlineFormSet = inlineformset_factory(
   can_order=False,
 )
 
+
+class GenerateCouponForm(forms.Form):
+  generation_type = forms.ChoiceField(choices=(('num_of_coupon', 'Number of coupon'), ('num_of_selected_customer', 'Number of selected customer')))
+  total_coupon = forms.IntegerField(required=False)
+  customer = forms.CharField(max_length=500, required=False)
+
+
 class AddressModelForm(forms.ModelForm):
   class Meta:
     model = Address

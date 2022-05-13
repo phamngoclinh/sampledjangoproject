@@ -6,7 +6,7 @@ from django.views.generic.list import ListView
 
 from .models import Coupon, CouponProgram, Order, Partner, Product
 
-from .forms import CouponModelForm, CouponInlineFormSet, CouponProgramModelForm, OrderDetailInlineFormSet, OrderModelForm
+from .forms import GenerateCouponForm, CouponModelForm, CouponInlineFormSet, CouponProgramModelForm, OrderDetailInlineFormSet, OrderModelForm
 
 from . import services
 
@@ -188,6 +188,17 @@ class CouponProgramUpdateView(UpdateView):
       ctx['inlines'] = CouponInlineFormSet(instance=self.object)
     
     return ctx
+
+
+@login_required()
+def generate_coupon(request, pk):
+  form = GenerateCouponForm(request.POST)
+  if form.is_valid():
+    generation_type = form.cleaned_data['generation_type']
+    total_coupon = form.cleaned_data['total_coupon']
+    rule_customer = form.cleaned_data['customer']
+    services.generate_coupon(pk, generation_type, total_coupon, rule_customer)
+  return redirect('edit_couponprogram', pk=pk)
 
 
 @login_required
