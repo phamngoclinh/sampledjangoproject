@@ -3,15 +3,15 @@
 {% load sale_custom_tags %}
 
 <div class="couponprogram-form">
-    <table class="table table-striped">
+    <table class="table table-striped align-middle">
         <thead>
             <tr>
                 <th>{{ couponprogram_form.name.label }}</th>
                 <th>{{ couponprogram_form.start_date.label }}</th>
                 <th>{{ couponprogram_form.expired_date.label }}</th>
-                <th>{{ couponprogram_form.discount_type.label }}</th>
-                <th>{{ couponprogram_form.discount.label }}</th>
-                <th></th>
+                <td>Trạng thái</td>
+                <td>Mã giảm giá</td>
+                <td>Doanh thu</td>
             </tr>
         </thead>
         <tbody>
@@ -19,13 +19,12 @@
                 <td>{{ couponprogram_form.name|add_class:'form-control' }}</td>
                 <td>{{ couponprogram_form.start_date|add_class:'form-control' }}</td>
                 <td>{{ couponprogram_form.expired_date|add_class:'form-control' }}</td>
-                <td>{{ couponprogram_form.discount_type|add_class:'form-control' }}</td>
-                <td>{{ couponprogram_form.discount|add_class:'form-control' }}</td>
+                <td>{% if couponprogram_form.instance.is_available %}Đang hoạt động{% else %}Không hoạt động{% endif %}</td>
                 <td>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#couponForm">
-                        Quản lý mã giảm giá
-                    </button>
+                    {{ inlines.total_form_count }}
+                    {% comment %} (<a href="{% url 'coupon_list' couponprogram_form.instance.id %}">Chi tiết</a>) {% endcomment %}
                 </td>
+                <td>0đ</td>
             </tr>
         </tbody>
     </table>
@@ -42,70 +41,75 @@
         </tbody>
     </table> {% endcomment %}
 
-    <!-- Modal -->
-    <div class="modal fade" id="couponForm" tabindex="-1" aria-labelledby="couponFormLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="couponFormLabel">Quản lý mã giảm giá</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-floating mb-3">
-                        <input type="number" name="total-coupon" class="form-control" id="total-coupon" placeholder="Nhập số lượng coupon" value="{{ inlines.total_form_count }}">
-                        <label for="total-coupon">Nhập số lượng coupon</label>
-                    </div>
-                    <div class="formset">
-                        {{ inlines.management_form }}
-                        <div id="formset" class="formset-inlines coupon-formset">
-                            {% for inline in inlines %}
-                                {% include 'sale/couponprogram/inline-coupon-form.html' with form=inline %}
-                            {% endfor %}
-                        </div>
-                        <div class="formset-empty" id="empty-form" style="display:none">
-                            {% include 'sale/couponprogram/inline-coupon-form.html' with form=inlines.empty_form %}
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                    <button type="submit" class="btn btn-primary">Cập nhật</button>
-                </div>
+    <div class="d-flex">
+        <div>
+            <h2>Cài đặt điều kiện</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>{{ couponprogram_form.rule_product.label }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            {{ couponprogram_form.rule_product|add_class:'form-control'|attr:'readonly:true' }}
+                            {% with couponprogram_form.rule_product.value|json_loads as rule_product_json %}
+                            {% include 'sale/couponprogram/product-rules.html' with data=rule_product_json %}
+                            {% endwith %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div>
+            <h2>Loại khuyến mãi</h2>
+            <div class="tabs d-flex">
+                <table class="table table-borderless align-top">
+                    <tr>
+                        <td>
+                            {{ couponprogram_form.reward_type.label }}
+                            {{ couponprogram_form.reward_type|add_class:'form-control tab-label' }}
+                        </td>
+                        <td>
+                            <div>
+                                <table class="tab-content discount align-top" {% if couponprogram_form.reward_type.value != 'discount' %}style="display:none;"{% endif %}>
+                                    <tr>
+                                        <td>{{ couponprogram_form.discount.label }}</td>
+                                        <td>
+                                            <div class="d-flex">
+                                                {{ couponprogram_form.discount_type|add_class:'form-control' }}
+                                                {{ couponprogram_form.discount|add_class:'form-control' }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ couponprogram_form.discount_apply_on_type.label }}</td>
+                                        <td>{{ couponprogram_form.discount_apply_on_type|add_class:'form-control' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ couponprogram_form.discount_max_amount.label }}</td>
+                                        <td>{{ couponprogram_form.discount_max_amount|add_class:'form-control' }}</td>
+                                    </tr>
+                                </table>
+                    
+                                <table class="tab-content free_product align-top" {% if couponprogram_form.reward_type.value != 'free_product' %}style="display:none;"{% endif %}>
+                                    <tr>
+                                        <td>{{ couponprogram_form.free_product.label }}</td>
+                                        <td>{{ couponprogram_form.free_product|add_class:'form-control' }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td>{{ couponprogram_form.free_product_total.label }}</td>
+                                        <td>{{ couponprogram_form.free_product_total|add_class:'form-control' }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
-
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th width="33.33%">{{ couponprogram_form.rule_product.label }}</th>
-                <th width="33.33%">{{ couponprogram_form.rule_customer.label }}</th>
-                <th width="33.33%">{{ couponprogram_form.rule_order.label }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>
-                    {{ couponprogram_form.rule_product|add_class:'form-control'|attr:'readonly:true' }}
-                    {% with couponprogram_form.rule_product.value|json_loads as rule_product_json %}
-                      {% include 'sale/couponprogram/product-rules.html' with data=rule_product_json %}
-                    {% endwith %}
-                </td>
-                <td>
-                    {{ couponprogram_form.rule_customer|add_class:'form-control'|attr:'readonly:true' }}
-                    {% with couponprogram_form.rule_customer.value|json_loads as rule_customer_json %}
-                      {% include 'sale/couponprogram/customer-rules.html' with data=rule_customer_json %}
-                    {% endwith %}
-                </td>
-                <td>
-                    {{ couponprogram_form.rule_order|add_class:'form-control'|attr:'readonly:true' }}
-                    {% with couponprogram_form.rule_order.value|json_loads as rule_order_json %}
-                      {% include 'sale/couponprogram/order-rules.html' with data=rule_order_json %}
-                    {% endwith %}
-                </td>
-            </tr>
-        </tbody>
-    </table>
 </div>
 {{ couponprogram_form.rule_product.value|json_script:"product_rules" }}
 {{ couponprogram_form.rule_customer.value|json_script:"customer_rules" }}

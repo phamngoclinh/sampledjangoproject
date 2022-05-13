@@ -1,0 +1,42 @@
+{% extends "sale/base-management.html" %}
+
+{% block content %}
+<h1>Danh sách mã khuyến mãi</h1>
+<table class="table table-striped table-hover">
+  <thead>
+    <tr>
+      <td>#</td>
+      <td>Mã</td>
+      <td>Tên CT</td>
+      <td>Khách hàng</td>
+      <td>Đơn hàng</td>
+      <td>Ngày bắt đầu</td>
+      <td>Ngày kết thúc</td>
+      <td>Trạng thái</td>
+      <td>Thao tác</td>
+    </tr>
+  </thead>
+  <tbody>
+    {% for coupon in object_list %}
+    <tr>
+      <td>{{ forloop.counter }}</td>
+      <td>{{ coupon.code }}</td>
+      <td>{{ coupon.program }}</td>
+      <td>{{ coupon.customer }}</td>
+      <td>{{ coupon.order }}</td>
+      <td>{{ coupon.start_date|date:"SHORT_DATE_FORMAT" }}</td>
+      <td>{{ coupon.expired_date|date:"SHORT_DATE_FORMAT" }}</td>
+      <td>{{ coupon.is_available|yesno:'Đang hoạt động,Ngừng hoạt động' }}</td>
+      <td>
+        {% comment %} <a href="{% url 'edit_coupon' coupon.id %}">Chi tiết</a> {% endcomment %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="9">Chưa có mã giảm giá</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock content %}

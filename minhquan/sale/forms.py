@@ -131,10 +131,17 @@ class CouponProgramModelForm(forms.ModelForm):
       'rule_customer': 'Cài đặt khách hàng',
       'start_date': 'Ngày bắt đầu',
       'expired_date': 'Ngày kết thúc',
+      'reward_type': 'Hình thức áp dụng',
       'discount_type': 'Loại chiết khấu',
       'discount': 'Giá trị chiết khấu',
+      'discount_apply_on_type': 'Áp dụng cho',
+      'discount_max_amount': 'Chiết khấu tối đa',
+      'free_product': 'Sản phẩm',
+      'free_product_total': 'Số lượng',
     }
     widgets = {
+      'rule_product': forms.HiddenInput(),
+      'rule_customer': forms.HiddenInput(),
       'start_date': forms.widgets.DateInput(attrs={'type': 'date'}),
       'expired_date': forms.widgets.DateInput(attrs={'type': 'date'}),
     }
@@ -158,6 +165,8 @@ class CouponModelForm(forms.ModelForm):
     }
     widgets = {
       'order': forms.HiddenInput(),
+      'customer': forms.HiddenInput(),
+      'program': forms.HiddenInput(),
       'start_date': forms.widgets.DateInput(attrs={'type': 'date'}),
       'expired_date': forms.widgets.DateInput(attrs={'type': 'date'}),
     }

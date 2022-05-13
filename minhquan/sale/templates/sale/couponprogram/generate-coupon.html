@@ -1,0 +1,56 @@
+
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#couponForm">Tạo mã giảm giá</button>
+<!-- Modal -->
+<div class="modal fade" id="couponForm" tabindex="-1" aria-labelledby="couponFormLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <form method="POST" action="" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="couponFormLabel">Tạo mã giảm giá</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="tabs">
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input tab-label" type="radio" name="coupon_generation_type" id="coupon_generation_type" value="num_of_coupon" checked>
+                                    <label class="form-check-label" for="coupon_generation_type">
+                                        Số lượng coupon
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input tab-label" type="radio" name="coupon_generation_type" id="num_of_selected_customer" value="num_of_selected_customer">
+                                    <label class="form-check-label" for="num_of_selected_customer">
+                                        Số lượng khách hàng được chọn
+                                    </label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="tab-content num_of_coupon">
+                            <td colspan="2">
+                                <div class="form-floating mt-3">
+                                    <input type="number" name="total_coupon" class="form-control" id="total_coupon" placeholder="Nhập số lượng coupon">
+                                    <label for="total_coupon">Nhập số lượng coupon</label>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="tab-content num_of_selected_customer" style="display: none;">
+                            <td colspan="2">
+                                <div class="mt-3">
+                                    <input type="hidden" id="id_rule_customer" name="customer">
+                                    {% include 'sale/couponprogram/customer-rules.html' with input="#coupon_customer" %}
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

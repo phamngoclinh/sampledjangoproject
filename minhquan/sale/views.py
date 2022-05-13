@@ -4,9 +4,9 @@ from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic.list import ListView
 
-from .models import CouponProgram, Order, Partner, Product
+from .models import Coupon, CouponProgram, Order, Partner, Product
 
-from .forms import CouponInlineFormSet, CouponProgramModelForm, OrderDetailInlineFormSet, OrderModelForm
+from .forms import CouponModelForm, CouponInlineFormSet, CouponProgramModelForm, OrderDetailInlineFormSet, OrderModelForm
 
 from . import services
 

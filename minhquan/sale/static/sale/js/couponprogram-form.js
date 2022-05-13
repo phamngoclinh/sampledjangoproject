@@ -105,4 +105,10 @@ $(function () {
       }
     })
   })
+
+  $('.tab-label').on('change', function () {
+    const tabId = $(this).val() || $(this).id
+    $(this).parents('.tabs').find('.tab-content').hide()
+    $(`.${tabId}`).show()
+  })
 })

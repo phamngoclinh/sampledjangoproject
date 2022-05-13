@@ -1,14 +1,21 @@
 {% extends "sale/base-management.html" %}
 
+{% load widget_tweaks %}
+{% load static %}
+{% load sale_custom_tags %}
+
 {% block content %}
 <h1>Cập nhật chương trình</h1>
-<form method="POST" enctype="multipart/form-data">
-  {% csrf_token %}
-  {% include 'sale/couponprogram/couponprogram-form.html' with couponprogram_form=form %}
 
-  <hr />
-  
-  <button type="submit" class="btn btn-warning">Cập nhật chương trình</button>
+{% include "sale/couponprogram/generate-coupon.html" with program=form.instance %}
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% include 'sale/couponprogram/couponprogram-form.html' with couponprogram_form=form %}
+
+    <hr />
+    
+    <button type="submit" class="btn btn-warning">Cập nhật chương trình</button>
 </form>
 
 <br/><br/>

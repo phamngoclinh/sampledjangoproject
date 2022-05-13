@@ -80,16 +80,30 @@ class CouponProgram(BaseModel):
     ('percent', 'Percent'),
     ('fixed', 'Fixed Amount'),
   )
+  REWARD_TYPE = (
+    ('discount', 'Discount'),
+    ('free_product', 'Free product'),
+  )
+  DISCOUNT_APPLY_ON_TYPE = (
+    ('order', 'Order'),
+    ('cheapest_product', 'Cheapest product'),
+    ('specific_product', 'Specific product'),
+  )
   
-  products = models.ManyToManyField('Product', related_name='couponprograms')
+  products = models.ManyToManyField('Product', related_name='couponprograms', null=True, blank=True)
   name = models.CharField(max_length=200)
   rule_product = models.JSONField(null=True, blank=True)
   rule_order = models.JSONField(null=True, blank=True)
   rule_customer = models.JSONField(null=True, blank=True)
   start_date = models.DateTimeField(default=datetime.now)
   expired_date = models.DateTimeField(default=datetime.now)
+  reward_type = models.CharField(default='discount', max_length=50, choices=REWARD_TYPE)
+  discount = models.FloatField(default=0, null=True, blank=True)
   discount_type = models.CharField(default='percent', max_length=50, choices=DISCOUNT_TYPE)
-  discount = models.FloatField(default=0)
+  discount_apply_on_type = models.CharField(default='order', max_length=50, choices=DISCOUNT_APPLY_ON_TYPE)
+  discount_max_amount = models.FloatField(default=0, null=True, blank=True)
+  free_product = models.ForeignKey('Product', related_name='free_product_couponprograms', on_delete=models.CASCADE, null=True, blank=True)
+  free_product_total = models.FloatField(default=0, null=True, blank=True)
 
   def calcute_discount(self, price):
     return price * self.discount / 100.0 if self.discount_type == 'percent' else (0 if self.discount > price else self.discount)
@@ -101,12 +115,16 @@ class CouponProgram(BaseModel):
 class Coupon(BaseModel):
   program = models.ForeignKey(CouponProgram, related_name='coupons', on_delete=models.CASCADE)
   order = models.ForeignKey('Order', related_name='coupons', on_delete=models.CASCADE, null=True, blank=True)
+  customer = models.ForeignKey(Partner, related_name='coupons', on_delete=models.CASCADE, null=True, blank=True)
   code = models.CharField(max_length=200)
   start_date = models.DateTimeField()
   expired_date = models.DateTimeField()
 
   def __str__(self):
     return self.code
+  
+  def is_available(self):
+    return self.start_date <= datetime.today() and self.expired_date >= datetime.today()
 
 
 class ProductCategory(BaseModel):
