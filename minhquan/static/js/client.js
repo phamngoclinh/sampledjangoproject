@@ -31,4 +31,10 @@ const SERVICES = {
   getProduct: function ({ data, ...others }) {
     HTTP_CLIENT.sendRequest({ method: 'POST', absoluteUrl: '/sale/api/get-product/', data, ...others })
   },
+  getProductsByRule: function ({ data, ...others }) {
+    HTTP_CLIENT.sendRequest({ method: 'POST', absoluteUrl: '/sale/api/get-product-by-rule/', data, ...others })
+  },
+  getCustomersByRule: function ({ data, ...others }) {
+    HTTP_CLIENT.sendRequest({ method: 'POST', absoluteUrl: '/sale/api/get-customer-by-rule/', data, ...others })
+  }
 }

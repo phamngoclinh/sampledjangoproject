@@ -5,6 +5,64 @@ $(function () {
     order: JSON.parse(JSON.parse(document.getElementById('order_rules').textContent))
   }
 
+  $(document).on('change', '#id_rule_product', function () {
+    SERVICES.getProductsByRule({
+      data: rules.product,
+      success: function (response) {
+        $('#ruleProductReflection table tbody').empty()
+        if (!response.success) {
+          $(`[id^=id_rule_product][id$=total]`).html(0)
+        } else {
+          const { result, fields } = response.data
+          $('#id_rule_product_total').html(result.length)
+          Object.keys(fields).forEach(function (field) {
+            $(`#id_rule_product_${field}_total`).html(fields[field].length)
+          })
+
+          result.forEach(function (product, index) {
+            $('#ruleProductReflection table tbody').append(`
+              <tr>
+                <td>${index + 1}</td>
+                <td><img width="40" height="40" src="/media/${product.image}" alt="${product.name}"></td>
+                <td>${product.name}</td>
+              </tr>
+            `)
+          })
+          
+        }
+      }
+    })
+  })
+
+  $(document).on('change', '#id_rule_customer', function () {
+    SERVICES.getCustomersByRule({
+      data: rules.customer,
+      success: function (response) {
+        $('#ruleCustomerReflection table tbody').empty()
+        if (!response.success) {
+          $(`[id^=id_rule_customer][id$=total]`).html(0)
+        } else {
+          const { result, fields } = response.data
+          $('#id_rule_customer_total').html(result.length)
+          Object.keys(fields).forEach(function (field) {
+            $(`#id_rule_customer_${field}_total`).html(fields[field].length)
+          })
+
+          result.forEach(function (customer, index) {
+            $('#ruleCustomerReflection table tbody').append(`
+              <tr>
+                <td>${index + 1}</td>
+                <td>${customer.full_name}</td>
+                <td>${customer.email}</td>
+                <td>${customer.phone}</td>
+              </tr>
+            `)
+          })
+        }
+      }
+    })
+  })
+
   $(document).on('change', '.rule-widget', function () {
     const model = $(this).data('model')
     const field = $(this).data('field')
@@ -62,7 +120,7 @@ $(function () {
     }
 
     const $ruleElement = $(`#id_rule_${model}`)
-    $ruleElement.val(JSON.stringify(rules[model]))
+    $ruleElement.val(JSON.stringify(rules[model])).trigger('change')
   })
 
   $('.add_more_rule').on('click', function () {
@@ -86,7 +144,7 @@ $(function () {
     const field = $(this).data('field')
     rules[model]['fields'][field]['lookups'].splice(lookupIndex, 1)
     const $ruleElement = $(`#id_rule_${model}`)
-    $ruleElement.val(JSON.stringify(rules[model]))
+    $ruleElement.val(JSON.stringify(rules[model])).trigger('change')
     $ruleItem.remove()
   })
 

@@ -120,6 +120,40 @@ def get_product(request):
 
 @csrf_exempt
 @require_http_methods(['POST'])
+def get_product_by_rule(request):
+  try:
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+
+    products_filterable = services.make_rule_json_as_queryable(body)
+    products = services.execute_json_rule_within_serialized(products_filterable, Product)
+
+    return JsonResponse({
+      'success': True,
+      'data': products
+    })
+  except Exception as ex:
+    return JsonResponse({ 'success': False, 'messages': 'Sản phầm không tồn tại' })
+
+@csrf_exempt
+@require_http_methods(['POST'])
+def get_customer_by_rule(request):
+  try:
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+
+    customers_filterable = services.make_rule_json_as_queryable(body)
+    customers = services.execute_json_rule_within_serialized(customers_filterable, Partner)
+
+    return JsonResponse({
+      'success': True,
+      'data': customers
+    })
+  except Exception as ex:
+    return JsonResponse({ 'success': False, 'messages': 'Khách hàng không tồn tại' })
+
+@csrf_exempt
+@require_http_methods(['POST'])
 def search_product(request):
   try:
     body_unicode = request.body.decode('utf-8')
@@ -217,9 +251,11 @@ urlpatterns = [
   path('get-coupon/', get_coupon, name='get_coupon'),
   path('add-to-cart/', add_to_cart, name='add_to_cart'),
   path('get-product/', get_product, name='get_product'),
+  path('get-product-by-rule/', get_product_by_rule, name='get_product_by_rule'),
   path('search-product/', search_product, name='search_product'),
   path('search-customer/', search_partner, name='search_partner'),
   path('search-shipping_address/', search_address, name='search_address'),
+  path('get-customer-by-rule/', get_customer_by_rule, name='get_product_by_rule'),
   path('create-partner/', create_partner, name='create_partner'),
   path('create-address/', create_address, name='create_address'),
 ]

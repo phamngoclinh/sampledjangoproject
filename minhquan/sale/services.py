@@ -261,7 +261,7 @@ def make_rule_json_as_queryable(json_rule):
     if is_enabled:
       top_queryable.add(field_queryable, Q.AND if top_condition == 'and' else Q.OR)
   
-  clone_json_rule['queryable'] = top_queryable
+  clone_json_rule['queryable'] = top_queryable if len(top_queryable) != 0 else None
 
   return clone_json_rule
 
@@ -274,26 +274,45 @@ def execute_json_rule(json_rule, model):
         'lookups':  [{ 'lookup_name': lookup_value }, { 'lookup_name': lookup_value }, ...]
         'extra': { 'condition': 'or',  'enabled': 'True', ... },
         'queryable': [Q(), Q(), ...,],
-        'result': [],
+        'result': [Queryset<Model>()],
       },
       'model_field_2': {
         'lookups':  [{ 'lookup_name': lookup_value }, { 'lookup_name': lookup_value }, ...]
         'extra': { 'condition': 'or',  'enabled': 'True', ... },
         'queryable': [Q(), Q(), ...,],
-        'result': [],
+        'result': [Queryset<Model>()],
       },
       ...
     },
     'queryable': [Q(), Q(), ...,],
-    'result': [],
+    'result': [Queryset<Model>()],
   }
   """
   for field_name in json_rule['fields']:
     field_queryable = safeget(json_rule, 'fields', field_name, 'queryable')
     json_rule['fields'][field_name]['result'] = model.objects.filter(field_queryable)
   top_queryable = json_rule['queryable']
-  json_rule['result'] = model.objects.filter(top_queryable)
+  json_rule['result'] = None if not top_queryable else model.objects.filter(top_queryable)
   return json_rule
+
+def execute_json_rule_within_serialized(json_rule, model):
+  """
+  Output: {
+    'fields': {
+      'model_field_1': [Queryset<Model>()],
+      'model_field_2': [Queryset<Model>()],
+      ...
+    },
+    'result': [Queryset<Model>()],
+  }
+  """
+  rules = execute_json_rule(json_rule, model)
+  serialized_result = {'result': [], 'fields': {}}
+  if rules['result']:
+    serialized_result['result'] = list(rules['result'].values())
+  for field, value in rules['fields'].items():
+    serialized_result['fields'][field] = list(value['result'].values())
+  return serialized_result
 
 def filter_model_by_q(json_rule, model):
   """

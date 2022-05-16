@@ -17,7 +17,7 @@
             {{ rule_title }}
         </span>
     </span>
-    <span class="badge bg-primary rounded-pill">{{ result.count|default:0 }}</span>
+    <span id="id_rule_{{ model}}_{{ field }}_total" class="badge bg-primary rounded-pill">{{ result.count|default:0 }}</span>
 </div>
 <div id="by_{{ model }}_{{ field }}"
      class="accordion-collapse collapse {{ show }} {{ model }}_domain_rule"
