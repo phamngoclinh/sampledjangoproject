@@ -144,6 +144,10 @@ class CouponProgramModelForm(forms.ModelForm):
       'rule_customer': forms.HiddenInput(),
       'start_date': forms.widgets.DateInput(attrs={'type': 'date'}),
       'expired_date': forms.widgets.DateInput(attrs={'type': 'date'}),
+      'free_product': SearchInputWidget(attrs={
+        'search_url': '/sale/api/search-product/',
+        'placeholder': 'Nhập tên sản phẩm',
+      }),
     }
 
 class CouponModelForm(forms.ModelForm):

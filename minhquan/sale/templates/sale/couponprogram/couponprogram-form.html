@@ -52,11 +52,11 @@
         </div>
         <div>
             <h2>Loại khuyến mãi</h2>
-            <table class="table table-borderless align-top">
+            <table class="tabs table table-borderless align-top">
                 <tr>
                     <td>
                         {{ couponprogram_form.reward_type.label }}
-                        {{ couponprogram_form.reward_type|add_class:'form-control tab-label' }}
+                        {{ couponprogram_form.reward_type|add_class:'form-select tab-label' }}
                     </td>
                     <td>
                         <div>
@@ -65,14 +65,14 @@
                                     <td>{{ couponprogram_form.discount.label }}</td>
                                     <td>
                                         <div class="d-flex">
-                                            {{ couponprogram_form.discount_type|add_class:'form-control' }}
+                                            {{ couponprogram_form.discount_type|add_class:'form-select' }}
                                             {{ couponprogram_form.discount|add_class:'form-control' }}
                                         </div>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>{{ couponprogram_form.discount_apply_on_type.label }}</td>
-                                    <td>{{ couponprogram_form.discount_apply_on_type|add_class:'form-control' }}</td>
+                                    <td>{{ couponprogram_form.discount_apply_on_type|add_class:'form-select' }}</td>
                                 </tr>
                                 <tr>
                                     <td>{{ couponprogram_form.discount_max_amount.label }}</td>
