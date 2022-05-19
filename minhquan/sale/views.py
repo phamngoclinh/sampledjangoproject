@@ -111,7 +111,7 @@ class CouponProgramCreateView(CreateView):
   model = CouponProgram
   form_class = CouponProgramModelForm
   template_name = 'sale/couponprogram/create-couponprogram.html'
-  success_url = reverse_lazy('program_list')
+  success_url = reverse_lazy('couponprogram_list')
 
   def form_valid(self, form):
     if form.is_valid():
