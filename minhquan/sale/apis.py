@@ -337,6 +337,16 @@ def get_category(request, pk):
 
 @csrf_exempt
 @require_http_methods(['POST'])
+def get_category_by_slug(request, slug):
+  category = ProductCategory.objects.get(slug=slug)
+  response = model_to_dict(category)
+  return JsonResponse({
+    'success': True,
+    'data': response
+  })
+
+@csrf_exempt
+@require_http_methods(['POST'])
 def get_products(request):
   body_unicode = request.body.decode('utf-8')
   body = json.loads(body_unicode)
@@ -438,6 +448,7 @@ urlpatterns = [
   path('v1/users', get_users, name='get_users'),
   path('v1/categories', get_categories, name='get_categories'),
   path('v1/category/<int:pk>', get_category, name='get_category'),
+  path('v1/category/<slug:slug>', get_category_by_slug, name='get_category_by_slug'),
   path('v1/products', get_products, name='get_products'),
   path('v1/product/<int:pk>', get_product, name='get_product'),
   path('v1/product/<slug:slug>', get_product_by_slug, name='get_product_by_slug'),
