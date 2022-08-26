@@ -1,4 +1,9 @@
 import json
+
+from django.contrib.auth.models import User
+from rest_framework import routers, serializers, viewsets
+from rest_framework import routers
+
 from datetime import datetime
 
 from django.contrib.auth import authenticate, login, logout
@@ -7,7 +12,7 @@ from django.contrib.sessions.models import Session
 from django.forms.models import model_to_dict
 from django.db.models import Q
 from django.http import JsonResponse
-from django.urls import path
+from django.urls import path, include
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
@@ -16,6 +21,8 @@ from .models import User, Address, Order, Coupon, Partner, Product, ProductCateg
 from . import services
 
 from . import forms
+
+from .decorators import logged_in_required
 
 
 @csrf_exempt
@@ -272,20 +279,26 @@ def auth_register(request):
 @csrf_exempt
 @require_http_methods(['POST'])
 def auth_login(request):
-  username = request.POST['username']
-  password = request.POST['password']
+  body_unicode = request.body.decode('utf-8')
+  body = json.loads(body_unicode)
+  username = body.get('username', None)
+  password = body.get('password', None)
+
   user = authenticate(request, username=username, password=password)
   if user is not None:
       login(request, user)
-      # session = Session.objects.get(session_key=request.session.session_key)
+      session = Session.objects.get(session_key=request.session.session_key)
+      # request.session['session_key'] = request.session.session_key
+
       return JsonResponse({
         'success': True,
-        'data': user.id
+        'data': model_to_dict(user, exclude=['password'])
       })
   else:
     return JsonResponse({
       'success': False,
-      'data': None
+      'data': None,
+      'message': 'Failed to login'
     })
   
 
@@ -301,17 +314,15 @@ def auth_logout(request):
   except:
     return JsonResponse({
       'success': False,
-      'data': None
+      'data': None,
+      'message': 'Cannot logout'
     })
 
 @csrf_exempt
 @require_http_methods(['POST'])
+@logged_in_required
 def get_users(request):
-  body_unicode = request.body.decode('utf-8')
-  body = json.loads(body_unicode)
-  query = body['query']
-  kwargs = eval(query)
-  users = User.objects.filter(**kargs)
+  users = User.objects.all()
   return JsonResponse({
     'success': True,
     'data': list(users.values())
@@ -340,6 +351,21 @@ def get_category(request, pk):
 def get_category_by_slug(request, slug):
   category = ProductCategory.objects.get(slug=slug)
   response = model_to_dict(category)
+
+  if not slug:
+    root_categories = ProductCategory.objects.filter(parent_id__isnull=True)
+  else:
+    root_categories = ProductCategory.objects.filter(slug=slug)
+  
+  products = []
+  for root_category in root_categories:
+    _products, c = services.get_products_in_category(root_category.slug)
+    for p in _products:
+      product_model = model_to_dict(p, exclude=['image'])
+      product_model['image'] = request._current_scheme_host + p.image.url
+      products.append(product_model)
+  response['products'] = products
+
   return JsonResponse({
     'success': True,
     'data': response
@@ -430,6 +456,10 @@ def get_coupons(request):
   })
 
 
+
+
+
+
 urlpatterns = [
   path('get-coupon/', get_coupon, name='get_coupon'),
   path('add-to-cart/', add_to_cart, name='add_to_cart'),
@@ -441,6 +471,7 @@ urlpatterns = [
   path('get-customer-by-rule/', get_customer_by_rule, name='get_product_by_rule'),
   path('create-partner/', create_partner, name='create_partner'),
   path('create-address/', create_address, name='create_address'),
+
 
   path('v1/auth/register', auth_register, name='auth_register'),
   path('v1/auth/login', auth_login, name='auth_login'),

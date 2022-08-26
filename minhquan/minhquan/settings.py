@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework'
 ]
 
 FORM_RENDERER = 'django.forms.renderers.TemplatesSetting'
@@ -166,3 +167,12 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # Authentication & Authorization
 F2A_ENABLE = False
 F2A_METHOD = 'email'
+
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ]
+}
